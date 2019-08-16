@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.LoanPlatformMapper">
+	<resultMap id="PlatformMap" type="com.jbb.mgt.core.domain.Platform">
+		<id property="platformId" column="platformId" />
+		<result property="name" column="name" />
+		<result property="shortName" column="shortName" />
+		<result property="url" column="url" />
+		<result property="logo" column="logo" />
+		<result property="adImgUrl" column="adImgUrl" />
+		<result property="desc1" column="desc1" />
+		<result property="desc2" column="desc2" />
+		<result property="desc3" column="desc3" />
+		<result property="minAmount" column="minAmount" />
+		<result property="maxAmount" column="maxAmount" />
+		<result property="loanPeriod" column="loanPeriod" />
+		<result property="interestRate" column="interestRate" />
+		<result property="approvalTime" column="approvalTime" />
+		<result property="isNew" column="isNew" />
+		<result property="isHot" column="isHot" />
+		<result property="creator" column="creator" />
+		<result property="isDeleted" column="isDeleted" />
+		<result property="creationTime" column="creationTime" />
+		<result property="updateTime" column="updateTime" />
+		<result property="cpaPrice" column="cpaPrice" />
+		<result property="groupName" column="groupName" />
+		<result property="type" column="type" />
+		<result property="applyCnt" column="applyCnt" />
+		<result property="isSupportIos" column="isSupportIos" />
+		<result property="isSupportAndroid" column="isSupportAndroid" />
+		<result property="isHomePagePush" column="isHomePagePush" />
+		<result property="priceMode" column="priceMode" />
+		<result property="uvPrice" column="uvPrice" />
+		<result property="estimatedUvCnt" column="estimatedUvCnt" />
+		<result property="minBalance" column="minBalance" />
+		<collection property="platformTags" ofType="com.jbb.mgt.core.domain.LoanPlatformTag">
+			<id column="tagId" property="tagId" jdbcType="INTEGER"/>
+			<id column="platformId1" property="platformId" jdbcType="INTEGER"/>
+			<result column="pos"  property="pos" jdbcType="INTEGER"/>
+			<result column="creationDate"  property="creationDate" jdbcType="TIMESTAMP"/>
+		</collection>
+	</resultMap>
+	
+	<resultMap id="PlatformVoMap" type="com.jbb.mgt.core.domain.PlatformVo">
+		<id property="platformId" column="platformId" />
+		<result property="name" column="name" />
+		<result property="shortName" column="shortName" />
+		<result property="url" column="url" />
+		<result property="logo" column="logo" />
+		<result property="adImgUrl" column="adImgUrl" />
+		<result property="desc1" column="desc1" />
+		<result property="desc2" column="desc2" />
+		<result property="desc3" column="desc3" />
+		<result property="minAmount" column="minAmount" />
+		<result property="maxAmount" column="maxAmount" />
+		<result property="loanPeriod" column="loanPeriod" />
+		<result property="interestRate" column="interestRate" />
+		<result property="approvalTime" column="approvalTime" />
+		<result property="isNew" column="isNew" />
+		<result property="isHot" column="isHot" />
+		<result property="creator" column="creator" />
+		<result property="isDeleted" column="isDeleted" />
+		<result property="creationTime" column="creationTime" />
+		<result property="updateTime" column="updateTime" />
+		<result property="cpaPrice" column="cpaPrice" />
+		<result property="groupName" column="groupName" />
+		<result property="type" column="type" />
+		<result property="salesId" column="salesId" />
+		<result property="applyCnt" column="applyCnt" />
+		<result property="isSupportIos" column="isSupportIos" />
+		<result property="isSupportAndroid" column="isSupportAndroid" />
+		<result property="isHomePagePush" column="isHomePagePush" />
+		<result property="priceMode" column="priceMode" />
+		<result property="uvPrice" column="uvPrice" />
+		<result property="estimatedUvCnt" column="estimatedUvCnt" />
+		<result property="minBalance" column="minBalance" />
+		<association property="salesAccount" javaType="com.jbb.mgt.core.domain.Account">
+			<id property="accountId" column="salesId" />
+			<result property="nickname" column="nickname" />
+		</association>
+		<collection property="areaTags" ofType="com.jbb.mgt.core.domain.LoanTag">
+			<id column="areaTagId" property="areaTagId" jdbcType="INTEGER"/>
+			<result column="tagName"  property="tagName" jdbcType="VARCHAR"/>
+			<result column="areaId"  property="areaId" jdbcType="INTEGER"/>
+			<result column="pos"  property="pos" jdbcType="INTEGER"/>
+			<result column="logoUrl"  property="logoUrl" jdbcType="VARCHAR"/>
+			<result column="creationDate"  property="creationDate" jdbcType="TIMESTAMP"/>
+		</collection>
+	</resultMap>
+	
+	<resultMap id="AreaPlatformVoMap" type="com.jbb.mgt.core.domain.AreaPlatformVo">
+		<id column="areaTagId" property="areaTagId" />
+		<result column="tagName"  property="tagName"/>
+		<result column="areaId"  property="areaId"/>
+		<result column="pos"  property="pos"/>
+		<result column="logoUrl"  property="logoUrl" />
+		<result column="creationDate"  property="creationDate" />
+		
+		<collection property="platforms" ofType="com.jbb.mgt.core.domain.Platform">
+			<id property="platformId" column="platformId" jdbcType="INTEGER" />
+			<result property="name" column="name" jdbcType="VARCHAR" />
+			<result property="shortName" column="shortName" jdbcType="VARCHAR" />
+			<result property="url" column="url" jdbcType="VARCHAR" />
+			<result property="logo" column="logo" jdbcType="VARCHAR"/>
+			<result property="adImgUrl" column="adImgUrl" jdbcType="VARCHAR"/>
+			<result property="desc1" column="desc1" jdbcType="VARCHAR"/>
+			<result property="desc2" column="desc2" jdbcType="VARCHAR"/>
+			<result property="desc3" column="desc3" jdbcType="VARCHAR"/>
+			<result property="minAmount" column="minAmount" jdbcType="INTEGER"/>
+			<result property="maxAmount" column="maxAmount" jdbcType="INTEGER"/>
+			<result property="loanPeriod" column="loanPeriod" jdbcType="VARCHAR"/>
+			<result property="interestRate" column="interestRate" jdbcType="VARCHAR"/>
+			<result property="approvalTime" column="approvalTime" jdbcType="VARCHAR"/>
+			<result property="isNew" column="isNew" jdbcType="TINYINT"/>
+			<result property="isHot" column="isHot" jdbcType="TINYINT"/>
+			<result property="creator" column="creator" jdbcType="INTEGER"/>
+			<result property="isDeleted" column="isDeleted" jdbcType="TINYINT"/>
+			<result property="creationTime" column="creationTime" jdbcType="TIMESTAMP"/>
+			<result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+			<result property="applyCnt" column="applyCnt" jdbcType="INTEGER"/>
+			<result property="isSupportIos" column="isSupportIos" jdbcType="TINYINT"/>
+			<result property="isSupportAndroid" column="isSupportAndroid" jdbcType="TINYINT"/>
+			<result property="isHomePagePush" column="isHomePagePush" jdbcType="TINYINT"/>
+		</collection>
+	</resultMap>
+	
+	<resultMap id="platformTagMap" type="com.jbb.mgt.core.domain.LoanPlatformTag">
+		<id column="tagId" property="tagId" jdbcType="INTEGER"/>
+		<id column="platformId" property="platformId" jdbcType="INTEGER"/>
+		<result column="pos"  property="pos" jdbcType="INTEGER"/>
+		<result column="creationDate"  property="creationDate" jdbcType="TIMESTAMP"/>
+		<association property="platform" javaType="com.jbb.mgt.core.domain.Platform">
+			<id property="platformId" column="platformId1" />
+			<result property="name" column="name" />
+			<result property="logo" column="logo"/>
+			<result property="applyCnt" column="applyCnt"/>
+		</association>
+		<association property="area" javaType="com.jbb.mgt.core.domain.LoanTag">
+			<id column="areaTagId" property="areaTagId" />
+			<result column="tagName"  property="tagName"/>
+			<result column="areaId"  property="areaId"/>
+			<result column="pos1"  property="pos"/>
+			<result column="logoUrl"  property="logoUrl" />
+	 	</association>
+	</resultMap>
+	
+	<sql id="platformsql">
+			mlp.platform_id AS platformId,
+		    mlp.`name` AS name,
+			mlp.short_name AS shortName,
+			mlp.url AS url,
+			mlp.logo AS logo,
+			mlp.ad_img_url AS adImgUrl,
+			mlp.desc1 AS desc1,
+			mlp.desc2 AS desc2,
+			mlp.desc3 AS desc3,
+			mlp.min_amount AS minAmount,
+			mlp.max_amount AS maxAmount,
+			mlp.loan_period AS loanPeriod,
+			mlp.interest_rate AS interestRate,
+			mlp.approval_time AS approvalTime,
+			mlp.is_new AS isNew,
+			mlp.is_hot AS isHot,
+			mlp.creator AS creator,
+			mlp.is_deleted AS isDeleted,
+			mlp.creation_time AS creationTime,
+			mlp.update_time AS updateTime,
+			mlp.cpa_price AS cpaPrice,
+			mlp.group_name AS groupName,
+			mlp.sales_id AS salesId,
+			mlp.type AS type,
+			mlp.apply_cnt AS applyCnt,
+			mlp.is_support_ios AS isSupportIos,
+			mlp.is_support_android AS isSupportAndroid,
+			mlp.is_home_page_push AS isHomePagePush,
+			mlp.price_mode AS priceMode,
+			mlp.uv_price AS uvPrice,
+			mlp.estimated_uv_cnt AS estimatedUvCnt,
+			mlp.min_balance AS minBalance
+	</sql>
+
+	<insert id="insertLoanTag" useGeneratedKeys="true" keyProperty="areaTagId">
+		INSERT INTO mgt_loan_area_tags(area_tag_id, tag_name, area_id, pos, logo_url)
+		VALUES (#{areaTagId}, #{tagName}, #{areaId}, #{pos}, #{logoUrl})
+	</insert>
+
+	<update id="updateLoanTag">
+		UPDATE mgt_loan_area_tags
+		SET tag_name = #{tagName}, area_id = #{areaId}, pos = #{pos}, logo_url = #{logoUrl}
+		WHERE area_tag_id = #{areaTagId}
+	</update>
+
+	<delete id="deleteLoanTag">
+		DELETE FROM mgt_loan_area_tags
+		WHERE area_tag_id = #{tagId}
+	</delete>
+
+	<sql id="LoanAreaTagInfo">
+		lat.area_tag_id AS areaTagId, lat.tag_name AS tagName, lat.area_id AS areaId, lat.pos AS pos,
+		lat.logo_url AS logoUrl, lat.creation_date AS creationDate,lat.freeze
+	</sql>
+
+	<select id="selectLoanTags" resultType="com.jbb.mgt.core.domain.LoanTag">
+		SELECT <include refid="LoanAreaTagInfo"/>
+		FROM mgt_loan_area_tags lat
+		<if test="isHidden != null">
+			WHERE lat.freeze=#{isHidden}
+		</if>
+		ORDER BY lat.freeze ASC,lat.area_id ASC ,lat.pos ASC
+	</select>
+
+	<delete id="deletePlatformTagByTagId">
+		DELETE FROM mgt_loan_platform_tags
+		WHERE tag_id = #{tagId}
+	</delete>
+
+	<insert id="insertPlatform" useGeneratedKeys="true" keyProperty="platformId">
+		INSERT INTO mgt_loan_platforms 
+			(`name`,short_name,url,
+			logo,ad_img_url,desc1,
+			desc2,desc3,min_amount,
+			max_amount,loan_period,interest_rate,
+			approval_time,is_new,is_hot,
+			creator,is_deleted,creation_time,cpa_price,
+			group_name,type,sales_id,is_support_ios,is_support_android,is_home_page_push,
+			price_mode,uv_price,estimated_uv_cnt,min_balance)
+        VALUES(
+			#{name},#{shortName},#{url},
+			#{logo},#{adImgUrl},#{desc1},
+			#{desc2},#{desc3},#{minAmount},
+			#{maxAmount},#{loanPeriod},#{interestRate},
+			#{approvalTime},#{isNew},#{isHot},
+			#{creator},#{isDeleted},now(),#{cpaPrice},
+			#{groupName},#{type},#{salesId},#{isSupportIos},#{isSupportAndroid},#{isHomePagePush},
+			#{priceMode},#{uvPrice},#{estimatedUvCnt},#{minBalance})
+	</insert>
+	
+	<update id="updatePlatform">
+		UPDATE mgt_loan_platforms mlp
+		SET
+			mlp.`name`=#{name},
+			mlp.short_name=#{shortName},
+			mlp.url=#{url},
+			mlp.logo=#{logo},
+			mlp.ad_img_url=#{adImgUrl},
+			mlp.desc1=#{desc1},
+			mlp.desc2=#{desc2},
+			mlp.desc3=#{desc3},
+			mlp.min_amount=#{minAmount},
+			mlp.max_amount=#{maxAmount},
+			mlp.loan_period=#{loanPeriod},
+			mlp.interest_rate=#{interestRate},
+			mlp.approval_time=#{approvalTime},
+			mlp.is_new=#{isNew},
+			mlp.is_hot=#{isHot},
+			mlp.creator=#{creator},
+			mlp.is_deleted=#{isDeleted},
+			mlp.cpa_price=#{cpaPrice},
+			mlp.sales_id=#{salesId},
+			<!-- mlp.type=#{type}, -->
+			mlp.group_name=#{groupName},
+			mlp.is_support_ios=#{isSupportIos},
+			mlp.is_support_android=#{isSupportAndroid},
+			mlp.is_home_page_push=#{isHomePagePush},
+			mlp.price_mode=#{priceMode},
+			mlp.uv_price=#{uvPrice},
+			mlp.estimated_uv_cnt=#{estimatedUvCnt},
+			mlp.min_balance=#{minBalance},
+			mlp.update_time=now()
+		WHERE 
+			mlp.platform_id = #{platformId}
+	</update>
+	
+	<update id="updatePlatformStatus">
+		UPDATE mgt_loan_platforms mlp
+		SET 
+			mlp.is_deleted= #{isDeleted}
+		WHERE
+			mlp.platform_id = #{platformId}
+	</update>
+	
+	<select id="selectPlatformById" resultMap="PlatformMap">
+		SELECT <include refid="platformsql"/> ,mlpt.platform_id AS platformId1, mlpt.tag_id AS tagId,mlpt.pos AS pos,mlpt.creation_date AS creationDate
+		FROM mgt_loan_platforms mlp
+		LEFT JOIN mgt_loan_platform_tags mlpt on mlp.platform_id = mlpt.platform_id
+		WHERE mlp.platform_id=#{platformId}
+	</select>
+	
+	<select id="selectPlatforms" resultMap="PlatformVoMap" >
+		SELECT <include refid="platformsql"/> ,ma.nickname AS nickname,
+		mlat.area_tag_id AS areaTagId,mlat.tag_name AS tagName,mlat.area_id AS areaId,mlat.pos AS pos,
+		mlat.logo_url AS logoUrl,mlat.creation_date AS creationDate
+		FROM mgt_loan_platforms mlp
+		LEFT JOIN mgt_loan_platform_tags mlpt on mlp.platform_id = mlpt.platform_id
+		LEFT JOIN mgt_loan_area_tags mlat on mlat.area_tag_id = mlpt.tag_id
+		LEFT JOIN mgt_accounts ma ON ma.account_id = mlp.sales_id
+		WHERE
+		1=1 AND mlp.frozen = 0
+		<if test="isDeleted != null">
+		AND mlp.is_deleted=#{isDeleted}
+		</if>
+		<if test="areas != null">
+		AND mlat.area_id in 
+		<foreach item="areaId" index="index" collection="areas" open="(" separator="," close=")">
+			 #{areaId} 
+		</foreach>
+		</if>
+		<if test="tagNames != null">
+		AND mlat.tag_name in 
+		<foreach item="tagName" index="index" collection="tagNames" open="(" separator="," close=")">
+			 #{tagName} 
+		</foreach>
+		</if>
+		<if test="groupName != null">
+		AND mlp.group_name=#{groupName}
+		</if>
+		<if test="type != null">
+		AND mlp.type=#{type}
+		</if>
+		<if test="platformName != null">
+		AND mlp.name=#{platformName}
+		</if>
+		<if test="salesId != null">
+		AND mlp.sales_id=#{salesId}
+		</if>
+		order by mlp.is_deleted
+	</select>
+	
+	<select id="selectPlatformsFromUI" resultMap="AreaPlatformVoMap" >
+		SELECT
+			mlat.area_tag_id AS areaTagId,mlat.tag_name AS tagName,mlat.area_id AS areaId,mlat.pos AS pos,mlat.logo_url AS logoUrl,mlat.creation_date AS creationDate,
+			mlpn.platform_id AS platformId,mlpn.name AS name,mlpn.short_name AS shortName,mlpn.url AS url,mlpn.logo AS logo,mlpn.ad_img_url AS adImgUrl,
+			mlpn.desc1 AS desc1,mlpn.desc2 AS desc2,mlpn.desc3 AS desc3,mlpn.min_amount AS minAmount,mlpn.max_amount AS maxAmount,mlpn.loan_period AS loanPeriod,
+			mlpn.interest_rate AS interestRate,mlpn.approval_time AS approvalTime,mlpn.is_new AS isNew,mlpn.is_hot AS isHot,mlpn.creator AS creator,
+			mlpn.is_deleted AS isDeleted,mlpn.creation_time AS creationTime,mlpn.update_time AS updateTime,mlpn.apply_cnt AS applyCnt,
+			mlpn.is_support_ios AS isSupportIos,mlpn.is_support_android AS isSupportAndroid,mlpn.is_home_page_push AS isHomePagePush
+		FROM
+			mgt_loan_area_tags mlat
+		LEFT JOIN (
+			SELECT
+				mlp.platform_id,mlp.name,mlp.short_name,mlp.url,mlp.logo,mlp.ad_img_url,mlp.desc1,mlp.desc2,mlp.desc3,mlp.min_amount,mlp.max_amount,
+				mlp.loan_period,mlp.interest_rate,mlp.approval_time,mlp.is_new,mlp.is_hot,mlp.creator,mlp.is_deleted,mlp.creation_time,mlp.update_time,mlp.apply_cnt,
+				mlp.is_support_ios,mlp.is_support_android,mlpt.tag_id,mlpt.pos,mlp.is_home_page_push AS is_home_page_push
+			FROM
+				mgt_loan_platforms mlp
+			LEFT JOIN mgt_loan_platform_tags mlpt ON mlp.platform_id = mlpt.platform_id
+			WHERE
+				mlp.is_deleted = 0 AND mlp.frozen = 0
+				<choose>
+			    <when test="os == 'ios'">
+			      AND mlp.is_support_ios = 1
+			    </when>
+			    <when test="os == 'android'">
+			      AND mlp.is_support_android=1
+			    </when>
+			 </choose>
+			ORDER BY mlpt.pos ASC) AS mlpn ON mlat.area_tag_id = mlpn.tag_id
+		WHERE
+		    mlat.freeze=0
+			<if test="areas != null and areas.length>0">
+			AND
+			mlat.area_tag_id IN 
+			<foreach item="areaTagId" index="index" collection="areas" open="(" separator="," close=")">
+			 #{areaTagId} 
+			</foreach >
+			</if>
+		ORDER BY mlat.area_id ASC,mlat.pos ASC,mlpn.pos ASC,rand()
+	</select>
+	
+	<select id="selectLoanTagByAreaTagId" resultType="com.jbb.mgt.core.domain.LoanTag">
+		SELECT <include refid="LoanAreaTagInfo"/>
+		FROM mgt_loan_area_tags lat
+		WHERE lat.area_tag_id = #{areaTagId}
+	</select>
+	
+	<select id="selectLoanPlatformTagById" resultType="com.jbb.mgt.core.domain.LoanPlatformTag">
+		SELECT mlpt.platform_id AS platformId, mlpt.tag_id AS tagId,mlpt.pos AS pos,mlpt.creation_date AS creationDate
+		FROM mgt_loan_platform_tags mlpt 
+		WHERE mlpt.platform_id = #{platformId} AND mlpt.tag_id = #{tagId}
+	</select>
+	
+	<select id="selectPlatformTags" resultMap="platformTagMap">
+		SELECT mlpt.platform_id AS platformId,mlpt.tag_id AS tagId,mlpt.pos AS pos,mlpt.creation_date AS creationDate,
+		mlat.area_tag_id AS areaTagId,mlat.tag_name AS tagName,mlat.area_id AS areaId,mlat.pos AS pos1,mlat.logo_url AS logoUrl,
+		mlp.platform_id AS platformId1,mlp.`name` AS name,mlp.logo AS logo,mlp.apply_cnt AS applyCnt
+		FROM mgt_loan_platform_tags mlpt
+		LEFT JOIN mgt_loan_platforms mlp ON mlp.platform_id = mlpt.platform_id
+		LEFT JOIN mgt_loan_area_tags mlat ON mlat.area_tag_id = mlpt.tag_id
+		WHERE 1=1
+			<if test="areaId != null"> AND mlat.area_id = #{areaId} </if>
+			<if test="tagName != null  and tagName != ''"> AND mlat.tag_name = #{tagName} </if>
+			<if test="platformId != null"> AND mlpt.platform_id = #{platformId} </if>
+			<if test="pos != null"> AND mlpt.pos = #{pos} </if>	
+	   ORDER BY mlat.area_id ASC,mlat.area_tag_id ASC,mlpt.pos ASC
+	</select>
+	
+	<select id="selectLoanTagByAreaId" resultType="com.jbb.mgt.core.domain.LoanTag">
+		SELECT <include refid="LoanAreaTagInfo"/>
+		FROM mgt_loan_area_tags lat 
+		<if test="areaId > 0">
+			WHERE lat.area_id = #{areaId}
+		</if>
+		ORDER BY lat.pos ASC
+	</select>
+	
+	<select id="getPlatformGroupName" resultType="java.lang.String">
+		SELECT DISTINCT(group_name) FROM mgt_loan_platforms
+		WHERE group_name is NOT NULL
+	</select>
+	
+	<insert id="savePlatform" useGeneratedKeys="true" keyProperty="platformId">
+		INSERT INTO mgt_loan_platforms 
+			(`name`,short_name,url,
+			logo,ad_img_url,desc1,
+			desc2,desc3,min_amount,
+			max_amount,loan_period,interest_rate,
+			approval_time,is_new,is_hot,
+			creator,is_deleted,creation_time,cpa_price,
+			group_name,type,sales_id,is_support_ios,is_support_android,is_home_page_push,
+			price_mode,uv_price,estimated_uv_cnt,min_balance)
+        VALUES(
+			#{name},#{shortName},#{url},
+			#{logo},#{adImgUrl},#{desc1},
+			#{desc2},#{desc3},#{minAmount},
+			#{maxAmount},#{loanPeriod},#{interestRate},
+			#{approvalTime},#{isNew},#{isHot},
+			#{creator},#{isDeleted},now(),#{cpaPrice},
+			#{groupName},#{type},#{salesId},#{isSupportIos},#{isSupportAndroid},#{isHomePagePush},
+			#{priceMode},#{uvPrice},#{estimatedUvCnt},#{minBalance})
+			<!-- ON DUPLICATE KEY UPDATE 
+		    name = values(name),group_name=values(group_name),sales_id=values(sales_id),
+		    url=values(url),price_mode = values(price_mode),cpa_price=values(cpa_price),
+		    uv_price=values(uv_price),
+		    desc1=values(desc1),min_amount = values(min_amount),max_amount=values(max_amount),
+		    interest_rate=values(interest_rate),estimated_uv_cnt = values(estimated_uv_cnt),loan_period=values(loan_period),
+		    approval_time=values(approval_time),min_balance = values(min_balance),is_support_ios=values(is_support_ios),
+		     is_support_android=values(is_support_android),logo = values(logo),type=values(type),update_time=now() -->
+	</insert>
+	<select id="getPlatformByShortName" resultType="com.jbb.mgt.core.domain.Platform">
+	SELECT <include refid="platformsql"/>
+		FROM mgt_loan_platforms mlp
+		WHERE mlp.short_name=#{shortName}
+		<if test="platformId != null and platformId!=0 ">
+		AND mlp.platform_id!=#{platformId}
+		</if>
+	
+	</select>
+
+	<select id="selectPlatformHomePagePush" resultType="com.jbb.mgt.core.domain.Platform">
+		SELECT 
+			<include refid="platformsql"/> 
+		FROM mgt_loan_platforms mlp
+		WHERE
+			mlp.is_deleted = 0 AND mlp.frozen = 0 AND is_home_page_push=1
+		<choose>
+			<when test="os == 'ios'">
+				AND mlp.is_support_ios = 1
+			</when>
+			<when test="os == 'android'">
+				AND mlp.is_support_android=1
+			</when>
+		</choose> ORDER BY RAND() LIMIT 1
+	</select>
+
+	<update id="updateLoanTagsStatus">
+		UPDATE mgt_loan_area_tags
+		SET freeze=#{freeze}
+		WHERE area_tag_id=#{areaTagId}
+	</update>
+</mapper>

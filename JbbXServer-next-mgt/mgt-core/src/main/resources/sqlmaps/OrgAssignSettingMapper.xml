@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.OrgAssignSettingMapper">
+
+	<select id="selectOrgAssignSetting" resultType="com.jbb.mgt.core.domain.OrgAssignSetting">
+		SELECT org_id AS orgId,assign_type AS  assignType, status AS status, accounts AS accounts
+		FROM mgt_organization_assign_settings
+		WHERE org_id = #{orgId}
+		<if test="assignType != null">
+			AND assign_type = #{assignType}
+		</if>
+	</select>
+
+	<insert id="saveOrgAssignSetting">
+		insert into mgt_organization_assign_settings ( org_id, assign_type, status,accounts )
+		values ( #{orgId}, #{assignType}, #{status},#{accounts} )
+		ON DUPLICATE KEY UPDATE status = #{status} , accounts = #{accounts}
+	</insert>
+	
+</mapper> 

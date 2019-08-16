@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.XjlUserMapper" >
+
+	<resultMap id="UserMap" type="com.jbb.mgt.core.domain.XjlUser">
+		<id property="userId" column="userId" />
+		<result property="jbbUserId" column="jbbUserId" />
+		<result property="phoneNumber" column="phoneNumber" />
+		<result property="userName" column="userName" />
+		<result property="sex" column="sex" />
+		<result property="age" column="age" />
+		<result property="census" column="census" />
+		<result property="email" column="email" />
+		<result property="idCard" column="idCard" />
+		<result property="ipAddress" column="ipAddress" />
+		<result property="ipArea" column="ipArea" />
+		<result property="zhimaScore" column="zhimaScore" />
+		<result property="qq" column="qq" />
+		<result property="wechat" column="wechat" />
+		<result property="realnameVerified" column="realnameVerified" />
+		<result property="mobileVerified" column="mobileVerified" />
+		<result property="zhimaVerified" column="zhimaVerified" />
+		<result property="jingdongVerified" column="jingdongVerified" />
+		<result property="siVerified" column="siVerified" />
+		<result property="gjjVerified" column="gjjVerified" />
+		<result property="chsiVerified" column="chsiVerified" />
+		<result property="taobaoVerified" column="taobaoVerified"/>
+		<result property="videoVerified" column="videoVerified"/>
+		<result property="hasContacts" column="hasContacts"/>
+		<result property="ocrIdcardVerified" column="ocrIdcardVerified"/>
+		<result property="idcardVerified" column="idcardVerified"/>
+		<result property="creationDate" column="creationDate" />
+		<result property="idcardRear" column="idcardRear" />
+		<result property="idcardBack" column="idcardBack" />
+		<result property="idcardInfo" column="idcardInfo" />
+		<result property="vidoeScreenShot" column="vidoeScreenShot" />
+		<result property="platform" column="platform" />
+		<result property="mobileManufacture" column="mobileManufacture" />
+		<result property="idcardAddress" column="idcardAddress" />
+		<result property="race" column="race" />
+		<result property="password" column="password" />
+		<result property="zhimaMin" column="zhimaMin" />
+		<result property="zhimaMax" column="zhimaMax" />
+		<result property="maritalStatus" column="maritalStatus" />
+		<result property="education" column="education" />
+		<result property="contract1XjlRelation" column="contract1XjlRelation" />
+		<result property="contract1XjlUsername" column="contract1XjlUsername" />
+		<result property="contract1XjlPhonenumber" column="contract1XjlPhonenumber" />
+		<result property="contract2XjlRelation" column="contract2XjlRelation" />
+		<result property="contract2XjlUsername" column="contract2XjlUsername" />
+		<result property="contract2XjlPhonenumber" column="contract2XjlPhonenumber" />
+		<result property="xjlBasicInfoVerified" column="xjlBasicInfoVerified"/>
+		<result property="receiveDate" column="receiveDate"/>
+		<result property="userStatus" column="userStatus"/>
+		<result property="applyCnt" column="applyCnt"/>
+		<result property="loanCnt" column="loanCnt"/>
+		<result property="repaymentCnt" column="repaymentCnt"/>
+		<result property="overdueCnt" column="overdueCnt"/>
+		<result property="loginDate" column="loginDate"/>
+		<result property="appLoginStatus" column="appLoginStatus"/>
+		<association property="liveAddress" javaType="com.jbb.mgt.core.domain.UserAddresses">
+			<id column="addressId" property="addressId" />
+			<result column="type"  property="type"/>
+			<result column="province"  property="province"/>
+			<result column="city"  property="city"/>
+			<result column="area"  property="area"/>
+			<result column="address"  property="address"/>
+		</association>
+		<association property="channels" javaType="com.jbb.mgt.core.domain.Channel">
+			<id column="channelCode" jdbcType="VARCHAR" property="channelCode" />
+			<result column="channelName" jdbcType="VARCHAR" property="channelName"/>
+		</association>
+		<association property="xjlApplyRecord" javaType="com.jbb.mgt.core.domain.XjlApplyRecord">
+			<id property="applyId" column="applyId" jdbcType="INTEGER"/>
+			<result property="userId" column="userId1" jdbcType="INTEGER"/>
+			<result property="orgId" column="orgId1" jdbcType="INTEGER"/>
+			<result property="status" column="status" jdbcType="INTEGER"/>
+			<result property="amount" column="amount" jdbcType="INTEGER" />
+			<result property="serviceFee" column="serviceFee" jdbcType="INTEGER"/>
+			<result property="creationDate" column="creationDate1" jdbcType="VARCHAR"/>
+			<result property="purpose" column="purpose" jdbcType="VARCHAR"/>
+			<result property="loanDate" column="loanDate" jdbcType="TIMESTAMP"/>
+			<result property="loanAmount" column="loanAmount" jdbcType="INTEGER"/>
+			<result property="days" column="days" jdbcType="INTEGER"/>
+			<result property="repaymentDate" column="repaymentDate" jdbcType="TIMESTAMP"/>
+			<result property="actualRepaymentDate" column="actualRepaymentDate" jdbcType="TIMESTAMP"/>
+			<result property="openId" column="openId" jdbcType="VARCHAR"/>
+			<result property="notifyStatus" column="notifyStatus" jdbcType="VARCHAR"/>
+			<result property="applyStatus" column="applyStatus" jdbcType="VARCHAR" />
+			<result property="applyMsg" column="applyMsg" jdbcType="VARCHAR"/>
+			
+		</association>
+	</resultMap>
+	<select id="getUsers" resultMap="UserMap">
+			SELECT
+				a.org_id AS orgId,
+				a.user_id AS userId,
+				a.channel_code AS channelCode,
+				a.creation_date AS creationDate,
+				c.channel_name AS channelName,
+				u.jbb_user_id AS jbbUserId,
+				u.ip_area AS ipArea,
+				u.username AS userName,
+				u.phone_number AS phoneNumber,
+				u.idcard AS idCard,
+				u.ip_address AS ipAddress,
+				u.zhima_score AS zhimaScore,
+				u.qq AS qq,
+				u.wechat AS wechat,
+				u.idcard_rear AS idcardRear,
+				u.idcard_back AS idcardBack,
+				u.idcard_info AS idcardInfo,
+				u.vidoe_screen_shot AS vidoeScreenShot,
+				u.platform AS platform,
+				u.mobile_manufacture AS mobileManufacture,
+				u.idcard_address AS idcardAddress,
+				u.race AS race,
+				u.education AS education,
+				u.contract1_xjl_relation AS contract1XjlRelation,
+				u.contract1_xjl_username AS contract1XjlUsername,
+				u.contract1_xjl_phonenumber AS contract1XjlPhonenumber,
+				u.contract2_xjl_relation AS contract2XjlRelation,
+				u.contract2_xjl_username AS contract2XjlUsername,
+				u.contract2_xjl_phonenumber AS contract2XjlPhonenumber,
+				u.realname_verified AS realnameVerified,
+				u.mobile_verified AS mobileVerified,
+				u.zhima_verified AS zhimaVerified,
+				u.jingdong_verified AS jingdongVerified,
+				u.si_verified AS siVerified,
+				u.gjj_verified AS gjjVerified,
+				u.chsi_verified AS chsiVerified,
+				u.taobao_verified AS taobaoVerified,
+				has_contacts AS hasContacts,
+				u.video_verified AS videoVerified,
+				u.ocr_idcard_verified AS ocrIdcardVerified,
+				u.idcard_verified AS idcardVerified,
+				u.xjl_basic_info_verified AS xjlBasicInfoVerified,
+				u.zhima_min AS zhimaMin,
+				u.zhima_max AS zhimaMax,
+				(
+					YEAR (NOW()) - substring(u.idCard, 7, 4)
+				) AS age,
+				CASE
+			WHEN substring(u.idCard, 17, 1) % 2 = 1 THEN
+				'男'
+			WHEN substring(u.idCard, 17, 1) % 2 = 0 THEN
+				'女'
+			END AS 'sex',
+			 xua.receive_date AS receiveDate,
+			 xua.user_status AS userStatus,
+			 xar.apply_id AS applyId,
+			 xar.user_id AS userId1,
+			 xar.org_id AS orgId1,
+			 xar.`status` AS `status`,
+			 xar.amount AS amount,
+			 xar.service_fee AS serviceFee,
+			 xar.creation_date AS creationDate1,
+			 xar.purpose AS purpose,
+			 xar.loan_date AS loanDate,
+			 xar.days AS days,
+			 xar.repayment_date AS repaymentDate,
+			 xar.actual_repayment_date AS actualRepaymentDate,
+			 xar.open_id AS openId,
+			 xar.notify_status AS notifyStatus,
+			 xar.apply_status AS applyStatus,
+			 xar.apply_msg AS applyMsg,
+			 t.applyCnt AS applyCnt,
+			 t.loanCnt AS loanCnt,
+			 t.repaymentCnt AS repaymentCnt,
+			 t.overdueCnt AS overdueCnt,
+			 xua.last_login_data AS loginDate,
+			
+			IF (
+				IFNULL(xua.last_login_data, FALSE),
+				TRUE,
+				FALSE
+			) AS appLoginStatus
+			FROM
+				mgt_org_app_channel_users a
+			LEFT JOIN mgt_users u ON a.user_id = u.user_id
+			LEFT JOIN mgt_xjl_users_accounts xua ON xua.org_id = a.org_id
+			AND xua.user_id = a.user_id
+			LEFT JOIN mgt_channels c ON c.channel_code = a.channel_code
+			LEFT JOIN mgt_xjl_apply_records xar ON xar.user_id = a.user_id
+			AND xar.org_id = a.org_id
+			AND xar.creation_date = xua.last_apply_date
+			LEFT JOIN (
+				SELECT
+					xar1.org_id AS orgId,
+					xar1.user_id AS userId,
+					count(1) AS applyCnt,
+					count(
+						CASE
+						WHEN xar1.`status` = 3
+						OR xar1.`status` = 4
+						OR xar1.`status` = 5
+						OR xar1.`status` = 99 THEN
+							1
+						ELSE
+							NULL
+						END
+					) AS loanCnt,
+					count(
+						CASE
+						WHEN xar1.`status` = 99 THEN
+							1
+						ELSE
+							NULL
+						END
+					) AS repaymentCnt,
+					count(
+						CASE
+						WHEN xar1.`status` = 4 THEN
+							1
+						ELSE
+							NULL
+						END
+					) AS overdueCnt
+				FROM
+					mgt_xjl_apply_records xar1
+				GROUP BY
+					xar1.org_id,
+					xar1.user_id
+			) t ON t.orgId = a.org_id
+			AND t.userId = a.user_id
+			WHERE
+			a.org_id =#{orgId}
+			<if test="null != startDate">
+			AND a.creation_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="null != endDate" >
+			AND a.creation_date <![CDATA[<]]> #{endDate}
+			</if>
+			<if test="times!=null">
+			AND a.creation_date <![CDATA[<]]> #{times}
+			</if>
+			<if test="null != ChannelCode" >
+			AND a.channel_code= #{ChannelCode}
+			</if>
+			<if test="null != searchText">
+			AND ( u.username LIKE CONCAT('%',#{searchText},'%') or u.phone_number LIKE CONCAT('%',#{searchText},'%')
+			or u.jbb_user_id LIKE CONCAT('%',#{searchText},'%'))
+		    </if>
+		    <if test="accountId!=null">
+        		<choose>
+        		<when test="flag=='toReceive'"> AND xua.account_id is null AND xar.apply_id is null</when>
+        		<when test="flag=='received'"> AND  xua.account_id=#{accountId}</when>
+        		<when test="flag=='applied'"> AND xar.apply_id is not null</when>
+	            <otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+	            </choose>
+        	</if>
+        	<if test="null != isAppLogin" >
+				<choose>
+        		<when test="isAppLogin"> AND xua.last_login_data is not null</when>
+	            <otherwise>AND xua.last_login_data is null</otherwise> <!-- 不传就返回空 -->
+	            </choose>
+			</if>
+			<if test="null != isUserInfoVerified" >
+				<choose>
+        		<when test="isUserInfoVerified"> AND u.xjl_basic_info_verified= #{isUserInfoVerified}</when>
+        		<otherwise> AND(u.xjl_basic_info_verified is null OR u.xjl_basic_info_verified=0)</otherwise> 
+	            </choose>
+			</if>
+			<if test="null != isMobileVerified" >
+			
+				<choose>
+        		<when test="isMobileVerified"> AND u.mobile_verified= #{isMobileVerified}</when>
+        		<otherwise> AND(u.mobile_verified is null OR u.mobile_verified=0)</otherwise> 
+	            </choose>
+			</if>
+			<if test="null != isVideoVerified" >
+				<choose>
+        		<when test="isVideoVerified"> AND u.video_verified= #{isVideoVerified}</when>
+        		<otherwise> AND(u.video_verified is null OR u.video_verified=0)</otherwise> 
+	            </choose>
+			</if>
+			<if test="null != isRealnameVerified" >
+				<choose>
+        		<when test="isRealnameVerified"> AND u.realname_verified= #{isRealnameVerified}</when>
+        		<otherwise> AND(u.realname_verified is null OR u.realname_verified=0)</otherwise> 
+	            </choose>
+			</if>
+			<if test="null != hasContacts" >
+				<choose>
+        		<when test="hasContacts"> AND u.has_contacts= #{hasContacts}</when>
+        		<otherwise> AND(u.has_contacts is null OR u.has_contacts=0)</otherwise> 
+	            </choose>
+			</if>
+			<if test="null != isTaobaoVerified" >
+			<choose>
+        		<when test="isTaobaoVerified"> AND u.taobao_verified= #{isTaobaoVerified}</when>
+        		<otherwise> AND(u.taobao_verified is null OR u.taobao_verified=0)</otherwise> 
+	            </choose>
+			</if>
+			<if test="userStatus!=null">
+        		<choose>
+        		<when test="userStatus==0"> AND(xua.user_status is null OR xua.user_status=0)</when>
+        		<otherwise> AND xua.user_status=#{userStatus}</otherwise> 
+	            </choose>
+        	</if>
+		 
+			order by xar.creation_date DESC,a.creation_date DESC
+	</select>
+	
+	<select id="getUsers_COUNT" resultType="Long">
+		SELECT COUNT(1)
+			FROM
+			mgt_org_app_channel_users a
+			LEFT JOIN mgt_users u ON a.user_id = u.user_id
+			LEFT JOIN mgt_xjl_users_accounts xua ON xua.org_id = a.org_id
+			AND xua.user_id = a.user_id
+			LEFT JOIN mgt_channels c ON c.channel_code = a.channel_code
+			LEFT JOIN mgt_xjl_apply_records xar ON xar.user_id = a.user_id
+			AND xar.org_id = a.org_id
+			AND xar.creation_date = xua.last_apply_date
+		  WHERE
+			a.org_id =#{orgId}
+			<if test="null != startDate">
+			AND a.creation_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="null != endDate" >
+			AND a.creation_date <![CDATA[<]]> #{endDate}
+			</if>
+			<if test="times!=null">
+			AND a.creation_date <![CDATA[<]]> #{times}
+			</if>
+			<if test="null != ChannelCode" >
+			AND a.channel_code= #{ChannelCode}
+			</if>
+			<if test="null != searchText">
+			AND ( u.username LIKE CONCAT('%',#{searchText},'%') or u.phone_number LIKE CONCAT('%',#{searchText},'%')
+			or u.jbb_user_id LIKE CONCAT('%',#{searchText},'%'))
+		    </if>
+		    <if test="accountId!=null">
+        		<choose>
+        		<when test="flag=='toReceive'"> AND xua.account_id is null AND xar.apply_id is null</when>
+        		<when test="flag=='received'"> AND  xua.account_id=#{accountId}</when>
+        		<when test="flag=='applied'"> AND xar.apply_id is not null</when>
+	            <otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+	            </choose>
+        	</if>
+        	<if test="null != isAppLogin" >
+				<choose>
+        		<when test="isAppLogin"> AND xua.last_login_data is not null</when>
+	            <otherwise>AND xua.last_login_data is null</otherwise> <!-- 不传就返回空 -->
+	            </choose>
+			</if>
+			<if test="null != isUserInfoVerified" >
+				<choose>
+        		<when test="isUserInfoVerified"> AND u.xjl_basic_info_verified= #{isUserInfoVerified}</when>
+        		<otherwise> AND(u.xjl_basic_info_verified is null OR u.xjl_basic_info_verified=0)</otherwise> 
+	            </choose>
+			</if>
+			<if test="null != isMobileVerified" >
+			
+				<choose>
+        		<when test="isMobileVerified"> AND u.mobile_verified= #{isMobileVerified}</when>
+        		<otherwise> AND(u.mobile_verified is null OR u.mobile_verified=0)</otherwise> 
+	            </choose>
+			</if>
+			<if test="null != isVideoVerified" >
+				<choose>
+        		<when test="isVideoVerified"> AND u.video_verified= #{isVideoVerified}</when>
+        		<otherwise> AND(u.video_verified is null OR u.video_verified=0)</otherwise> 
+	            </choose>
+			</if>
+			<if test="null != isRealnameVerified" >
+				<choose>
+        		<when test="isRealnameVerified"> AND u.realname_verified= #{isRealnameVerified}</when>
+        		<otherwise> AND(u.realname_verified is null OR u.realname_verified=0)</otherwise> 
+	            </choose>
+			</if>
+			<if test="null != hasContacts" >
+				<choose>
+        		<when test="hasContacts"> AND u.has_contacts= #{hasContacts}</when>
+        		<otherwise> AND(u.has_contacts is null OR u.has_contacts=0)</otherwise> 
+	            </choose>
+			</if>
+			<if test="null != isTaobaoVerified" >
+			<choose>
+        		<when test="isTaobaoVerified"> AND u.taobao_verified= #{isTaobaoVerified}</when>
+        		<otherwise> AND(u.taobao_verified is null OR u.taobao_verified=0)</otherwise> 
+	            </choose>
+			</if>
+			<if test="userStatus!=null">
+        		<choose>
+        		<when test="userStatus==0"> AND(xua.user_status is null OR xua.user_status=0)</when>
+        		<otherwise> AND xua.user_status=#{userStatus}</otherwise> 
+	            </choose>
+        	</if>
+	</select>
+	
+	<select id="checkExistByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM mgt_org_app_channel_users WHERE user_id = #{userId} AND org_id=#{orgId} 
+		<if test="times!=null">
+			 AND creation_date <![CDATA[<]]> #{times}
+		</if>
+		)
+	</select>
+	
+	<select id="checkUserReceive" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM mgt_xjl_users_accounts WHERE user_id = #{userId} AND org_id=#{orgId} AND account_id IS not NULL)
+	</select>
+	
+	<insert id="saveUserStatus">
+		INSERT INTO mgt_xjl_users_accounts
+		(org_id, user_id, user_status) VALUES (#{orgId}, #{userId},#{status})  
+		ON DUPLICATE KEY UPDATE user_status=#{status}
+	</insert>
+
+	<update id="updateUserLoanCnt">
+		UPDATE mgt_xjl_users_accounts
+		SET loan_cnt = loan_cnt+1
+		WHERE  user_id = #{userId}
+		AND org_id = #{orgId}
+	</update>
+	
+	<insert id="saveReceive">
+		INSERT INTO mgt_xjl_users_accounts
+		(org_id, user_id, account_id,receive_date) VALUES (#{orgId}, #{userId},#{accountId},now())  
+		ON DUPLICATE KEY UPDATE account_id=#{accountId},receive_date=now()
+	</insert>
+	
+	<insert id="saveLastApplyDate">
+		INSERT INTO mgt_xjl_users_accounts
+		(org_id, user_id,last_apply_date) VALUES (#{orgId}, #{userId},#{lastApplyDate})  
+		ON DUPLICATE KEY UPDATE last_apply_date=#{lastApplyDate}
+	</insert>
+	
+	<insert id="saveLastLoginDate">
+		INSERT INTO mgt_xjl_users_accounts
+		(org_id, user_id,last_login_data) VALUES (#{orgId}, #{userId},now())  
+		ON DUPLICATE KEY UPDATE last_login_data=now()
+	</insert>
+	
+</mapper> 
+

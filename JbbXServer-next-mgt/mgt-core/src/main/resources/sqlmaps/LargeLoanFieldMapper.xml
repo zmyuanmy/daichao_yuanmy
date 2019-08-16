@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.LargeLoanFieldMapper">
+
+	<resultMap id="LargeLoanFieldMap" type="com.jbb.mgt.core.domain.LargeLoanField">
+			<id property="fieldId" column="fieldId" />
+			<result property="fieldName" column="fieldName" />
+			<result property="desc" column="desc"/>
+			<result property="type" column="type"/>
+			<result property="area" column="area" />
+			<result property="displyIndex" column="displyIndex" />
+			<result property="required" column="required" />
+		<collection property="largeLoanFieldValues" ofType="com.jbb.mgt.core.domain.LargeLoanFieldValue">
+			<id property="fieldId" column="fieldId1" jdbcType="INTEGER"/>
+			<id property="fieldValue" column="fieldValue" jdbcType="VARCHAR"/>
+			<result property="desc" column="desc1" jdbcType="VARCHAR"/>
+			<result property="displayIndex" column="displayIndex1" jdbcType="INTEGER"/>
+		</collection>
+	</resultMap>
+	
+	<select id="getLoanFields" resultMap="LargeLoanFieldMap">
+		SELECT
+			llf.field_id AS fieldId,
+			llf.field_name AS fieldName,
+			llf.`desc` AS `desc`,
+			llf.type AS type,
+			llf.area AS area,
+			llf.display_index AS displyIndex,
+			llf.required AS required
+			<if test="includeValue">
+			,
+			llfv.field_id AS fieldId1,
+			llfv.field_value AS fieldValue,
+			llfv.`desc` AS `desc1`,
+			llfv.display_index AS displayIndex1
+			</if>
+		FROM
+			mgt_large_loan_fields llf
+			<if test="includeValue">
+			LEFT JOIN mgt_large_loan_field_values llfv ON llfv.field_id = llf.field_id 
+			</if>
+		WHERE
+			llf.is_hidden = 0 
+			<if test="required">
+			AND llf.required=1
+			</if>
+		ORDER BY
+			llf.area ASC,
+			llf.display_index ASC,
+			llf.field_id ASC,
+			<if test="includeValue">
+			llfv.display_index ASC
+			</if>
+	</select>
+	
+	<select id="getRequiredFields" resultType="java.lang.String">
+		SELECT field_name FROM mgt_large_loan_fields WHERE required=1 AND is_hidden=0
+	</select>
+</mapper> 
+

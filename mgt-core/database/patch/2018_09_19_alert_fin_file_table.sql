@@ -1,0 +1,1 @@
+alter table mgt_fin_files add platform_id int;

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.jbb.mgt.core.dao.mapper.ChannelCrawlerUserMapper">
+
+	<sql id="channelCrawlerUserCols">
+		c.id AS id,
+		c.channel_code AS channelCode,
+		c.merchant_id AS merchantId,
+		c.user_name AS userName,
+		c.phone_number AS phoneNumber,
+		c.register_date AS registerDate,
+		c.creation_date AS creationDate,
+		c.u_id AS uId
+	</sql>
+
+	<insert id="insertChannelsStatisticDaily"
+		parameterType="ArrayList">
+		INSERT INTO mgt_channel_crawler_users
+		(channel_code, merchant_id,user_name,phone_number,register_date,creation_date,u_id)
+		VALUES
+		<foreach collection="lists" item="list" index="index"
+			separator=",">
+			( #{list.channelCode},#{list.merchantId},#{list.userName},#{list.phoneNumber},#{list.registerDate},#{list.creationDate},#{list.uId})
+		</foreach>
+	</insert>
+
+
+	<select id="selectCrawlUsers"
+		resultType="com.jbb.mgt.core.domain.ChannelCrawlerUser">
+		SELECT
+		<include refid="channelCrawlerUserCols" />
+		FROM
+		mgt_channel_crawler_users c
+		WHERE
+		c.channel_code = #{channelCode}
+		AND
+		c.register_date &gt;= #{startDate}
+		AND
+		c.register_date &lt;= #{endDate}
+	</select>
+
+	<select id="countCrawlUsers" resultType="java.lang.Integer">
+		SELECT count(*) FROM mgt_channel_crawler_users
+ 		WHERE
+ 		channel_code = #{channelCode}
+		AND
+		register_date &gt;= #{startDate}
+		AND
+		register_date &lt;= #{endDate}
+ 	</select>
+
+	<select id="getLastCrawlUser" resultType="com.jbb.mgt.core.domain.ChannelCrawlerUser">
+		SELECT
+		<include refid="channelCrawlerUserCols" />
+		FROM
+		mgt_channel_crawler_users c
+		WHERE
+		c.channel_code = #{channelCode}
+		ORDER BY c.register_date DESC LIMIT 1
+	</select>
+
+	<select id="selectExistCrawlUser" resultType="java.lang.Integer">
+		SELECT EXISTS(SELECT 1 FROM mgt_channel_crawler_users c
+ 		WHERE c.channel_code = #{channelCode} AND c.u_id =#{uId} )
+ 	</select>
+
+</mapper>

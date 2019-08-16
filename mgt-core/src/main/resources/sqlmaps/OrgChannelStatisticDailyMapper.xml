@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.OrgChannelStatisticDailyMapper" >
+
+<select id="selectFinOrgStatisticDaily" resultType="com.jbb.mgt.core.domain.OrgChannelStatisticDaily">
+
+	select
+		t.statisticDate,
+		t.cCnt, 
+		t.cExpense ,  <!-- 消耗额 -->
+		t.cPrice ,  <!-- 消耗价-->
+		t.pAmount , <!-- 收款额-->
+		t.pBalance , <!-- 余额-->
+		t.pTotalCnt, <!-- 总注册量-->
+		t.pCnt, <!--  应付供应量-->
+		t.pPrice*t.pCnt as pExpense,  <!-- 总采购额-->
+		t.pPrice, <!-- 采购价-->
+		t.pOrgCnt,  <!-- 平均卖家-->
+		t.totalCExpense/t.totalCCnt as pSalePrice,	 <!-- 注册卖价-->
+		t.totalCExpense/t.totalCCnt - t.pPrice/t.pOrgCnt as pDiffPrice ,	 <!-- 注册毛利-->
+		t.cCnt*(t.totalCExpense/t.totalCCnt - t.pPrice/t.pOrgCnt) as pProfit 	 <!-- 注册总毛利-->
+	from(
+	select 
+		
+		o1.statistic_date as statisticDate,
+		o1.cCnt as cCnt, 
+		o1.cExpense AS cExpense ,  <!-- 消耗额 -->
+		o1.cExpense / o1.cCnt AS cPrice ,  <!-- 消耗价-->
+		o1.pAmount AS pAmount , <!-- 收款额-->
+		o1.pBalance AS pBalance , <!-- 余额-->
+		t1.tRegisterCnt as pTotalCnt, <!-- 总注册量-->
+		t1.tRegisterCnt - t1.hRegisterCnt as pCnt, <!--  应付供应量-->
+		t1.expense as pExpense,  <!-- 总采购额-->
+		t1.price as pPrice, <!-- 采购价-->
+		o2.cCnt/(t1.tRegisterCnt-t1.hRegisterCnt) as pOrgCnt,  <!-- 平均卖家-->
+		o2.cCnt as totalCCnt,
+		o2.cExpense as totalCExpense,
+		o2.pAmount as totalPAmount,
+		o2.pBalance as totalPBalance
+		from (  <!-- 按销售过滤的数据-->
+			select 
+				os.statistic_date , 
+				sum(os.cnt) as cCnt, 
+				sum(os.expense) as cExpense,
+				sum(os.amount) as pAmount,
+				sum(os.balance) as pBalance
+			from mgt_fin_org_statistic_daily os
+			left join mgt_fin_org_sales_relation osales on os.org_id = osales.org_id
+			where type = #{type} AND os.statistic_date &gt;=#{startDate}
+				<if test="endDate!=null">
+					AND os.statistic_date &lt;=#{endDate}
+				</if>
+			<if test="salesId!=null"> AND osales.account_id=#{salesId} </if>
+			group by os.statistic_date
+		) o1
+		left join  (  <!-- 总数-->
+			select 
+				os.statistic_date , 
+				sum(os.cnt) as cCnt, 
+				sum(os.expense) as cExpense,
+				sum(os.amount) as pAmount,
+				sum(os.balance) as pBalance
+			from mgt_fin_org_statistic_daily os
+			where type = #{type} AND os.statistic_date &gt;=#{startDate}
+				<if test="endDate!=null">
+					AND os.statistic_date &lt;=#{endDate}
+				</if>
+			group by os.statistic_date
+		) o2 on o1.statistic_date = o2.statistic_date 
+		left join ( <!-- 渠道数据-->
+			select 
+			scd.statistic_date,
+			sum(scd.total_register_cnt) as tRegisterCnt, 
+			sum(scd.hidden_register_cnt) as hRegisterCnt,
+			
+			
+			sum(csd.expense)/sum(csd.cnt) as price,  <!-- 平均采购价 -->
+			sum(csd.expense) as expense,  <!-- 总消耗额 -->
+			sum(csd.amount) as amount, 
+			sum(csd.balance) as balance
+			from mgt_statistic_channel_daily scd
+			left join mgt_fin_channel_statistic_daily csd on scd.statistic_date = csd.statistic_date and scd.channel_code = csd.channel_code
+			where user_type = #{type} AND scd.statistic_date &gt;=#{startDate}
+				<if test="endDate!=null">
+					AND scd.statistic_date &lt;=#{endDate}
+				</if>
+			group by scd.statistic_date
+		) t1 on o1.statistic_date= t1.statistic_date
+		) t
+
+</select>
+
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mall.core.dao.mapper.CategorieMapper">
+
+	<resultMap id="classifications" type="com.jbb.mall.core.dao.domain.Classification">
+		<id column="classification" property="classification" />
+		<result column="desc" property="desc" />
+		<result column="imgUrl" property="imgUrl"/>
+		<collection property="categories" ofType="com.jbb.mall.core.dao.domain.Categorie">
+			<id column="categoryId" property="categoryId" />
+			<result column="classification" property="classification" />
+			<result column="csDesc" property="desc" />
+			<result column="title" property="title" />
+			<result column="creationDate" property="creationDate" />
+			<result column="adImg" property="adImg" />
+			<result column="indexNo" property="indexNo" />
+			<result column="productType" property="productType" />
+		</collection>
+	</resultMap>
+
+	<select id="selectClassificationsByclassification" resultMap="classifications">
+		select  c.classification AS classification, c.`desc` AS 'desc', c.img_url AS imgUrl
+			<if test="getDetail">
+			,cs.category_id AS categoryId, cs.`desc` AS csDesc, cs.title AS title, cs.creation_date AS creationDate,
+			cs.adImg AS adImg, cs.index_no AS indexNo, cs.product_type AS productType
+			</if>
+		FROM mall_classifications c
+		LEFT JOIN mall_categories cs ON c.classification = cs.classification
+		WHERE cs.product_type = #{productType} AND c.classification NOT LIKE '首页%'
+		<if test="null != classification">
+			AND c.classification IN
+			<foreach collection="classification" item="item" index="index" open="(" separator="," close=")">
+		  		#{item}
+			</foreach>
+		</if>
+	</select>
+
+</mapper>

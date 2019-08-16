@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.ProductMapper" >
+<insert id="insertUserProductCount">
+		INSERT INTO mgt_user_product_count (user_id, product_name,count)
+		VALUES (#{userId}, #{productName},#{count})
+	</insert>
+	
+	<select id="selectUserProductCountForUpdate" resultType="java.lang.Integer">
+		SELECT count
+		FROM mgt_user_product_count u
+		WHERE u.user_id = #{userId}
+		AND u.product_name = #{productName} FOR UPDATE
+	</select>
+	
+	<select id="selectUserProductCount" resultType="java.lang.Integer">
+		SELECT count
+		FROM mgt_user_product_count u
+		WHERE u.user_id = #{userId}
+			AND u.product_name = #{productName}
+	</select>
+
+	<update id="increaseUserProductCount">
+		UPDATE mgt_user_product_count u
+		SET u.count = u.count+1
+		WHERE u.user_id = #{userId}
+			AND u.product_name = #{productName}
+	</update>
+
+	<update id="reduceUserProductCount">
+		UPDATE mgt_user_product_count u
+		SET u.count = u.count-1
+		WHERE u.user_id = #{userId}
+			AND u.product_name = #{productName}
+	</update>
+	
+</mapper> 
+

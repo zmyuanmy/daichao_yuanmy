@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.FinAdStatisticDailyMapper" >
+
+	<select id="selectFinAdStatisticDaily" resultType="com.jbb.mgt.core.domain.FinOrgAdDelStatisticDaily">
+	 SELECT
+		    a.statisticDate,
+			a.adCnt,
+			a.adExpense,
+			a.adAmount,
+			a.adBalance,
+			a.adPrice,
+			a.adTotalCnt,
+			a.adSupplyCnt,
+			a.adBuyExpense,
+			a.adBuyExpense/a.adSupplyCnt AS adBuyPrice,
+			a.adExpense/a.adSupplyCnt AS adSalePrice,
+			a.adExpense/a.adSupplyCnt-a.adBuyExpense/a.adSupplyCnt AS adDiffPrice,
+			a.adProfit
+		FROM(
+		SELECT
+			t.statistic_date AS statisticDate,
+			t.adCnt, 
+			t.adExpense, 
+			t.adAmount, 
+			t.adBalance,  
+		    IFNULL(t.adExpense/t.adCnt,0) AS adPrice, 
+			IFNULL(t1.adTotalCnt,0) AS adTotalCnt, 
+			IFNULL(t1.adTotalCnt,0)-IFNULL(t1.hiddenCnt,0)AS adSupplyCnt, 
+			t2.adBuyExpense,
+		    t.adExpense- t2.adBuyExpense AS adProfit
+		    FROM (
+				SELECT
+					f.statistic_date,
+					sum(f.cnt) AS adCnt,
+					sum(f.expense) AS adExpense,
+					sum(f.amount) AS adAmount,
+					sum(f.balance) AS adBalance
+				FROM  mgt_fin_org_del_statistic_daily f
+				LEFT JOIN mgt_fin_org_sales_relation osales ON f.org_id = osales.org_id
+				WHERE f.statistic_date &gt;=#{startDate}
+					<if test="endDate!=null">
+						AND f.statistic_date &lt;=#{endDate}
+					</if>
+				<if test="salesId!=null"> AND osales.account_id=#{salesId} </if>
+				GROUP BY f.statistic_date
+			) t
+		    LEFT JOIN (
+				   SELECT
+						std.statistic_date,
+						sum(std.total_register_cnt) AS adTotalCnt,
+						sum(std.hidden_register_cnt) AS hiddenCnt
+				FROM mgt_statistic_channel_daily std
+				WHERE  std.user_type = 3 AND std.statistic_date &gt;=#{startDate}
+					<if test="endDate!=null">
+						AND std.statistic_date &lt;=#{endDate}
+					</if>
+				GROUP BY std.statistic_date
+			) t1 ON t.statistic_date = t1.statistic_date
+			LEFT JOIN (
+				SELECT
+					fcsd.statistic_date,
+					sum(fcsd.ad_cnt * fcsd.price) AS adBuyExpense
+				FROM mgt_fin_channel_statistic_daily fcsd
+				WHERE fcsd.statistic_date &gt;=#{startDate}
+						<if test="endDate!=null">
+							AND fcsd.statistic_date &lt;=#{endDate}
+						</if>
+				GROUP BY fcsd.statistic_date
+			) t2 ON t.statistic_date = t2.statistic_date
+			)a
+		</select>
+</mapper> 
+

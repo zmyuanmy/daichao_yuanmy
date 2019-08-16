@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.StatisticFeedbackDailyMapper">
+
+	<insert id="insertStatisticFeedbackDetailDaily" parameterType="ArrayList">
+		INSERT INTO mgt_statistic_feedback_detail_daily(
+		statistic_date, channel_code, user_type, reason, cnt
+		)VALUES
+		<foreach collection="lists" item="item" index="index" separator=",">
+			(#{item.statisticDate},#{item.channelCode},#{item.userType},#{item.reason},#{item.cnt})
+		</foreach>
+		ON DUPLICATE KEY UPDATE cnt = values(cnt)
+	</insert>
+
+	<insert id="insertStatisticFeedbackDaily" parameterType="ArrayList">
+		INSERT INTO mgt_statistic_feedback_daily(
+		statistic_date, channel_code, user_type, total_recommand_cnt, reject_cnt, hangup_cnt
+		) VALUES
+		<foreach collection="lists" item="item" index="index" separator=",">
+			(#{item.statisticDate},#{item.channelCode},#{item.userType},#{item.totalRecommandCnt},
+			#{item.rejectCnt},#{item.hangupCnt})
+		</foreach>
+		ON DUPLICATE KEY UPDATE total_recommand_cnt = VALUES(total_recommand_cnt)
+		, reject_cnt = VALUES(reject_cnt), hangup_cnt = VALUES(hangup_cnt)
+	</insert>
+
+	<select id="selectStatisticFeedbackDetailDaily" resultType="com.jbb.mgt.core.domain.StatisticChannelDetailDaily">
+		select date(uar.creation_date) as statisticDate, uar.s_channel_code as channelCode, uar.s_user_type as userType,
+			uaf.reason, count(1) as cnt
+		from mgt_user_apply_records uar
+			join mgt_users u on uar.user_id = u.user_id
+			join mgt_user_apply_feedback uaf on uar.apply_id =  uaf.apply_id
+		where uar.creation_date <![CDATA[>=]]> #{startDate} and uar.creation_date <![CDATA[<]]> #{endDate}
+			and uar.s_org_id = 1 and uaf.reason is not null
+			group by date(uar.creation_date), uar.s_channel_code, uar.s_user_type, uaf.reason
+		union all
+		select date(uar.creation_date) as statisticDate, uar.s_channel_code as channelCode, uar.s_user_type as userType,
+			'已加好友',count(1) as cnt
+		from mgt_user_apply_records uar
+			join mgt_users u on uar.user_id = u.user_id
+			join mgt_account_op_log log on log.apply_id =  uar.apply_id and (log.op_type = 51 or log.op_type = 52)
+		where uar.creation_date <![CDATA[>=]]> #{startDate} and uar.creation_date <![CDATA[<]]> #{endDate}
+		 	and uar.s_org_id = 1
+			group by date(uar.creation_date), uar.s_channel_code, uar.s_user_type, '已加好友'
+	</select>
+
+	<select id="selectStatisticFeedbackDaily" resultType="com.jbb.mgt.core.domain.StatisticFeedbackDaily" >
+		select date(uar.creation_date) as statisticDate, uar.s_channel_code as channelCode, uar.s_user_type as userType,
+			count(uar.apply_id) as totalRecommandCnt,
+			sum(case when uar.`status` = 3 or  uar.`status` = 7 then 1 else 0 end) as rejectCnt,
+			sum(case when uar.`status` = 4 or  uar.`status` = 8 then 1 else 0 end) as hangupCnt
+		from mgt_user_apply_records uar
+			join mgt_users u on uar.user_id = u.user_id
+		where uar.creation_date <![CDATA[>=]]> #{startDate} and uar.creation_date <![CDATA[<]]> #{endDate}
+			and uar.s_org_id = 1
+			group by date(uar.creation_date), uar.s_channel_code, uar.s_user_type
+	</select>
+
+	<resultMap id="feedbackDaily" type="com.jbb.mgt.core.domain.StatisticFeedbackDaily">
+		<id column="statisticDate" jdbcType="DATE" property="statisticDate"/>
+		<id column="channelCode" jdbcType="VARCHAR" property="channelCode"/>
+		<id column="userType" jdbcType="INTEGER" property="userType"/>
+		<result column="totalRecommandCnt" jdbcType="INTEGER" property="totalRecommandCnt"/>
+		<result column="rejectCnt" jdbcType="INTEGER" property="rejectCnt"/>
+		<result column="hangupCnt" jdbcType="INTEGER" property="hangupCnt"/>
+		<result column="channelName" jdbcType="VARCHAR" property="channelName"/>
+		<collection property="feedback" javaType="ArrayList" ofType="com.jbb.mgt.core.domain.FeedBack">
+			<result column="reason" jdbcType="VARCHAR" property="reason"/>
+			<result column="cnt" jdbcType="INTEGER" property="cnt"/>
+		</collection>
+	</resultMap>
+
+	<!--<select id="selectStatisticFeedbackDailyByDateAndUserType" resultMap="feedbackDaily">
+		SELECT s.statistic_date AS statisticDate,s.channel_code AS channelCode,
+			s.user_type AS userType,s.total_recommand_cnt AS totalRecommandCnt,
+			s.reject_cnt AS rejectCnt,s.hangup_cnt AS hangupCnt,f.reason AS reason,f.cnt AS cnt,
+			c.channel_name AS channelName
+		FROM mgt_statistic_feedback_daily s
+			LEFT JOIN mgt_statistic_feedback_detail_daily f ON s.statistic_date=f.statistic_date
+				AND s.channel_code=f.channel_code AND s.user_type=f.user_type
+			LEFT JOIN mgt_channels c ON s.channel_code = c.channel_code
+		WHERE s.statistic_date <![CDATA[>=]]> #{startDate}
+			<if test="null != endDate">
+				AND s.statistic_date <![CDATA[<=]]> #{endDate}
+			</if>
+			<if test="null != userType">
+				AND s.user_type = #{userType}
+			</if>
+			<if test="null != channelCode">
+				AND  s.channel_code = #{channelCode}
+			</if>
+		ORDER BY s.total_recommand_cnt DESC
+	</select>-->
+
+	<select id="selectStatisticFeedbackDailyByDateAndUserType" resultMap="feedbackDaily">
+		SELECT s.statistic_date AS statisticDate,s.channel_code AS channelCode,
+			s.user_type AS userType,
+			SUM(s.total_recommand_cnt) AS totalRecommandCnt,
+			SUM(s.reject_cnt) AS rejectCnt,
+			SUM(s.hangup_cnt) AS hangupCnt,
+			fd.reason, fd.cnt, c.channel_name AS channelName
+		FROM mgt_statistic_feedback_daily s
+		LEFT JOIN (
+				SELECT f.reason AS reason,SUM(f.cnt) AS cnt,f.channel_code,f.user_type FROM
+				mgt_statistic_feedback_detail_daily f
+				WHERE f.statistic_date <![CDATA[>=]]> #{startDate}
+				<if test="null != endDate">
+					AND f.statistic_date <![CDATA[<=]]> #{endDate}
+				</if>
+				GROUP BY f.channel_code,f.reason,f.user_type
+		) fd ON s.channel_code=fd.channel_code AND s.user_type=fd.user_type
+		LEFT JOIN mgt_channels c ON s.channel_code = c.channel_code
+		WHERE s.statistic_date <![CDATA[>=]]> #{startDate}
+		<if test="null != endDate">
+			AND s.statistic_date <![CDATA[<=]]> #{endDate}
+		</if>
+		<if test="null != userType">
+			AND s.user_type = #{userType}
+		</if>
+		<if test="null != channelCode">
+			AND  s.channel_code = #{channelCode}
+		</if>
+		GROUP BY s.channel_code,s.user_type,fd.reason
+		ORDER BY sum(s.total_recommand_cnt) DESC
+	</select>
+
+</mapper>

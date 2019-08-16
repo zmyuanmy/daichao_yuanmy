@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.ChuangLanMapper" >
+
+	<insert id="insertMsgReport">
+		INSERT INTO mgt_message_report ( msg_id, report_time, mobile, `status`, notify_time, status_desc, uid, `length` )
+		VALUES( #{msgid},  #{reportTime},  #{mobile},  #{status},  #{notifyTime},  #{statusDesc},  #{uid},  #{length} )
+		ON DUPLICATE KEY UPDATE report_time = #{reportTime} , mobile = #{mobile},`status` = #{status} , notify_time = #{notifyTime},
+		 status_desc = #{statusDesc}, uid = #{uid}, `length` = #{length}
+	</insert>
+
+	<insert id="insertMessageLog">
+		INSERT INTO mgt_message_logs ( msg_id, phone_number, channel_code, remote_address , creation_date)
+		VALUES( #{msgid},  #{phoneNumber},  #{channelCode},  substring_index(#{remoteAddress},',',1), NOW())
+	</insert>
+
+</mapper> 
+

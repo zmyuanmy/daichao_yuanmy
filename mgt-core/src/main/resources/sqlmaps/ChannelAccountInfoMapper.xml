@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.ChannelAccountInfoMapper">
+
+	<sql id="ChannelAccountInfo">
+		cai.channel_code as channelCode, cai.name AS name, cai.number AS number, cai.bank_info AS bankInfo,
+		cai.update_date AS updateDate, cai.update_account_id AS updateAccountId
+	</sql>
+
+	<insert id="insertChannelAccountInfo">
+		INSERT INTO mgt_channel_account_info (channel_code, name, number, bank_info, update_date, update_account_id)
+		VALUES (#{channelCode}, #{name}, #{number}, #{bankInfo}, #{updateDate}, #{updateAccountId})
+		ON DUPLICATE KEY UPDATE name = #{name}, number = #{number}, bank_info = #{bankInfo}, update_account_id = #{updateAccountId}
+	</insert>
+
+	<select id="selectChannelAccountInfo" resultType="com.jbb.mgt.core.domain.ChannelAccountInfo">
+		select <include refid="ChannelAccountInfo"/>
+		FROM mgt_channel_account_info cai
+		WHERE cai.channel_code = #{channelCode}
+	</select>
+
+</mapper>

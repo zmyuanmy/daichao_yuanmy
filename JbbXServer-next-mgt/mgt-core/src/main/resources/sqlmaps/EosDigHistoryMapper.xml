@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.EosDigHistoryMapper">
+
+	<sql id="eosCols">
+		miner AS miner, tx_no AS txNo, token AS token, quantity AS quantity, winner AS winner,
+		winner_quantity AS winnerQuantity, tx_data AS txData, creation_date AS creationDate
+	</sql>
+	
+	<resultMap id="EosMap" type="com.jbb.mgt.core.domain.EosDigHistory">
+		<result property="token" column="token" />
+		<result property="quantity" column="quantity" />
+		<result property="winnerQuantity" column="winnerQuantity" />
+		<result property="total" column="total" />
+		<association property="eosTokenRefReward" javaType="com.jbb.mgt.core.domain.EosTokenRefReward">
+			<result property="token" column="token" />
+			<result property="refPercent" column="refPercent" />
+			<result property="tokenPercent" column="tokenPercent" />
+			<result property="refTokenPercent" column="refTokenPercent" />
+		</association>
+	</resultMap>
+	
+	<insert id="insertEosDigHistory">
+		INSERT INTO eos_dig_history(miner, tx_no, token, quantity, winner, winner_quantity, tx_data) 
+		VALUES (#{miner}, #{txNo}, #{token}, #{quantity}, #{winner}, #{winnerQuantity}, #{txData})
+	</insert>
+	
+	<select id="selectEosDigHistory" resultType="com.jbb.mgt.core.domain.EosDigHistory">
+		SELECT <include refid="eosCols"/> FROM eos_dig_history ORDER BY creation_date DESC LIMIT 50
+	</select>
+	
+	<select id="selectEosDigHistoryProfit" resultMap="EosMap">
+		SELECT edh.token AS token,COUNT(1) AS total,IFNULL(SUM(quantity),0) AS quantity,
+			IFNULL(SUM(winner_quantity),0) winnerQuantity,IFNULL(etrr.ref_percent,0) AS refPercent,
+			IFNULL(etrr.token_percent,0)  AS tokenPercent,IFNULL(etrr.ref_token_percent,0)  AS refTokenPercent
+		FROM eos_dig_history edh 
+		LEFT JOIN eos_token_ref_reward etrr ON etrr.token=edh.token
+		WHERE edh.token=#{tokenName}
+	</select>
+	
+	<select id="checkEosDigHistory" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM eos_dig_history WHERE miner = #{miner} AND tx_no = #{txNo})
+	</select>
+
+</mapper>

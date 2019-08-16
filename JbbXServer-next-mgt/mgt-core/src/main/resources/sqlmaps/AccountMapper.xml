@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.AccountMapper" >
+
+	<sql id="accountCols">
+        c.account_id AS accountId,c.username AS username
+        , c.nickname AS nickName, c.phone_number AS phoneNumber,c.jbb_user_id AS jbbUserId,
+		c.password AS password,c.org_id AS orgId,c.is_deleted AS deleted, c.is_freeze AS freeze,
+		c.creator AS creator, c.creation_date AS creationDate,c.trade_password AS tradePassword	
+    </sql>
+
+	<insert id="insertAccount" useGeneratedKeys="true" keyProperty="accountId">
+		INSERT INTO mgt_accounts 
+			(username, nickname, phone_number, jbb_user_id, password,org_id, creator, creation_date)
+		VALUES 
+			(#{username}, #{nickname}, #{phoneNumber}, #{jbbUserId}, #{password},#{orgId},#{creator},#{creationDate})
+	</insert>
+	
+	<update id="updatePassword">
+		UPDATE mgt_accounts 
+		SET password = #{password}
+		WHERE account_id = #{accountId}
+	</update>
+
+	<update id="updateAccount">
+	  UPDATE mgt_accounts
+      SET
+      	username = #{username},
+      	nickname = #{nickname},
+      	<if test="jbbUserId!=null">
+      	jbb_user_id = #{jbbUserId},
+      	</if>
+		<if test="phoneNumber!=null">
+      	phone_number = #{phoneNumber},
+		</if>
+      	password = #{password}
+      WHERE 
+      	account_id = #{accountId}
+	</update>
+	
+	<delete id="deleteAccount">
+		DELETE  from mgt_accounts 
+		WHERE account_id = #{accountId}
+	</delete>
+	
+	<select id="selectAccountById" resultType="com.jbb.mgt.core.domain.Account">
+		SELECT  <include refid="accountCols"/> 				
+		FROM  mgt_accounts c
+		WHERE c.account_id = #{accountId}
+		<if test="orgId!=null">AND c.org_id = #{orgId}</if>
+	</select>
+	
+	<select id="getAccountByNickName" resultType="com.jbb.mgt.core.domain.Account">
+		SELECT  <include refid="accountCols"/> 				
+		FROM  mgt_accounts c
+		WHERE c.nickname=#{nickname}
+	</select>
+
+	<select id="selectAccountByJbbUserId" resultType="com.jbb.mgt.core.domain.Account">
+		SELECT  <include refid="accountCols"/>
+		FROM  mgt_accounts c
+		WHERE c.jbb_user_id = #{jbbUserId} LIMIT 1
+	</select>
+
+	<select id="checkUsernameExist" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM mgt_accounts WHERE username = #{username})
+	</select>
+	
+	<select id="checkJbbIdExist" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM mgt_accounts WHERE jbb_user_id = #{jbbUserId})
+	</select>
+	
+	<select id="selectAccountByUsername" resultType="com.jbb.mgt.core.domain.Account">
+		SELECT  <include refid="accountCols"/> 						
+		FROM  mgt_accounts c
+		WHERE c.username = #{username}
+	</select>
+	
+	
+	<select id="selectAccounts" resultType="com.jbb.mgt.core.domain.Account">
+		SELECT  <include refid="accountCols"/> 					
+		FROM  mgt_accounts c
+		WHERE c.org_id = #{orgId}
+		ORDER BY is_deleted,is_freeze,creation_date DESC
+	</select>
+	
+    <select id="selectAccountRoles" resultType="integer">
+		SELECT c.role_id
+		FROM mgt_account_roles c
+		LEFT JOIN mgt_roles r ON c.role_id = r.role_id
+		WHERE r.application_id = 1 AND c.account_id = #{accountId}
+	</select>
+	
+	<delete id="deleteAccountRoles">
+		DELETE FROM mgt_account_roles 
+		WHERE account_id = #{accountId}
+	</delete>
+	
+	<insert id="insertAccountRole">
+		INSERT INTO mgt_account_roles 
+			(account_id,role_id)
+		VALUES 
+			(#{accountId}, #{roleId})
+	</insert>
+
+	<insert id="insertUserKey">
+		INSERT INTO mgt_account_keys (account_id, user_key, expiry, is_deleted)
+		VALUES (#{accountId}, #{userKey},#{expiry}, #{deleted})
+	</insert>	
+
+	<update id="updateUserKey">
+		UPDATE mgt_account_keys 
+		SET user_key = #{userKey}, expiry = #{expiry}, is_deleted =#{deleted}
+		WHERE account_id = #{accountId}
+	</update>
+	
+	<delete id="deleteUserKey" parameterType="java.lang.String">
+		UPDATE mgt_account_keys SET is_deleted = 1 WHERE user_key=#{userKey}
+	</delete>
+	
+	<delete id="deleteUserKeyByAccountId">
+		DELETE FROM mgt_account_keys WHERE account_id=#{accountId}
+	</delete>
+	
+	<select id="selectUserKey" resultType="com.jbb.mgt.core.domain.AccountKey">
+		SELECT account_id AS "accountId", user_key AS "userKey", expiry, is_deleted AS "deleted"
+		FROM mgt_account_keys
+		WHERE account_id = #{accountId}
+	</select>	
+	
+	<select id="selectAccountByKey" resultType="com.jbb.mgt.core.domain.Account">
+		SELECT  <include refid="accountCols"/>
+			, k.user_key as 'key.userKey', k.expiry as 'key.expiry', k.is_deleted as 'key.deleted'
+		FROM mgt_account_keys k, mgt_accounts c
+		WHERE c.account_id = k.account_id AND k.user_key = #{userKey}
+			AND k.expiry &gt;= #{expiry} AND k.is_deleted = 0
+	</select>	
+	
+	<update id="updateAccountStatus">
+		UPDATE mgt_accounts
+      SET 
+      	is_deleted = #{status}
+      WHERE 
+      	account_id = #{accountId}
+	</update>
+
+	<select id="selectAccountPermissions" resultType="java.lang.Integer">
+		SELECT p.permission_id 
+		FROM mgt_accounts c, mgt_account_roles r, mgt_role_permissions p
+		WHERE c.account_id = #{accountId} AND c.account_id = r.account_id AND r.role_id = p.role_id
+	</select>	
+ 
+ 	<insert id="insertLoginLog">
+		INSERT INTO mgt_account_login_log 
+			(account_id,login_date, ip_address, province, city, detail)
+		VALUES 
+			(#{accountId}, #{loginDate}, #{ipAddress}, #{province}, #{city}, #{detail})
+	</insert>
+ 	
+ 	
+ 	<select id="selectLoginLogs" resultType="com.jbb.mgt.core.domain.LoginLog">
+		SELECT log.account_id as accountId, log.login_date as loginDate, log.ip_address as ipAddress,
+			log.province as province, log.city as city, c.username as username, c.nickname as nickname
+		FROM mgt_account_login_log log, mgt_accounts c
+		WHERE c.account_id = log.account_id
+		<if test="orgId"> 
+			AND c.org_id = #{orgId}
+		</if>
+		<if test="accountId"> 
+			AND log.account_id = #{accountId}
+		</if>
+		ORDER BY login_date DESC
+	</select>
+	
+	<select id="selectLoginLogs_COUNT" resultType="Long">
+		SELECT COUNT(1) FROM mgt_account_login_log log, mgt_accounts c
+		WHERE c.account_id = log.account_id
+		<if test="orgId"> 
+			AND c.org_id = #{orgId}
+		</if>
+		<if test="accountId"> 
+			AND log.account_id = #{accountId}
+		</if>
+		ORDER BY login_date DESC
+	</select>
+	
+ 	<insert id="insertupAccounts">
+		INSERT INTO mgt_account_dependencies 
+			(account_id, dep_account_id, dep_relation, role_id)
+		VALUES 
+			(#{accountId}, #{upAccountsId}, 1, #{roleId})
+	</insert>
+	
+	<insert id="insertdownAccounts">
+		INSERT INTO mgt_account_dependencies 
+			(account_id, dep_account_id, dep_relation, role_id)
+		VALUES 
+			(#{accountId}, #{downAccountsId}, 2, #{roleId})
+	</insert>
+	
+	<select id="selectupAccounts" resultType="integer">
+		SELECT c.dep_account_id
+		FROM mgt_account_dependencies c 
+		WHERE c.account_id =#{accountId} AND c.dep_relation=1
+	</select>
+	
+	<select id="selectdownAccounts" resultType="integer">
+		SELECT c.dep_account_id
+		FROM mgt_account_dependencies c 
+		WHERE c.account_id =#{accountId} AND c.dep_relation=2
+	</select>
+	
+	<delete id="deleteUpAccounts">
+		DELETE FROM mgt_account_dependencies 
+		WHERE account_id =#{accountId} AND dep_relation=1
+	</delete>
+	
+	<delete id="deleteDownAccounts">
+		DELETE FROM mgt_account_dependencies   
+		WHERE account_id =#{accountId} AND dep_relation=2
+	</delete>
+	
+	<delete id="deleteDUpAccounts">
+		DELETE FROM mgt_account_dependencies 
+		WHERE dep_account_id =#{accountId} AND dep_relation=2
+	</delete>
+	
+	<delete id="deleteUDownAccounts">
+		DELETE FROM mgt_account_dependencies   
+		WHERE dep_account_id =#{accountId} AND dep_relation=1
+	</delete>
+	
+	<select id="select" resultType="integer">
+		SELECT   c.dep_account_id AS depAccountId 				
+		FROM  mgt_account_dependencies  c
+		WHERE c.account_id = #{accountId} AND c.role_id = #{roleId} AND c.dep_relation =#{depRelation}
+	</select>	
+	
+	<select id="selectDescprition" resultType="string">
+	    SELECT   c.description AS description 				
+		FROM  mgt_roles  c
+		WHERE c.role_id = #{roleId} 
+	</select>
+	
+	<select id="selectAccountByRoleId" resultType="com.jbb.mgt.core.domain.Account">
+	SELECT DISTINCT cc.account_id,<include refid="accountCols"/> FROM mgt_account_roles cc,mgt_accounts c
+	WHERE cc.role_id = #{roleId} AND c.account_id = cc.account_id AND c.is_freeze=0
+	AND cc.account_id in (SELECT c.account_id from mgt_accounts c WHERE c.org_id =#{orgId})
+	</select>
+	
+	<select id="selectAccountByRoleIds" resultType="com.jbb.mgt.core.domain.Account">
+		SELECT DISTINCT ar.account_id, <include refid="accountCols"/> 
+		FROM mgt_accounts c
+		JOIN mgt_account_roles ar on c.account_id = ar.account_id 
+		WHERE  c.org_id = #{orgId}
+			<if test="roleIds"> 
+			AND ar.role_id IN
+				<foreach item="roleId" index="index" collection="roleIds" open="(" separator="," close=")">
+					#{roleId}
+				</foreach>
+			</if>
+	</select>
+	
+	<select id="selectDownAccountByRoleId" resultType="com.jbb.mgt.core.domain.Account">
+	SELECT DISTINCT cc.account_id,<include refid="accountCols"/> FROM mgt_account_roles cc,mgt_accounts c
+	WHERE cc.role_id = #{roleId} AND c.account_id = cc.account_id AND c.is_freeze=0
+	AND cc.account_id in (SELECT m.dep_account_id from mgt_account_dependencies m  WHERE account_id =#{accountId})
+	</select>
+	
+	<update id="freezeAccount">
+		UPDATE mgt_accounts
+      SET 
+      	is_freeze = 1
+      WHERE 
+      	account_id = #{accountId}
+	</update>
+	
+	<update id="thawAccount">
+		UPDATE mgt_accounts
+      SET 
+      	is_freeze = 0
+      WHERE 
+      	account_id = #{accountId}
+	</update>
+
+	<select id="getAccountCount" resultType="java.lang.Integer">
+		SELECT count(1) AS count from mgt_accounts c
+		WHERE c.org_id = #{orgId} AND is_deleted = 0
+	</select>
+	
+	<select id="selectOrgAdminAccount"  resultType="com.jbb.mgt.core.domain.Account">
+		SELECT <include refid="accountCols"/> 
+		FROM mgt_accounts c , mgt_account_roles r
+		WHERE c.org_id = #{orgId} AND c.account_id = r.account_id
+		<if test="orgType == null">
+			AND r.role_id = 2 
+		</if>
+		<if test="orgType == 3">
+			AND r.role_id = 202
+		</if>
+		LIMIT 1
+	</select>
+	
+	<select id="selectOrgAutoAssignAccounts"  resultType="com.jbb.mgt.core.domain.Account">
+		SELECT <include refid="accountCols"/> , t.initCnt as initCnt
+		FROM mgt_accounts c
+		INNER JOIN mgt_organization_assign_settings s ON c.org_id = s.org_id 
+		LEFT JOIN (
+			SELECT uar.init_acc_id, uar.org_id,  count(1) as initCnt FROM mgt_user_apply_records uar 
+			WHERE 1=1 
+			<if test="startDate != null">
+			AND uar.creation_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null">
+			AND uar.creation_date <![CDATA[<]]> #{endDate}
+			</if>
+			<choose>
+			    <when test="assignType ==  1"><!-- 自有渠道件 -->
+			      AND uar.s_org_id != 1
+			    </when>
+			    <when test="assignType ==  2"> <!-- 进件 -->
+			      AND uar.s_user_type = 1 AND uar.s_org_id = 1
+			    </when>
+			     <when test="assignType ==  3"><!-- 流量 -->
+			      AND uar.s_user_type = 2 AND uar.s_org_id = 1
+			    </when>
+			 </choose>
+			 AND uar.org_id = #{orgId}
+			GROUP BY uar.init_acc_id, uar.org_id
+		) t ON t.init_acc_id = c.account_id AND t.org_id = c.org_id
+		WHERE s.status = 1  AND c.is_deleted = 0 AND c.is_freeze = 0
+			AND s.assign_type = #{assignType} 
+			AND c.org_id = #{orgId}
+			AND FIND_IN_SET(c.account_id, s.accounts)
+			<if test="accountId != null">
+			      AND c.account_id = #{accountId} 
+			</if>
+	</select>
+	
+	
+	<select id="countOrgAccountInitNumber"  resultType="com.jbb.mgt.core.domain.Account">
+		SELECT <include refid="accountCols"/> , t.initCnt as initCnt
+		FROM mgt_accounts c
+		LEFT JOIN (
+			SELECT uar.init_acc_id, uar.org_id,  count(1) as initCnt FROM mgt_user_apply_records uar 
+			WHERE 1=1 
+			<if test="startDate != null">
+			AND uar.creation_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null">
+			AND uar.creation_date <![CDATA[<]]> #{endDate}
+			</if>
+			<choose>
+			    <when test="assignType ==  1"><!-- 自有渠道件 -->
+			      AND uar.s_org_id != 1
+			    </when>
+			    <when test="assignType ==  2"> <!-- 进件 -->
+			      AND uar.s_user_type = 1 AND uar.s_org_id = 1
+			    </when>
+			     <when test="assignType ==  3"><!-- 流量 -->
+			      AND uar.s_user_type = 2 AND uar.s_org_id = 1
+			    </when>
+			 </choose>
+			 AND uar.org_id = #{orgId}
+			GROUP BY uar.init_acc_id, uar.org_id
+		) t ON t.init_acc_id = c.account_id AND t.org_id = c.org_id
+		LEFT JOIN (
+			SELECT DISTINCT account_id FROM mgt_account_roles 
+			WHERE role_id in (2,6)
+		) r on r.account_id = c.account_id
+		WHERE c.org_id = #{orgId}
+		<if test="accountId != null">
+			      AND c.account_id = #{accountId} 
+		</if>
+		ORDER BY t.initCnt DESC
+	</select>
+</mapper> 
+

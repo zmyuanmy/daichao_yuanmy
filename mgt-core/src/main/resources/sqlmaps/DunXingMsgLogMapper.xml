@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.DunXingMsgLogMapper">
+
+	<insert id="insertDunXingMsgLog">
+		INSERT INTO mgt_dunxin_msg_log
+		(order_id, account_id,phone_number,mode_id,send_status,send_date)
+		VALUES
+		(#{orderId},#{accountId},#{phoneNumber},#{modeId},#{sendStatus},#{sendDate})
+	</insert>
+
+	<select id="selectDunXingMsgLogById" resultType="com.jbb.mgt.core.domain.DunXingMsgLog">
+		SELECT
+		order_id as orderId,
+		account_id AS accountId,
+		phone_number AS phoneNumber,
+		mode_id AS modeId,
+		send_status AS sendStatus,
+		send_date AS sendDate
+		FROM mgt_dunxin_msg_log
+		WHERE order_id =#{orderId}
+	</select>
+
+	<select id="selectLastDunXingMsgLogByPhoneNumber" resultType="com.jbb.mgt.core.domain.DunXingMsgLog">
+		SELECT
+		order_id as orderId,
+		account_id AS accountId,
+		phone_number AS phoneNumber,
+		mode_id AS modeId,
+		send_status AS sendStatus,
+		send_date AS sendDate
+		FROM mgt_dunxin_msg_log
+		WHERE phone_number = #{phoneNumber}
+		ORDER BY send_date DESC limit 1
+	</select>
+
+	<select id="selectDunxingMsgLogs" resultType="com.jbb.mgt.core.domain.DunXingMsgLog">
+		SELECT
+		d.order_id as orderId,
+		d.account_id AS accountId,
+		INSERT(d.phone_number, 4, 4, '****') AS phoneNumber,
+		d.mode_id AS modeId,
+		d.send_status AS sendStatus,
+		d.send_date AS sendDate,
+		d.error_msg AS errorMsg,
+		h.sex AS sex,
+		h.username AS userName,
+		h.cdate AS cDate
+		FROM mgt_dunxin_msg_log d
+		LEFT JOIN mgt_human_lp_phones h
+		on d.phone_number = h.phone_number
+		WHERE d.send_date &gt;= #{startDate}
+		AND d.send_date &lt; #{endDate}
+		<if test="status!=null">
+			AND d.send_status = #{status}
+		</if>
+		<if test="phoneNumber!=null">
+			AND d.phone_number LIKE #{phoneNumber}
+		</if>
+		ORDER BY d.send_date desc
+	</select>
+
+	<update id="updateDunXingMsgLog">
+        UPDATE mgt_dunxin_msg_log
+        SET
+        send_status = #{sendStatus},
+        error_msg = #{errorMsg}
+        WHERE order_id = #{orderId}
+    </update>
+
+	<select id="checkExistPhoneNumber" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM mgt_dunxin_msg_log
+		WHERE phone_number = #{phoneNumber} AND send_status='2' )
+	</select>
+
+
+</mapper> 

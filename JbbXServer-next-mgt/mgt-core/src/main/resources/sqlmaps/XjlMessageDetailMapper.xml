@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.XjlMessageDetailMapper">
+
+	<insert id="insertXjlMsgReport">
+		INSERT INTO mgt_xjl_message_detail(msg_id,apply_id,account_id,mobile,msg_desc,`status`,status_desc,notify_date) 
+		values(#{msgid},#{applyId},#{accountId},#{mobile},#{msgDesc},#{status},#{statusDesc},#{notifyDate})
+		ON DUPLICATE KEY UPDATE status = #{status}, status_desc = #{statusDesc}, notify_date = #{notifyDate}
+	</insert>	
+	
+	<select id="selectXjlMessageDetail" resultType="com.jbb.mgt.core.domain.XjlMessageDetail">
+		SELECT msg_id AS msgId,apply_id AS applyId,account_id AS accountId,mobile AS mobile,msg_desc AS msgDesc,`status` AS status
+		,status_desc AS statusDesc,notify_date AS notifyDate,creation_date AS creationDate 
+		FROM mgt_xjl_message_detail
+		WHERE msg_id=#{msgId} AND mobile=#{mobile}
+	</select>
+
+</mapper>

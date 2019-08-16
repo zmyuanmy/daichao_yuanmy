@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.XjlUserOrderMapper" >
+
+    <sql id="xjlUserOrderCols">
+        o.order_id AS orderId,
+        o.user_id AS userId,
+        o.apply_id AS applyId,
+        o.type AS type,
+        o.status AS status,
+        o.creation_date AS creationDate,
+        o.update_date AS updateDate,
+        o.expiry_date AS expiryDate,
+        o.ip_address AS ipAddress,
+        o.terminal_type AS terminalType,
+        o.terminal_id AS terminalId,
+        o.card_no AS cardNo,
+        o.pay_product_id AS payProductId
+    </sql>
+
+    <insert id="insertXjlUserOrder">
+		INSERT INTO mgt_xjl_user_orders
+			(order_id, user_id, apply_id, type, status,creation_date, update_date, expiry_date,ip_address,terminal_type,terminal_id,card_no,pay_product_id)
+		VALUES
+			(#{orderId}, #{userId}, #{applyId}, #{type}, #{status},#{creationDate},#{updateDate},#{expiryDate},#{ipAddress},#{terminalType},#{terminalId},#{cardNo},#{payProductId})
+	</insert>
+
+    <update id="updateXjlUserOrder">
+		UPDATE mgt_xjl_user_orders
+		SET status = #{status},
+		update_date = #{updateDate}
+		WHERE order_id = #{orderId}
+	</update>
+
+    <select id="selectXjlUserOrder" resultType="com.jbb.mgt.core.domain.XjlUserOrder">
+        SELECT <include refid="xjlUserOrderCols"/>
+        FROM mgt_xjl_user_orders o
+        WHERE o.user_id = #{userId}
+        AND o.card_no = #{cardNo}
+        AND o.pay_product_id = #{payProductId}
+        AND o.apply_id = #{applyId}
+        AND o.type = #{type}
+        <if test="expiryDate != null">
+            AND o.expiry_date &gt; #{expiryDate}
+        </if>
+    </select>
+
+    <select id="selectXjlUserOrderById" resultType="com.jbb.mgt.core.domain.XjlUserOrder">
+        SELECT <include refid="xjlUserOrderCols"/>
+        FROM mgt_xjl_user_orders o
+        WHERE o.order_id = #{orderId}
+    </select>
+</mapper> 
+

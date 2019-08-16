@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.AgreementMapper" >
+
+	<select id="selectAgreement" resultType="com.jbb.mgt.core.domain.Agreement">
+		SELECT id AS agreementId,name AS agreementName,`desc`,version,is_required AS isRequired,creation_date AS creationDate
+		,org_id AS orgId, agreement_url AS agreementUrl
+		FROM mgt_xjl_agreements WHERE is_required = 1 AND org_id=#{orgId}
+	</select>
+
+</mapper>

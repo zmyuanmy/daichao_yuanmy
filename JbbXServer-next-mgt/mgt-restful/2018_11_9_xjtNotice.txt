@@ -1,0 +1,44 @@
+----------------------------------------------------------------------
+1.在小金条组织 创建渠道号为xjl的渠道								
+2.机审中的订单是看不到的  需要写个脚本让机审直接过						
+3.小金条组织 管理员角色改成202
+4.设置创蓝短信回调地址  数据推送 上行短信推送地址  线上地址+/manager/mgt/message/report
+5.201809_patch --0925之后 2018_10_patch  201810_patch 中的sql
+6.dml-->init_xjt_roles_and_permissions.sql
+7.短信模板配置
+您好，您申请的{s4}元，期限7天的借款已放款至默认银行卡，请注意查收。
+{s5}，您{s10}申请的{s4}元，期限7天的借款明天到期，请提前准备，按时还款。
+{s5}，您{s10}申请的{s4}元，期限7天的借款今天到期，请登陆App立即还款。
+{s5}，您{s10}申请的{s4}元，期限7天的借款已超{s1}天，请登陆App立即还款。
+												
+-----------------------------------------------------------------------
+一.畅捷支付 changjiepay.property
+1.需要调整快捷支付回调接口地址
+jbb.pay.changjie.quickPayCallBack.url = https://api.jiebangbang.cn/manager/xjl/user/changjiepay/notify
+2.调整代付回调接口地址
+jbb.pay.changjie.transferCallBack.url = https://api.jiebangbang.cn/manager/xjl/user/changjietransfer/notify
+
+二.盾星短信
+1.增加dunxing.property配置文件
+2.短信签名如果调整，需要修改参数
+jbb.mgt.dunxing.msg.template
+3.如果需要调整客服短信接口，需要修改参数
+#1表示使用盾星旧接口 2 表示盾星新接口 3表示秒滴接口 后续继续添加
+jbb.mgt.dunxing.msg.inteface.type 
+
+三.合利宝
+1.需要调整合利宝快捷支付回调地址
+jbb.pay.heli.callback.url
+
+四.小金条配置文件
+1.调整支付产品接口类型
+#支付产品类型 1表示为合利宝 2 表示为畅捷	
+jbb.mgt.pay.product.type = 1
+2.你我金融配置反欺诈模型回调地址
+xjl.nwjr.notify.url = https://api.jiebangbang.cn/manager/xjt/nwjr/getResult
+
+-----------------------------------------------------------------------
+
+
+
+

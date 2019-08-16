@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.DataJuXinLiUrlsMapper">
+
+    <insert id="insertDataJuXinLiUrls">
+        INSERT INTO mgt_data_julixin_urls
+        (user_id, report_type, h5_url,h5_short_url, creation_date)
+        VALUES
+        (#{userId}, #{reportType}, #{h5Url},#{h5ShortUrl},#{creationDate})
+    </insert>
+    
+    <update id="updateDataJuXinLiUrls">
+        UPDATE mgt_data_julixin_urls
+        SET h5_url = #{h5Url}, h5_short_url=#{h5ShortUrl}, creation_date = #{creationDate}
+        WHERE user_id = #{userId} AND report_type = #{reportType}
+    </update>
+</mapper>

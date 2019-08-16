@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.OrgDFlowBaseMapper">
+
+	<insert id="insertOrgDFlowBase">
+		INSERT INTO mgt_org_dflow_base(org_id,dflow_id,update_account_id) VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.orgId}, #{item.dflowId}, #{item.updateAccountId})
+		</foreach>
+		ON DUPLICATE KEY UPDATE update_account_id = VALUES(update_account_id), update_date = VALUES(update_date)
+	</insert>
+
+	<select id="selectOrgDflowBase" resultType="com.jbb.mgt.core.domain.DataFlowBase">
+		SELECT d.`dflow_id` as dataFlowId,d.`jexl_script` as jexlScript,
+			d.`jexl_desc` as jexlDesc,d.`price` as price,
+			d.`creation_date` as creationDate,d.`is_deleted` as deleted
+		FROM mgt_org_dflow_base o RIGHT JOIN mgt_dflow_base d ON o.dflow_id = d.dflow_id
+		WHERE 1=1
+		<if test="!includeDeleted">
+			AND  org_id = #{orgId}
+		</if>
+		GROUP BY d.dflow_id
+	</select>
+
+	<delete id="deleteOrgDflowBase">
+		DELETE FROM mgt_org_dflow_base WHERE org_id = #{orgId}
+	</delete>
+
+	<select id="selectdflowId" resultType="java.lang.Integer">
+		SELECT dflow_id AS dflowId
+		FROM mgt_org_dflow_base
+		<if test="null != orgId">
+			WHERE org_id = #{orgId}
+		</if>
+	</select>
+
+</mapper>

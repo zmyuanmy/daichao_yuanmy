@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.UserLoginLogMapper" >
+
+	<insert id="insertUserLoginLog">
+		INSERT INTO mgt_user_login_logs 
+			(user_id, channel_code, application_id, platform, user_type, remote_address )
+		VALUES 
+			(#{userId}, #{channelCode}, #{applicationId}, #{platform}, #{userType}, #{remoteAddress})
+	</insert>
+
+</mapper>

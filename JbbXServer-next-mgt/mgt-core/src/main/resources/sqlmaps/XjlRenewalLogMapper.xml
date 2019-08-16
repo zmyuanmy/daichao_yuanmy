@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.XjlRenewalLogMapper" >
+
+	<resultMap id="XjlRenewalLogListMap" type="com.jbb.mgt.core.domain.XjlRenewalLog">
+		<id  property="logId"  column="logId" />
+		<result property="applyId" column="applyId" />
+		<result property="userId" column="userId" />
+		<result property="accountId" column="accountId" />
+		<result property="opType" column="opType" />
+		<result property="creationDate" column="creationDate" />	
+	</resultMap>
+	
+	<select id="queryRenewalLogList" resultMap="XjlRenewalLogListMap">
+	   SELECT 
+	   log_id as logId,apply_id as applyId,user_id as userId,account_id as accountId,
+	   op_type as opType,creation_date as creationDate
+	   FROM mgt_xjl_renewal_log where apply_id=#{applyId} 
+	   <if test="null != userId">
+	       and user_id = #{userId}
+	   </if>
+	   <if test="null != creationDate">
+	   
+	   </if>
+	</select>
+	
+	 
+	 <select id="selectXjlRenewalLogByLogId" resultMap="XjlRenewalLogListMap">
+	     SELECT log_id,apply_id,user_id,account_id,op_type,creation_date 
+	     FROM mgt_xjl_renewal_log where log_id=#{logId}
+	 </select>
+	 
+	 <insert id="insertXjlRenewalLog" useGeneratedKeys="true" keyProperty="logId">  
+	     INSERT INTO mgt_xjl_renewal_log
+		(apply_id, user_id, account_id,op_type,creation_date) 
+		VALUES (#{xjlRenewalLog.applyId}, #{xjlRenewalLog.userId},
+		#{xjlRenewalLog.accountId},#{xjlRenewalLog.opType},#{xjlRenewalLog.creationDate})  		 
+	 </insert>
+	 
+	 <update id="updateXjlRenewalLog">
+	   update mgt_xjl_renewal_log set apply_id = #{xjlRenewalLog.applyId},
+	   user_id = #{xjlRenewalLog.userId},
+	   account_id = #{xjlRenewalLog.accountId},
+	   op_type = #{xjlRenewalLog.opType},
+	   creation_date = #{xjlRenewalLog.creationDate},
+	 
+	 </update>
+	 
+	 <delete id="deleteXjlRenewalLog"> 
+	    DELETE FROM mgt_xjl_renewal_log where log_id=#{logId}
+	 </delete>
+	 
+</mapper> 
+

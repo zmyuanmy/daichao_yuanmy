@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jbb.server.core.dao.mapper.IouOperationRecordMapper">
+	<insert id="insertIouOperationRecord">
+		INSERT INTO
+		`iou_operation_records`(`iou_code`,`from_user`,`to_user`,`op_name`,`params`)
+		VALUES(#{iouCode},#{fromUser},#{toUser},#{opName},#{params})
+	</insert>
+
+	<select id="searchIouOperationRecords" resultType="com.jbb.server.core.domain.IouOperationRecord">
+		SELECT `iou_code` AS iouCode,`from_user` AS fromUser,`to_user`
+		AS toUser,`op_name` AS opName,`op_date` AS
+		opDate,`params` FROM
+		`iou_operation_records` WHERE 1=1
+		<if test="iouCode!=null">
+			AND `iou_code` = #{iouCode}
+		</if>
+		<if test="fromUser!=null">
+			AND `from_user` = #{fromUser}
+		</if>
+		<if test="toUser!=null">
+			AND `to_user` = #{toUser}
+		</if>
+		<if test="opName!=null">
+			AND `op_name`=#{opName}
+		</if>
+		<if test="opDate!=null">
+			AND `op_date` > #{opDate}
+		</if>
+	</select>
+</mapper>

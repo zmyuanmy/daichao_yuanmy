@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.OrganizationMapper" >
+
+	<sql id="organizationCols">
+       o.org_id AS orgId ,  
+       o.name AS name ,  
+       o.description AS description,  
+       o.deleted AS deleted,
+       o.count,
+       o.sms_sign_name AS smsSignName,
+       o.sms_template_id AS smsTemplateId,
+       o.level AS level,
+       o.org_type AS orgType,
+       o.cnt AS cnt ,
+       o.weight AS weight,
+       o.data_enabled AS dataEnabled,
+       o.filter_script AS filterScript,
+       o.company_name AS companyName,
+       o.delegate_enabled AS delegateEnabled,
+       o.delegate_weight AS delegateWeight,
+       o.delegate_h5_type AS delegateH5Type
+    </sql>
+    
+    <resultMap id="OrgnazationMap" type="com.jbb.mgt.core.domain.Organization">
+		<id property="orgId" column="orgId" />
+		<result property="name" column="name" />
+		<result property="deleted" column="deleted" />
+		<result property="description" column="description" />
+		<result property="count" column="count" />
+		<result property="smsSignName" column="smsSignName" />
+		<result property="smsTemplateId" column="smsTemplateId" />
+		<result property="level" column="level" />
+		<result property="orgType" column="orgType" />
+		<result property="cnt" column="cnt" />
+		<result property="weight" column="weight" />
+		<result property="dataEnabled" column="dataEnabled" />
+		<result property="filterScript" column="filterScript" />
+		<result property="companyName" column="companyName" />
+		<result property="defaultRegisterPrice" column="defaultRegisterPrice" />
+		<result property="defaultEntryPrice" column="defaultEntryPrice" />
+		<result column="delegatePrice" jdbcType="INTEGER" property="delegatePrice"/>
+		<result property="delegateEnabled" column="delegateEnabled" />
+		<result property="delegateWeight" column="delegateWeight" />
+		<result property="delegateH5Type" column="delegateH5Type" />
+		<result property="delegateEnabled2" column="delegateEnabled2" />
+		<result property="balance" column="balance" />
+		<association property="dataFlowSetting" javaType="com.jbb.mgt.core.domain.DataFlowSetting">
+			<id column="orgId" jdbcType="INTEGER" property="orgId" />
+			<result column="dataFlowId" jdbcType="INTEGER" property="dataFlowId" />
+			<result column="minValue" jdbcType="INTEGER" property="minValue"/>
+			<result column="maxValue" jdbcType="INTEGER" property="maxValue" />
+			<result column="closed" jdbcType="TINYINT" property="closed"/>
+		</association>
+		<association property="recharge" javaType="com.jbb.mgt.core.domain.OrgRecharges">
+			<id column="orgId" jdbcType="INTEGER" property="orgId" />
+			<result column="totalDataAmount" jdbcType="INTEGER" property="totalDataAmount" />
+			<result column="totalSmsAmount" jdbcType="INTEGER" property="totalSmsAmount"/>
+			<result column="totalDataExpense" jdbcType="INTEGER" property="totalDataExpense" />
+			<result column="totalSmsExpense" jdbcType="INTEGER" property="totalSmsExpense"/>
+		</association>
+		<association property="sales" javaType="com.jbb.mgt.core.domain.Account">
+			<id column="accountId" jdbcType="INTEGER" property="accountId" />
+			<result column="username" jdbcType="VARCHAR" property="username" />
+			<result column="nickname" jdbcType="VARCHAR" property="nickname"/>
+		</association>
+
+		<collection property="dateCounts" javaType="ArrayList" ofType="com.jbb.mgt.core.domain.UserCounts">
+			<result column="statisDate" jdbcType="VARCHAR" property="statisDate"/>
+			<result column="entryCnt" jdbcType="INTEGER" property="entryCnt"/>
+			<result column="regCnt" jdbcType="INTEGER" property="regCnt"/>
+			<result column="idCnt" jdbcType="INTEGER" property="idCnt"/>
+			<result column="noidCnt" jdbcType="INTEGER" property="noidCnt"/>
+		</collection>
+		<collection property="dateAdCounts" javaType="ArrayList" ofType="com.jbb.mgt.core.domain.UserAdCounts">
+			<result column="statisDate1" jdbcType="VARCHAR" property="statisDate"/>
+			<result column="adCnt" jdbcType="INTEGER" property="adCnt"/>
+		</collection>
+	</resultMap>
+	
+	<insert id="insertOrganization" useGeneratedKeys="true" keyProperty="orgId">
+		INSERT INTO mgt_organizations
+			(name, description,sms_sign_name, sms_template_id,level,org_type,cnt,weight,data_enabled,filter_script,company_name,delegate_enabled,
+			delegate_weight,delegate_h5_type)
+		VALUES 
+			(#{name}, #{description},#{smsSignName},#{smsTemplateId},#{level},#{orgType},#{cnt},#{weight},#{dataEnabled},#{filterScript},#{companyName},
+			#{delegateEnabled},#{delegateWeight},#{delegateH5Type})
+	</insert>
+	
+	<update id="deleteOrganization">
+		UPDATE mgt_organizations
+		SET deleted = 1
+		WHERE org_id = #{orgId}
+	</update>
+		
+	<select id="selectOrganizations" resultMap="OrgnazationMap">
+		SELECT  <include refid="organizationCols"/>
+			<if test="detail"> 
+				,IF(IFNULL(de2.delegate_org_id,FALSE),TRUE,FALSE) AS delegateEnabled2
+				,m.total_data_amount As totalDataAmount
+        		, m.total_sms_amount AS totalSmsAmount,
+				m.total_data_expense AS totalDataExpense,m.total_sms_expense AS totalSmsExpense,
+				ifnull(r.is_closed,1) AS closed , r.dflow_id AS dataFlowId,r.min_value AS minValue ,r.max_value AS 'maxValue'
+				, dfbase.price AS defaultEntryPrice
+			</if>
+			<if test="getStatistic"> 
+				, s.statisDate , s.entryCnt, s.regCnt, s.idCnt, s.noidCnt
+				,a.account_id AS accountId, a.username AS username, a.nickname AS nickname, fs.default_price AS defaultRegisterPrice
+			</if>
+			<if test="getAdStatistic">
+			,s1.statisDate1,s1.adCnt,fs.delegate_price AS delegatePrice,
+			ifnull(today.balance,0)+ifnull(f.amount,0)-ifnull(s2.adCnt1,0)*ifnull(fs.delegate_price,0) AS balance
+			</if>
+		FROM  mgt_organizations o
+		LEFT JOIN mgt_fin_org_sales_relation fs  ON o.org_id = fs.org_id
+		<if test="detail"> 
+		LEFT JOIN  mgt_account_dflow_settings r ON o.org_id = r.org_id
+		LEFT JOIN  mgt_org_recharges m ON o.org_id = m.org_id	
+		LEFT JOIN  mgt_dflow_base dfbase ON r.dflow_id = dfbase.dflow_id
+		LEFT JOIN (
+				SELECT
+					c.delegate_org_id
+					FROM
+						mgt_channels c
+					LEFT JOIN mgt_accounts a ON a.account_id = c.creator
+					WHERE
+						a.org_id = 1
+					AND c.delegate_org_id IS NOT NULL
+					GROUP BY
+						delegate_org_id
+				) de2 ON de2.delegate_org_id=o.org_id 
+		</if>	
+		<if test="getStatistic"> 
+		LEFT JOIN (
+       	   SELECT ur.org_id AS orgId, 
+		   		DATE(ur.creation_date) AS statisDate, 
+		   		SUM(case when ur.s_user_type = 1 then 1 else 0 end) AS entryCnt,
+		   		SUM(case when ur.s_user_type = 2 then 1 else 0 end) AS regCnt,
+		   		SUM(case when ur.s_user_type = 2 and u.idcard is not null then 1 else 0 end) AS idCnt,
+		   		SUM(case when ur.s_user_type = 2 and u.idcard is null then 1 else 0 end) AS noidCnt	
+	       		FROM mgt_user_apply_records ur
+	       		LEFT JOIN mgt_users u on u.user_id = ur.user_id
+	       WHERE ur.org_id !=1 AND ur.s_org_id = 1
+	       <if test="startDate != null"> AND ur.creation_date &gt;= #{startDate}</if>
+		   <if test="endDate != null"> AND ur.creation_date &lt; #{endDate} </if>
+	       GROUP BY ur.org_id, DATE(ur.creation_date)
+		) s ON  s.orgId  = o.org_id
+		LEFT JOIN mgt_accounts a ON fs.account_id = a.account_id
+		</if>
+		<if test="getAdStatistic"> 
+		LEFT JOIN  (
+       	   SELECT ou.org_id AS orgId, COUNT(1) AS adCnt, DATE(ou.creation_date) AS statisDate1
+           FROM mgt_org_users ou 
+           WHERE ou.jbb_flag=1 AND ou.org_id!=1 
+	       <if test="startDate != null"> AND ou.creation_date &gt;= #{startDate}</if>
+		   <if test="endDate != null"> AND ou.creation_date &lt; #{endDate} </if>
+	       GROUP BY ou.org_id, DATE(ou.creation_date)
+		) s1 ON  s1.orgId  = o.org_id
+		LEFT JOIN  (
+       	   SELECT ou.org_id AS orgId, COUNT(1) AS adCnt1
+           FROM mgt_org_users ou 
+           WHERE ou.jbb_flag=1 AND ou.org_id!=1 
+	      AND  DATE(ou.creation_date)=DATE(#{endDate})
+	      GROUP BY ou.org_id
+		) s2 ON  s2.orgId  = o.org_id
+		LEFT JOIN mgt_fin_org_statistic_daily f ON  f.org_id = o.org_id AND f.type=3 AND f.statistic_date=date(#{endDate})
+	    LEFT JOIN (SELECT f2.statistic_date AS statistic_date,f2.balance AS balance,f2.org_id AS orgId
+			 FROM  mgt_fin_org_statistic_daily f2
+		WHERE   f2.statistic_date = DATE_ADD(DATE(#{endDate}), INTERVAL -1 DAY)
+	    AND f2.type=3 ) today ON today.orgId = o.org_id
+		</if>
+		WHERE 1=1
+		<if test="orgId"> AND o.org_id = #{orgId} </if>
+		<if test="!includeDelete"> AND o.deleted = 0 </if>
+		ORDER BY <if test="detail"> closed ASC , dataEnabled DESC, delegateEnabled DESC, delegateEnabled2 DESC, </if> orgId ASC 
+	</select>
+
+	<resultMap id="OrgnazationSimperMap" type="com.jbb.mgt.core.domain.Organization">
+		<id property="orgId" column="orgId" />
+		<result property="name" column="name" />
+		<result property="deleted" column="deleted" />
+		<result property="description" column="description" />
+		<result property="count" column="count" />
+		<result property="smsSignName" column="smsSignName" />
+		<result property="smsTemplateId" column="smsTemplateId" />
+		<result property="level" column="level" />
+		<result property="orgType" column="orgType" />
+		<result property="cnt" column="cnt" />
+		<result property="weight" column="weight" />
+		<result property="dataEnabled" column="dataEnabled" />
+		<result property="filterScript" column="filterScript" />
+		<result property="companyName" column="companyName" />
+		<result property="delegateEnabled" column="delegateEnabled" />
+		<result property="delegateWeight" column="delegateWeight" />
+		<result property="delegateH5Type" column="delegateH5Type" />
+		<association property="sales" javaType="com.jbb.mgt.core.domain.Account">
+			<id column="accountId" jdbcType="INTEGER" property="accountId" />
+			<result column="username" jdbcType="VARCHAR" property="username" />
+			<result column="nickname" jdbcType="VARCHAR" property="nickname"/>
+		</association>
+	</resultMap>
+
+	<select id="selectOrganizationSimper" resultMap="OrgnazationSimperMap">
+		SELECT  <include refid="organizationCols"/>
+		,a.account_id AS accountId, a.username AS username, a.nickname AS nickname
+		FROM  mgt_organizations o
+		LEFT JOIN mgt_fin_org_sales_relation fs  ON o.org_id = fs.org_id
+		LEFT JOIN mgt_accounts a ON fs.account_id = a.account_id
+		WHERE 1=1
+		<if test="null != salesId">
+			AND a.account_id in
+			<foreach collection="salesId" item="item" index="index" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+		</if>
+		ORDER BY dataEnabled DESC, orgId ASC
+	</select>
+
+	<update id="updateOrganization">
+		UPDATE mgt_organizations o
+		SET o.cnt = #{cnt},
+			o.weight = #{weight},
+			o.data_enabled =#{dataEnabled},
+			o.filter_script = #{filterScript},
+			o.company_name = #{companyName},
+			o.delegate_enabled = #{delegateEnabled},
+      		o.delegate_weight = #{delegateWeight},
+      		o.delegate_h5_type = #{delegateH5Type}
+		WHERE org_id = #{orgId}
+	</update>
+ 
+</mapper> 

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jbb.mgt.core.dao.mapper.BaseInfoMapper">
+
+
+	<sql id="educationBaseCols">
+        e.id AS id,
+        e.des AS des
+    </sql>
+
+	<sql id="maritalStatusBaseCols">
+        m.id AS id,
+        m.des AS des
+    </sql>
+
+	<sql id="loanPurposeBaseCols">
+        l.id AS id,
+        l.des AS des
+    </sql>
+
+	<sql id="relationBaseCols">
+        r.id AS id,
+        r.relation_level AS relationLevel,
+        r.des AS des,
+        r.queue AS queue,
+        r.relation AS relation
+    </sql>
+
+
+	<sql id="professionTypeBaseCols">
+        p.id AS id,
+        p.des AS des
+    </sql>
+
+	
+	<select id="selectEducationBases" resultType="com.jbb.mgt.core.domain.EducationBase">
+		SELECT <include refid="educationBaseCols"/>
+		FROM mgt_education_base e
+	</select>
+
+	<select id="selectMaritalStatusBases" resultType="com.jbb.mgt.core.domain.MaritalStatusBase">
+		SELECT <include refid="maritalStatusBaseCols"/>
+		FROM mgt_marital_status_base m
+	</select>
+
+	<select id="selectLoanPurposeBases" resultType="com.jbb.mgt.core.domain.LoanPurposeBase">
+		SELECT <include refid="loanPurposeBaseCols"/>
+		FROM mgt_loan_purpose_base l
+	</select>
+
+	<select id="selectRelationBases" resultType="com.jbb.mgt.core.domain.RelationBase">
+		SELECT <include refid="relationBaseCols"/>
+		FROM mgt_relation_base r
+	</select>
+
+	<select id="selectProfessionTypeBases" resultType="com.jbb.mgt.core.domain.ProfessionTypeBase">
+		SELECT <include refid="professionTypeBaseCols"/>
+		FROM mgt_profession_type_base p
+	</select>
+
+
+</mapper>

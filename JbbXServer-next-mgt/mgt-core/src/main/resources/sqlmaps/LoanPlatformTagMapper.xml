@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.LoanPlatformTagMapper">
+
+	<insert id="insertLoanPlatformTag">
+		INSERT INTO mgt_loan_platform_tags(platform_id,tag_id,pos) VALUES(#{platformId},#{tagId},#{pos})
+	</insert>
+	
+	<delete id="deleteLoanPlatformTag">
+		DELETE FROM mgt_loan_platform_tags 
+		<where>
+			<if test="platformId!=null">
+			 	AND platform_id = #{platformId} 
+			</if>
+			<if test="tagId!=null">
+				AND tag_id = #{tagId}
+			</if>
+			<if test="pos!=null">
+				AND pos = #{pos}
+			</if>
+			<if test="platformId==null and tagId==null and pos==null">
+			 	AND 1!=1
+			</if>	
+		</where>
+	</delete>
+	
+	<update id="updateLoanPlatformTag">
+		UPDATE mgt_loan_platform_tags SET pos = #{pos} WHERE platform_id = #{platformId} AND tag_id = #{tagId}
+	</update>
+		
+	<select id="selectLoanPlatformTagById" resultType="com.jbb.mgt.core.domain.LoanPlatformTag">
+		SELECT mlpt.platform_id AS platformId, mlpt.tag_id AS tagId,mlpt.pos AS pos,mlpt.creation_date AS creationDate
+		FROM mgt_loan_platform_tags mlpt 
+		WHERE mlpt.platform_id = #{platformId} AND mlpt.tag_id = #{tagId}
+	</select>
+	
+</mapper>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.LoanPlatformPublishMapper">
+
+	<resultMap id="publishMap" type="com.jbb.mgt.core.domain.LoanPlatformPublish">
+		<id property="id" column="id" />
+		<result property="platformId" column="platformId" />
+		<result property="publishDate" column="publishDate" />
+		<result property="creationDate" column="creationDate" />
+		<result property="isDeleted" column="isDeleted" />
+		<association property="platform" javaType="com.jbb.mgt.core.domain.Platform">
+			<id property="platformId" column="platformId" />
+			<result property="name" column="name" />
+			<result property="shortName" column="shortName" />
+			<result property="url" column="url" />
+			<result property="logo" column="logo" />
+			<result property="adImgUrl" column="adImgUrl" />
+			<result property="desc1" column="desc1" />
+			<result property="desc2" column="desc2" />
+			<result property="desc3" column="desc3" />
+			<result property="minAmount" column="minAmount" />
+			<result property="maxAmount" column="maxAmount" />
+			<result property="loanPeriod" column="loanPeriod" />
+			<result property="interestRate" column="interestRate" />
+			<result property="approvalTime" column="approvalTime" />
+			<result property="isNew" column="isNew" />
+			<result property="isHot" column="isHot" />
+			<result property="creator" column="creator" />
+			<result property="isDeleted" column="isDeleted" />
+			<result property="creationTime" column="creationTime" />
+			<result property="updateTime" column="updateTime" />
+			<result property="cpaPrice" column="cpaPrice" />
+			<result property="applyCnt" column="applyCnt"/>
+		</association>
+	</resultMap>
+	
+	<sql id="publishCols">
+		mlpp.id AS id,mlpp.platform_id AS platformId,mlpp.publish_date AS publishDate,
+		mlpp.creation_date AS creationDate,mlpp.is_deleted as isDeleted
+	</sql>
+	
+	<sql id="platformCols">
+			mlp.platform_id AS platformId,
+		    mlp.`name` AS name,
+			mlp.short_name AS shortName,
+			mlp.url AS url,
+			mlp.logo AS logo,
+			mlp.ad_img_url AS adImgUrl,
+			mlp.desc1 AS desc1,
+			mlp.desc2 AS desc2,
+			mlp.desc3 AS desc3,
+			mlp.min_amount AS minAmount,
+			mlp.max_amount AS maxAmount,
+			mlp.loan_period AS loanPeriod,
+			mlp.interest_rate AS interestRate,
+			mlp.approval_time AS approvalTime,
+			mlp.is_new AS isNew,
+			mlp.is_hot AS isHot,
+			mlp.creator AS creator,
+			mlp.is_deleted AS isDeleted,
+			mlp.apply_cnt AS applyCnt,
+			mlp.creation_time AS creationTime,
+			mlp.update_time AS updateTime
+			
+	</sql>
+	
+	<insert id="insertPlatformPublish">
+		INSERT INTO mgt_loan_platform_publish(platform_id,publish_date) VALUES(#{platformId},#{publishDate});
+	</insert>
+	
+	<update id="updatePlatformPublish">
+		UPDATE mgt_loan_platform_publish SET platform_id = #{platformId},publish_date = #{publishDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deletePlatformPublish">
+		UPDATE mgt_loan_platform_publish SET is_deleted = 1 WHERE id = #{id}
+	</update>
+
+	<select id="selectPlatformPublish" resultType="com.jbb.mgt.core.domain.LoanPlatformPublish">
+		SELECT <include refid="publishCols"/> FROM mgt_loan_platform_publish mlpp
+		WHERE id = #{id} 
+		<if test="platformId != null">
+			AND platform_id = #{platformId}
+		</if>
+	</select>
+	
+	<select id="selectPlatformPublishByDate" resultMap="publishMap">
+		SELECT <include refid="publishCols"/> ,<include refid="platformCols"/> 
+		<if test="isDeleted">
+		 	,mlp.cpa_price AS cpaPrice
+		</if>
+		FROM mgt_loan_platform_publish mlpp
+		LEFT JOIN mgt_loan_platforms mlp ON mlpp.platform_id=mlp.platform_id
+		WHERE 1=1
+		<if test="startDate != null">
+			AND	mlpp.publish_date <![CDATA[>=]]> #{startDate}
+		</if>
+		<if test="endDate != null">
+		 	AND mlpp.publish_date <![CDATA[<]]> #{endDate}
+		</if>
+		<if test="isDeleted==false">
+		 	AND mlpp.is_deleted=0 AND mlp.is_deleted=0
+		</if>
+		<if test="isDeleted">
+		 	ORDER BY mlpp.publish_date DESC
+		</if>
+	</select>
+	
+	<select id="selectPlatformPublishByDate_COUNT" resultType="Long">
+		SELECT COUNT(1) FROM mgt_loan_platform_publish mlpp
+		LEFT JOIN mgt_loan_platforms mlp ON mlpp.platform_id=mlp.platform_id
+		WHERE 1=1
+		<if test="startDate != null">
+			AND	mlpp.publish_date <![CDATA[>=]]> #{startDate}
+		</if>
+		<if test="endDate != null">
+		 	AND mlpp.publish_date <![CDATA[<]]> #{endDate}
+		</if>
+		<if test="isDeleted">
+		 	AND mlpp.is_deleted=0 AND mlp.is_deleted=0
+		</if>
+		<if test="isDeleted==false">
+		 	ORDER BY mlpp.publish_date DESC
+		</if>
+	</select>
+	
+
+</mapper>

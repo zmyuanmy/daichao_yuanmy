@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jbb.server.core.dao.mapper.UserFaceIdBizNoMapper">
+
+	<sql id="userFaceIdBigNoCols">
+	    u.user_id AS "userId",
+	    u.random_number AS "randomNumber",
+	    u.biz_no AS "bizNo",
+	    u.tokenrandomnumber AS "tokenRandomNumber",
+	    u.tokenvideo AS "tokenVideo",
+	    u.random_data AS "randomData",
+	    u.validatevideo_data AS "validateVideoData",
+	    u.verify_data AS "verifyData"
+	</sql>
+
+	<insert id="insertUserFaceIdBizNo">
+		INSERT INTO user_faceid_biz_no (user_id,random_number,biz_no,tokenrandomnumber,tokenvideo,random_data,validatevideo_data,verify_data)
+		VALUES (#{userId},
+			#{randomNumber},
+			#{bizNo}, 
+			#{tokenRandomNumber},
+			#{tokenVideo},
+			#{randomData}, 
+			#{validateVideoData},
+			#{verifyData}
+			)
+	</insert>
+
+
+
+	<update id="updateUserFaceIdBizNo">
+		UPDATE user_faceid_biz_no
+		SET random_number= #{randomNumber},
+		tokenrandomnumber= #{tokenRandomNumber},
+		tokenvideo= #{tokenVideo},
+		random_data= #{randomData},
+		validatevideo_data= #{validateVideoData},
+		verify_data= #{verifyData}
+		WHERE user_id = #{userId}
+		AND biz_no = #{bizNo}
+	</update>
+	
+	 <select id="selectUserFaceIdBizNo" resultType="com.jbb.server.core.domain.UserFaceIdBizNo">
+        SELECT <include refid="userFaceIdBigNoCols"/>
+        FROM user_faceid_biz_no u
+        WHERE user_id = #{userId}
+		AND biz_no = #{bizNo}
+    </select>
+    
+     <select id="selectUserFaceIdBizNoByRandom" resultType="com.jbb.server.core.domain.UserFaceIdBizNo">
+        SELECT <include refid="userFaceIdBigNoCols"/>
+        FROM user_faceid_biz_no u
+        WHERE user_id = #{userId}
+		AND random_number = #{randomNumber}
+    </select>
+    
+    
+
+
+
+</mapper>

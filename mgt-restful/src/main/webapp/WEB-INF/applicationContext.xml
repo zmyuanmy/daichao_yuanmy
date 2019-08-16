@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-4.3.xsd
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+    <import resource="classpath:/datasource-config.xml"/>
+    <import resource="classpath:/core-application-config.xml"/>
+
+    <!--  required for auto wire  -->
+    <context:annotation-config/>
+
+    <!-- Scan the package required for auto wire  -->
+
+    <context:component-scan base-package="com.jbb.mgt.rs.action.channel"  />
+    <context:component-scan base-package="com.jbb.mgt.rs.action.account"  />
+    <context:component-scan base-package="com.jbb.mgt.rs.action"  />
+
+  
+	<bean id="jbbMgtServices" class="com.jbb.mgt.server.rs.services.JbbMgtServices" autowire="byType" />
+	<bean id="jbbMgtAdminService" class="com.jbb.mgt.server.rs.services.JbbMgtAdminService" autowire="byType" />
+    <bean id="jbbMgtFinServices" class="com.jbb.mgt.server.rs.services.JbbMgtFinService" autowire="byType" />
+    <bean id="jbbMgtStatisticServices" class="com.jbb.mgt.server.rs.services.JbbMgtStatisticServices" autowire="byType" />
+    <bean id="jBBMgtPfServices" class="com.jbb.mgt.server.rs.services.JBBMgtPfServices" autowire="byType" />
+    <bean id="jBBPfServices" class="com.jbb.mgt.server.rs.services.JBBPfServices" autowire="byType" />
+    <bean id="jBBMgtBnhServices" class="com.jbb.mgt.server.rs.services.JBBMgtBnhServices" autowire="byType" />
+    <bean id="jBBBnhAdminServices" class="com.jbb.mgt.server.rs.services.JBBBnhAdminServices" autowire="byType" />
+</beans>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.XjlApplyRecordOpLogMapper">
+
+	<insert id="insertXjlApplyRecordOpLog">
+		INSERT INTO mgt_xjl_apply_record_op_logs(
+		apply_id, op_type, account_id, comment
+		) VALUES (
+		#{applyId}, #{opType}, #{accountId}, #{comment})
+	</insert>
+
+</mapper>

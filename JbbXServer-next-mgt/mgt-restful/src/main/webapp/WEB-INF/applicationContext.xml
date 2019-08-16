@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-4.3.xsd
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+    <import resource="classpath:/datasource-config.xml"/>
+    <import resource="classpath:/core-application-config.xml"/>
+
+    <!--  required for auto wire  -->
+    <context:annotation-config/>
+
+    <!-- Scan the package required for auto wire  -->
+
+    <context:component-scan base-package="com.jbb.mgt.rs.action.channel"  />
+    <context:component-scan base-package="com.jbb.mgt.rs.action.account"  />
+    <context:component-scan base-package="com.jbb.mgt.rs.action"  />
+
+    <!-- <bean id="rsJbbServices" class="com.jbb.server.rs.services.JbbServices" autowire="byType" />
+    <bean id="rsJbbServicesXml" class="com.jbb.server.rs.services.JbbServicesXml" autowire="byType" />
+    <bean id="rsJbbAdminServices" class="com.jbb.server.rs.services.JbbAdminServices" autowire="byType" />-->
+	<bean id="jbbMgtServices" class="com.jbb.mgt.server.rs.services.JbbMgtServices" autowire="byType" />
+	<bean id="jbbClubServices" class="com.jbb.mgt.server.rs.services.JbbClubServices" autowire="byType" />
+	<bean id="JbbMgtIntegrateService" class="com.jbb.mgt.server.rs.services.JbbMgtIntegrateService" autowire="byType" />
+	<bean id="jbbMgtAdminService" class="com.jbb.mgt.server.rs.services.JbbMgtAdminService" autowire="byType" />
+	<bean id="jbbMgtSpcApplyServices" class="com.jbb.mgt.server.rs.services.JbbMgtSpcApplyServices" autowire="byType" />
+    <!--  <bean id="jbbMgtReportServices" class="com.jbb.mgt.server.rs.services.JbbMgtReportServices" autowire="byType" /> -->
+    <bean id="jbbMgtFinServices" class="com.jbb.mgt.server.rs.services.JbbMgtFinService" autowire="byType" />
+    <bean id="jbbMgtStatisticServices" class="com.jbb.mgt.server.rs.services.JbbMgtStatisticServices" autowire="byType" />
+    <bean id="jbbMgtXjlServices" class="com.jbb.mgt.server.rs.services.JBBMgtXjlServices" autowire="byType" />
+    <bean id="jBBMgtPfServices" class="com.jbb.mgt.server.rs.services.JBBMgtPfServices" autowire="byType" />
+    <bean id="jBBPfServices" class="com.jbb.mgt.server.rs.services.JBBPfServices" autowire="byType" />
+    <bean id="jbbXjlManagerServices" class="com.jbb.mgt.server.rs.services.JbbXjlManagerServices" autowire="byType" />
+    <bean id="JbbXjlBossServices" class="com.jbb.mgt.server.rs.services.JbbXjlBossServices" autowire="byType" />
+    <bean id="JbbEosDigServices" class="com.jbb.mgt.server.rs.services.JbbEosDigServices" autowire="byType" />
+    <bean id="jBBMgtBnhServices" class="com.jbb.mgt.server.rs.services.JBBMgtBnhServices" autowire="byType" />
+    <bean id="jBBXjtReportServices" class="com.jbb.mgt.server.rs.services.JBBXjtReportServices" autowire="byType" />
+    <bean id="jBBBnhAdminServices" class="com.jbb.mgt.server.rs.services.JBBBnhAdminServices" autowire="byType" />
+    <bean id="jbbChannelService" class="com.jbb.mgt.server.rs.services.JbbChannelService" autowire="byType" />
+</beans>

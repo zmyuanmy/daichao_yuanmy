@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mall.core.dao.mapper.MallProductsMapper" >
+
+
+  <resultMap id="FlowerProduct" type="com.jbb.mall.core.dao.domain.FlowerProduct">
+	  <result property="typeId" column="categoryId" />
+	  <result property="title" column="title" />
+	  <result property="desc" column="desc1" />
+	  <result property="adImg" column="adImg" />  
+	  <collection  property="products" ofType="com.jbb.mall.core.dao.domain.ProductsVo">
+	    <id property="productId" column="productId" />
+	    <result property="productName" column="title2" />
+	    <result property="price" column="price" />
+	    <result property="discountPrice" column="discountPrice" /> 
+	    <result property="desc" column="desc2" /> 
+	    <result property="adImg" column="imgUrl" />
+	     <result property="status" column="status" />
+	  </collection>
+	</resultMap>
+	
+	
+	<select id="selectFlowerProductList" resultMap="FlowerProduct">
+		SELECT
+		  mc.category_id AS categoryId,
+		  mc.title AS title,
+		  mc.desc AS desc1,
+		  mc.adImg AS adImg,
+		  mp.product_id AS productId,
+		  mp.title AS title2,
+          mp.price AS price,
+          mp.discount_price AS discountPrice,
+          mp.desc AS desc2,
+          <if test="userId !=null ">
+             (
+		    CASE
+		      WHEN EXISTS
+		      (SELECT
+		        STATUS
+		      FROM
+		        mall_user_favorites muf
+		      WHERE muf.user_id = #{userId} AND muf.`status`=1
+		        AND muf.product_id = mp.product_id)
+		      THEN 1
+		      ELSE 0
+		    END
+		  ) AS status,
+          </if>       
+		  mpi.img_url AS imgUrl
+		FROM
+		  mall_categories mc
+		  INNER JOIN mall_category_products mcp
+		    ON mc.category_id = mcp.category_id
+		  LEFT JOIN mall_products mp
+		    ON mp.product_id = mcp.product_id
+		  LEFT JOIN mall_classifications mcf
+             ON mcf.classification = mc.classification
+		 LEFT JOIN
+		    (SELECT
+		      img_url,
+		      product_id,
+		      index_no
+		    FROM
+		      (SELECT
+		        img_url,
+		        product_id,
+		        index_no
+		      FROM
+		        mall_product_imgs
+		      ORDER BY product_id,
+		        index_no IS NOT NULL DESC,
+		        index_no ASC) t1
+		    GROUP BY t1.product_id) mpi
+		    ON mp.product_id = mpi.product_id
+		WHERE mc.product_type = #{type} AND mc.classification='首页列表场景'
+		ORDER BY mc.index_no
+	</select>
+	
+	<select id="selectProductDetail" resultType="com.jbb.mall.core.dao.domain.ProductDetailVo">
+	     SELECT
+		  mp.product_id AS productId,
+		  mp.product_type AS productType,
+		  mp.title AS title,
+		  mp.creation_date AS creationDate,
+		  mp.price AS price,
+		  mp.discount_price AS discountPrice,
+		  mp.desc,
+		   <if test="userId != null">
+			  (
+			    CASE
+			      WHEN EXISTS
+			      (SELECT
+			        1
+			      FROM
+			        mall_user_favorites
+			      WHERE 
+			         STATUS = 1 		         
+	          <if test="productId != null and productId != ''">
+			  AND product_id = #{productId}
+			 </if>
+			  <if test="userId != null">
+			  AND user_id = #{userId}
+			 </if>
+			      )
+			      THEN 1
+			      ELSE 0
+			    END
+			  ) AS STATUS,
+		  </if>
+		  mp.content AS content
+		FROM
+		  mall_products mp
+		  LEFT JOIN mall_user_favorites muf
+		    ON mp.product_id = muf.product_id
+		WHERE mp.product_type = #{type}
+		<if test="productId != null and productId != ''">
+		  AND mp.product_id = #{productId}
+		 </if>
+		LIMIT 1
+	</select>
+	
+	<select id="checkProduct" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM mall_products WHERE product_type = #{type} AND product_id = #{productId})	
+	</select>
+	
+	<select id="selectProductImgList" resultType="java.lang.String">
+		SELECT img_url FROM mall_product_imgs WHERE product_id = #{productId}
+	</select>	
+
+</mapper> 

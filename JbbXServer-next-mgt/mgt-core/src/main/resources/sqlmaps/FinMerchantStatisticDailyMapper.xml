@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.FinMerchantStatisticDailyMapper" >
+
+	<sql id="MerchantCols">
+		m.statistic_date AS statisticDate,m.merchant_id AS merchantId,m.cnt AS cnt,m.price AS price,
+		m.expense AS expense,m.amount AS amount,m.balance AS balance,m.status AS status,
+		m.creation_date AS creationDate,m.update_date AS updateDate,m.confirm_date AS confirmDate,
+		m.confrim_account_id AS confrimAccountId,m.uv_cnt AS uvCnt,m.total_register_cnt AS totalRegisterCnt
+	</sql>
+	
+	<sql id="h5Merchant">
+		h5.merchant_id AS merchantId, h5.name AS name, h5.short_name AS shortName,
+		h5.url AS url, h5.logo AS logo, h5.desc1 AS desc1, h5.desc2 AS desc2, h5.desc3 AS desc3,
+		h5.creator AS creator, h5.creation_date AS creationDate
+	</sql>
+	
+	<sql id="finFileCols">
+        f.file_id AS fileId, f.org_id AS orgId, f.merchant_id AS merchantId, f.file_name AS fileName,
+        f.file_type  AS fileType, f.creator AS creator, f.creation_date AS creationDate,
+        f.file_date AS fileDate, f.is_deleted AS isDeleted
+    </sql>
+    
+    <sql id="statisticCols">
+			SUM(cnt*price)/SUM(m.cnt)  AS price,
+			SUM(cnt*price)/SUM(CASE WHEN m.uv_cnt !=0 THEN m.uv_cnt ELSE t1.uvCnt END) AS uvPrice,
+			SUM(CASE WHEN m.uv_cnt !=0 THEN m.uv_cnt ELSE t1.uvCnt END) As uvCnt,
+			SUM(m.cnt) AS cnt,
+			SUM(CASE WHEN m.total_register_cnt !=0 THEN m.total_register_cnt ELSE t2.registerCnt END) as totalRegisterCnt,
+			SUM(m.cnt*1.0)/SUM(CASE WHEN m.uv_cnt !=0 THEN m.uv_cnt ELSE t1.uvCnt END)  AS uvRates,
+			SUM(m.cnt*1.0)/SUM(CASE WHEN m.total_register_cnt !=0 THEN m.total_register_cnt ELSE t2.registerCnt END) AS registerRates,
+			SUM(cnt*price)/SUM(CASE WHEN m.total_register_cnt !=0 THEN m.total_register_cnt ELSE t2.registerCnt END) AS contributedValue,
+			SUM(cnt*price)  AS money
+		from (
+			SELECT
+			l.event_label as merchant_id, DATE(l.creation_date) as statistic_date, COUNT(DISTINCT l.cookie_id) AS uvCnt 
+			From mgt_user_event_logs l
+			where DATE(l.creation_date)<![CDATA[>=]]> #{startDate} 
+			<if test="endDate != null">
+				AND DATE(l.creation_date) <![CDATA[<=]]> #{endDate}
+			</if>
+				AND l.event_action = 'clickH5' AND l.event_name = 'addmore'
+			group by l.event_label , DATE(l.creation_date)
+		) t1 
+		left join (
+			SELECT
+			l.event_value as merchant_id, DATE(l.creation_date) as statistic_date, COUNT(DISTINCT l.user_id) AS registerCnt 
+			From mgt_user_event_logs l
+			where DATE(l.creation_date)<![CDATA[>=]]> #{startDate} 
+			<if test="endDate != null">
+				AND DATE(l.creation_date) <![CDATA[<=]]> #{endDate}
+			</if>
+				AND l.event_action = 'register' AND l.event_name = 'userMerchant' AND l.event_label= 'merchantId'
+			group by l.event_value , DATE(l.creation_date)
+		) t2 on t1.statistic_date = t2.statistic_date and t1.merchant_id = t2.merchant_id
+		left join  mgt_fin_merchant_statistic_daily m on m.statistic_date = t1.statistic_date and m.merchant_id = t1.merchant_id
+    </sql>
+	
+	
+	<resultMap id="MerchantMap" type="com.jbb.mgt.core.domain.FinMerchantStatisticDaily">
+			<id property="statisticDate" column="statisticDate" />
+			<id property="merchantId" column="merchantId" />
+			<result property="cnt" column="cnt" />
+			<result property="price" column="price" />
+			<result property="expense" column="expense" />
+			<result property="amount" column="amount" />
+			<result property="balance" column="balance" />
+			<result property="status" column="status" />
+			<result property="creationDate" column="creationDate" />
+			<result property="updateDate" column="updateDate" />
+			<result property="confirmDate" column="confirmDate" />
+			<result property="confrimAccountId" column="confrimAccountId" />
+			<result property="uvCnt" column="uvCnt" />
+			<result property="totalRegisterCnt" column="totalRegisterCnt" />
+		<association property="merchant" javaType="com.jbb.mgt.core.domain.H5Merchant">
+			<id property="merchantId" column="merchantId" />
+			<result property="name" column="name" />
+			<result property="shortName" column="shortName" />
+			<result property="url" column="url" />
+			<result property="logo" column="logo" />
+			<result property="desc1" column="desc1" />
+			<result property="desc2" column="desc2" />
+			<result property="desc3" column="desc3" />
+			<result property="creator" column="creator" />
+			<result property="creationDate" column="creationDate" />
+		</association>
+		<collection property="files" javaType="ArrayList" ofType="com.jbb.mgt.core.domain.FinFile">
+			<id property="fileId" column="fileId" />
+			<result property="orgId" column="orgId" />
+			<result property="merchantId" column="merchantId" />
+			<result property="fileName" column="fileName" />
+			<result property="fileType" column="fileType" />
+			<result property="creator" column="creator" />
+			<result property="creationDate" column="creationDate" />
+			<result property="fileDate" column="fileDate" />
+			<result property="isDeleted" column="isDeleted" />
+		</collection>
+	</resultMap>
+
+	<select id="selectMerchantByDate" resultMap="MerchantMap">
+		SELECT <include refid="MerchantCols"/>,<include refid="h5Merchant"/>,<include refid="finFileCols"/>
+		FROM mgt_fin_merchant_statistic_daily m 
+		LEFT JOIN mgt_h5_merchants h5 ON m.merchant_id=h5.merchant_id
+		LEFT JOIN mgt_fin_files f ON m.merchant_id= f.merchant_id
+		 AND m.statistic_date=DATE(f.file_date) AND f.is_deleted=0
+		WHERE m.statistic_date = DATE(#{statisticDate})
+		ORDER BY statistic_date
+	</select>
+
+	<select id="selectMerchantById" resultMap="MerchantMap">
+		SELECT <include refid="MerchantCols"/>,<include refid="finFileCols"/>
+		FROM mgt_fin_merchant_statistic_daily m 
+		LEFT JOIN mgt_fin_files f ON m.merchant_id= f.merchant_id 
+		AND m.statistic_date=DATE(f.file_date) AND f.is_deleted=0
+		WHERE m.statistic_date <![CDATA[>=]]> #{startDate} AND m.merchant_id = #{merchantId}
+		<if test="endDate != null">
+			AND m.statistic_date <![CDATA[<=]]> #{endDate}
+		</if>
+		ORDER BY statistic_date
+	</select>
+	
+	<select id="selectMerchantByStaDate" resultType="com.jbb.mgt.core.domain.FinMerchantStatisticDaily">
+		SELECT <include refid="MerchantCols"/> FROM mgt_fin_merchant_statistic_daily m
+		WHERE m.merchant_id = #{merchantId}
+		<if test="day!=null">
+			AND m.statistic_date = DATE(#{statisticDate})
+		</if>
+		<if test="day==null">
+			AND m.statistic_date <![CDATA[<]]> DATE(#{statisticDate})
+			ORDER BY m.statistic_date DESC LIMIT 1
+		</if>
+		
+	</select>
+
+	<insert id="insertMerchant">
+		INSERT INTO mgt_fin_merchant_statistic_daily(statistic_date,merchant_id, cnt, price,expense,
+		amount, balance, status,creation_date, confirm_date,confrim_account_id,uv_cnt,total_register_cnt)
+		VALUES(#{statisticDate}, #{merchantId}, #{cnt}, #{price}, #{expense}, #{amount},
+		#{balance}, #{status}, CURRENT_TIMESTAMP, #{confirmDate}, #{confrimAccountId},#{uvCnt},#{totalRegisterCnt})	
+		ON DUPLICATE KEY UPDATE total_register_cnt=#{totalRegisterCnt},balance=#{balance},uv_cnt=#{uvCnt},update_date = now()
+	</insert>
+	
+	<update id="updateMerchant">
+		UPDATE mgt_fin_merchant_statistic_daily
+		<set>
+			<if test="cnt!=null">
+		  		cnt=#{cnt},
+			</if>
+			<if test="price!=null">
+		  		price=#{price},
+			</if>
+			<if test="expense!=null">
+		  		expense=#{expense},
+			</if>
+			<if test="amount!=null">
+		  		amount=#{amount},
+			</if>
+			<if test="balance!=null">
+		  		balance=#{balance},
+			</if>
+			<if test="status!=null">
+		  		status = #{status},
+			</if>
+			<if test="confirmDate!=null">
+		  		confirm_date=#{confirmDate},
+			</if>
+			<if test="confrimAccountId!=null">
+		  		confrim_account_id=#{confrimAccountId},
+			</if>
+			<if test="uvCnt!=null">
+		  		uv_cnt=#{uvCnt},
+			</if>
+			<if test="totalRegisterCnt!=null">
+		  		total_register_cnt=#{totalRegisterCnt},
+			</if>
+			<if test="totalRegisterCnt!=null">
+		  		total_register_cnt=#{totalRegisterCnt},
+			</if>
+			<if test="updateDate!=null">
+				update_date = #{updateDate}
+			</if>
+		</set>
+		  	
+	 	WHERE merchant_id = #{merchantId} AND statistic_date = #{statisticDate}
+	</update>
+	
+	<update id="updateMerchantByBalance">
+		UPDATE mgt_fin_merchant_statistic_daily SET balance=balance+#{balance},update_date = now()
+		WHERE merchant_id = #{merchantId} AND statistic_date <![CDATA[>]]> #{statisticDate}
+	</update>
+	
+	<select id="selectMerchantDaily" resultType="com.jbb.mgt.core.domain.FinMerchantStatisticDaily">
+		SELECT t1.statistic_date AS statisticDate,t1.merchant_id AS merchantId,<include refid="statisticCols"/>
+		WHERE 1=1
+		<if test="merchantIds != null">
+			AND t1.merchant_id in 
+			<foreach item="merchantId" index="index" collection="merchantIds" open="(" separator="," close=")">
+					#{merchantId}
+			</foreach>
+		</if>
+			AND t1.statistic_date <![CDATA[>=]]> #{startDate}
+		<if test="endDate != null">
+			AND t1.statistic_date <![CDATA[<=]]> #{endDate}
+		</if>
+		GROUP BY t1.statistic_date
+	</select>
+	
+	<select id="selectMerchantCompare" resultType="com.jbb.mgt.core.domain.FinMerchantStatisticDaily">
+		SELECT t1.statistic_date AS statisticDate,t1.merchant_id AS merchantId,h5.`name` AS h5Name,<include refid="statisticCols"/>
+		LEFT JOIN mgt_h5_merchants h5 ON t1.merchant_id=h5.merchant_id
+		WHERE 1=1
+		<if test="merchantIds != null">
+			AND t1.merchant_id in 
+			<foreach item="merchantId" index="index" collection="merchantIds" open="(" separator="," close=")">
+					#{merchantId}
+			</foreach>
+		</if>
+			AND t1.statistic_date <![CDATA[>=]]> #{startDate}
+		<if test="endDate != null">
+			AND t1.statistic_date <![CDATA[<=]]> #{endDate}
+		</if>
+		GROUP BY t1.merchant_id
+	</select>
+	
+	<select id="selectEventLogByEventValue" resultType="com.jbb.mgt.core.domain.FinMerchantStatisticDaily">
+		select 
+		t1.statistic_date as statisticDate,
+		t1.merchant_id as merchantId,
+		fm.amount AS amount ,
+		fm.expense AS expense,
+		t2.registerCnt as totalRegisterCnt, 
+		t1.uvCnt As uvCnt
+		from (
+			SELECT
+			l.event_label as merchant_id, DATE(l.creation_date) as statistic_date, COUNT(DISTINCT l.cookie_id) AS uvCnt 
+			From mgt_user_event_logs l
+			where  l.creation_date &gt;= #{startDate} AND l.creation_date &lt; #{endDate} AND l.event_action = 'clickH5' AND l.event_name = 'addmore'
+			group by l.event_label , DATE(l.creation_date)
+		) t1 
+		left join (
+			SELECT
+			l.event_value as merchant_id, DATE(l.creation_date) as statistic_date, COUNT(DISTINCT l.user_id) AS registerCnt 
+			From mgt_user_event_logs l
+			where  l.creation_date &gt;= #{startDate} AND l.creation_date &lt; #{endDate} AND l.event_action = 'register' AND l.event_name = 'userMerchant' AND l.event_label= 'merchantId'
+			group by l.event_value , DATE(l.creation_date)
+		) t2 on t1.statistic_date = t2.statistic_date and t1.merchant_id = t2.merchant_id
+		left join  mgt_fin_merchant_statistic_daily fm on fm.statistic_date = t1.statistic_date and fm.merchant_id = t1.merchant_id
+		order by t1.statistic_date
+	</select>
+
+	<update id="updateMerchantList">
+		UPDATE mgt_fin_merchant_statistic_daily
+		SET `status` = 1
+		WHERE
+		<foreach collection="list" index="index" item="item" separator="OR">
+			(statistic_date = DATE(#{item.statisticDate}) AND merchant_id = #{item.merchantId})
+		</foreach>
+	</update>
+
+</mapper>

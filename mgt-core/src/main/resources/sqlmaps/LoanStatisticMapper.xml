@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.LoanStatisticMapper" >
+	<select id="getLoanStatistics" resultType="com.jbb.mgt.core.domain.LoanStatistic">
+		SELECT
+			DATE(xar.loan_date) AS loanDate,
+			COUNT(1) AS loanCnt,
+			COUNT(CASE WHEN xar.`status` = 4 THEN 1 ELSE NULL END) AS overdueCnt,
+			SUM(IFNULL(xar.amount, 0)) AS amount,
+			SUM(IF (xar.`status` = 4,IFNULL(xar.amount, 0),0)) AS overdueAmount,
+			SUM(IFNULL(xar.service_fee, 0)) AS serviceFee,
+			SUM(IF (xar.`status` = 4,IFNULL(xar.service_fee, 0),0)) AS overdueServiceFee,
+			SUM(IFNULL(xar.amount, 0) + IFNULL(xar.service_fee, 0)) AS repayment,
+			SUM(IF (xar.`status` = 99,IFNULL(xar.amount, 0) + IFNULL(xar.service_fee, 0),0)) AS actualRepayment
+	   FROM
+		    mgt_xjl_apply_records xar
+	   WHERE
+			xar.`status` IN (3, 4, 99)
+			<if test="orgId != null">
+			AND xar.org_id = #{orgId}
+			</if>
+			<if test="startDate != null">
+			AND xar.loan_date<![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null">
+			AND xar.loan_date <![CDATA[<]]> #{endDate}
+			</if>
+	  GROUP BY DATE(xar.loan_date)
+	  ORDER BY xar.loan_date DESC
+	</select>
+</mapper> 
+

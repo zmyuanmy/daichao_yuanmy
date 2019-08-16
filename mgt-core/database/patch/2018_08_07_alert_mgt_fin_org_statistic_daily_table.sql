@@ -1,0 +1,1 @@
+alter table mgt_fin_org_statistic_daily add manul_amount int;

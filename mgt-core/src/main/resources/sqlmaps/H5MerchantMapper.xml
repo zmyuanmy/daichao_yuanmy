@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.H5MerchantMapper">
+
+	<sql id="h5Merchant">
+		m.merchant_id AS merchantId, m.name AS name, m.short_name AS shortName,
+		m.url AS url, m.logo AS logo, m.desc1 AS desc1, m.desc2 AS desc2, m.desc3 AS desc3,
+		m.creator AS creator, m.creation_date AS creationDate
+	</sql>
+	<insert id="insertH5Merchant">
+		INSERT INTO mgt_h5_merchants
+		(name, short_name, url, logo, desc1, desc2, desc3, creator, creation_date)
+		VALUES (#{name}, #{shortName}, #{url}, #{logo}, #{desc1}, #{desc2}, #{desc3},
+			#{creator}, #{creationDate})
+	</insert>
+
+	<select id="selectH5Merchants" resultType="com.jbb.mgt.core.domain.H5Merchant">
+		SELECT <include refid="h5Merchant"/>
+		FROM mgt_h5_merchants m
+	</select>
+
+	<update id="updateH5Merchant">
+		UPDATE mgt_h5_merchants
+		SET name = #{name}, short_name = #{shortName}, url = #{url}, logo = #{logo}, desc1 = #{desc1},
+			desc2 = #{desc2}, desc3 = #{desc3}, creator =#{creator}
+		WHERE merchant_id = #{merchantId}
+	</update>
+
+	<select id="selectH5merchantById" resultType="com.jbb.mgt.core.domain.H5Merchant">
+		SELECT <include refid="h5Merchant"/>
+		FROM mgt_h5_merchants m
+		WHERE merchant_id = #{merchantId}
+	</select>
+
+	<select id="selectH5merchantByChannelCode" resultType="com.jbb.mgt.core.domain.H5Merchant">
+		SELECT <include refid="h5Merchant"/>
+		FROM mgt_channels c
+		JOIN mgt_h5_merchants m ON c.merchant_id = m.merchant_id
+		WHERE c.channel_code = #{channelCode}
+	</select>
+
+</mapper>

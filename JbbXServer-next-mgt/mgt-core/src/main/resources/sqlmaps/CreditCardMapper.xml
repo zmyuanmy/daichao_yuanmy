@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.CreditCardMapper">
+	
+	<sql id="creditCardCols">
+		mc.credit_id AS creditId, mc.bank_code AS bankCode, mc.bank_name AS bankName, mc.bank_url AS bankUrl, mc.card_img_url AS cardImgUrl,
+		mc.tag_name AS tagName, mc.tag_color AS tagColor, mc.credit_short_name AS creditShortName, mc.credit_name AS creditName, mc.credit_desc AS creditDesc,
+		mc.gift_logo AS giftLogo, mc.gift_desc AS giftDesc, mc.detailed_desc AS detailedDesc, mc.weight AS weight, mc.is_deleted AS isDeleted,
+		mc.creation_date AS creationDate,mc.apply_cnt AS applyCnt
+	</sql>
+	
+	<sql id="categoriresCols">
+		mccc.category_id AS categoryId, mccc.`name` AS `name`, mccc.`desc` AS `desc`, mccc.detail_message AS detailMessage,
+		mccc.icon_url AS iconUrl, mccc.desc_color AS descColor
+	</sql>
+	
+	<select id="selectCreditCardByCategoryId" resultType="com.jbb.mgt.core.domain.CreditCard">
+		SELECT <include refid="creditCardCols"/> FROM mgt_credit_cards mc
+		LEFT JOIN mgt_credit_categorie_cards car ON mc.credit_id = car.credit_id
+		LEFT JOIN mgt_credit_card_categories cat ON car.category_id=cat.category_id
+		WHERE  car.category_id=#{categoryId} AND mc.is_deleted =0 ORDER BY mc.weight DESC LIMIT 6
+	</select>
+	
+	<resultMap id="cardMap" type="com.jbb.mgt.core.domain.CreditCard">
+			<id property="creditId" column="creditId" />
+			<result property="bankCode" column="bankCode" />
+			<result property="bankName" column="bankName" />
+			<result property="bankUrl" column="bankUrl" />
+			<result property="cardImgUrl" column="cardImgUrl" />
+			<result property="tagName" column="tagName" />
+			<result property="tagColor" column="tagColor" />
+			<result property="creditShortName" column="creditShortName" />
+			<result property="creditName" column="creditName" />
+			<result property="creditDesc" column="creditDesc" />
+			<result property=" giftLogo" column=" giftLogo" />
+			<result property="giftDesc" column="giftDesc" />
+			<result property="detailedDesc" column="detailedDesc" />
+			<result property="weight" column="weight" />
+			<result property="isDeleted" column="isDeleted" />
+			<result property="creationDate" column="creationDate" />
+			<result property="applyCnt" column="applyCnt" />
+			<collection property="cardCategories" ofType="com.jbb.mgt.core.domain.CreditCardCategorie"
+				select="selectCardCategorieByCreditId" column="{creditId=creditId}">
+			</collection>
+		</resultMap>
+	
+	<select id="selectCardCategorieByCreditId" resultType="com.jbb.mgt.core.domain.CreditCardCategorie">
+		SELECT <include refid="categoriresCols"/> FROM mgt_credit_categorie_cards car
+		LEFT JOIN mgt_credit_cards mc ON mc.credit_id = car.credit_id
+		LEFT JOIN mgt_credit_card_categories mccc ON car.category_id=mccc.category_id
+		WHERE car.credit_id = #{creditId}
+	</select>	
+	
+	<select id="selectCreditCardByCity" resultMap="cardMap">
+		SELECT DISTINCT mc.credit_id,<include refid="creditCardCols"/> FROM mgt_credit_cards mc
+		LEFT JOIN mgt_credit_categorie_cards car ON mc.credit_id = car.credit_id
+		LEFT JOIN mgt_credit_card_categories cat ON car.category_id=cat.category_id
+		WHERE 1=1
+		<if test="categoryId!=null and categoryId>0">
+			AND car.category_id=#{categoryId}
+		</if>
+		<if test="isDeleted!=null">
+			AND mc.is_deleted=#{isDeleted}
+		</if>
+		<if test="startDate!=null">
+			AND mc.creation_date <![CDATA[>=]]> #{startDate}
+		</if>
+		<if test="endDate!=null">
+			AND mc.creation_date <![CDATA[<]]>#{endDate}
+		</if>
+		ORDER BY mc.is_deleted ASC,mc.weight DESC
+	</select>
+	
+	<select id="selectCreditCardByCity_COUNT" resultType="Long">
+		SELECT COUNT(DISTINCT mc.credit_id) FROM mgt_credit_cards mc
+		LEFT JOIN mgt_credit_categorie_cards car ON mc.credit_id = car.credit_id
+		LEFT JOIN mgt_credit_card_categories cat ON car.category_id=cat.category_id
+		WHERE 1=1
+		<if test="categoryId!=null and categoryId>0">
+			AND car.category_id=#{categoryId}
+		</if>
+		<if test="isDeleted!=null">
+			AND mc.is_deleted=#{isDeleted}
+		</if>
+		<if test="startDate!=null">
+			AND mc.creation_date <![CDATA[>=]]> #{startDate}
+		</if>
+		<if test="endDate!=null">
+			AND mc.creation_date <![CDATA[<]]>#{endDate}
+		</if>
+	</select>
+	
+	<select id="selectCreditCardById" resultType="com.jbb.mgt.core.domain.CreditCard">
+		SELECT <include refid="creditCardCols"/> FROM mgt_credit_cards mc
+		WHERE mc.credit_id=#{creditId}
+	</select>
+	
+	<insert id="insertCreditCard" useGeneratedKeys="true" keyProperty="creditId">
+		INSERT INTO mgt_credit_cards (bank_code, bank_name, bank_url, card_img_url, tag_name, tag_color, credit_short_name,
+		credit_name, credit_desc, gift_logo, gift_desc, detailed_desc, weight, is_deleted) 
+		VALUES (#{bankCode}, #{bankName}, #{bankUrl}, #{cardImgUrl}, #{tagName}, #{tagColor}, #{creditShortName},
+		#{creditName}, #{creditDesc}, #{giftLogo}, #{giftDesc}, #{detailedDesc}, #{weight}, #{isDeleted})
+	</insert>
+	
+	<update id="updateCreditCard">
+		UPDATE mgt_credit_cards SET bank_code=#{bankCode}, bank_name=#{bankName}, bank_url=#{bankUrl}, 
+		card_img_url=#{cardImgUrl}, tag_name=#{tagName}, tag_color=#{tagColor}, credit_short_name=#{creditShortName},
+		credit_name=#{creditName},credit_desc=#{creditDesc}, gift_logo=#{giftLogo}, gift_desc=#{giftDesc},
+		detailed_desc=#{detailedDesc}, weight=#{weight}, is_deleted=#{isDeleted}
+		WHERE credit_id=#{creditId}
+	</update>
+	
+	<insert id="insertCreditCategorieCard">
+		INSERT INTO mgt_credit_categorie_cards (category_id, credit_id) VALUES (#{categoryId}, #{creditId})
+	</insert>
+	
+	<delete id="deleteCreditCategorieCard">
+		DELETE FROM mgt_credit_categorie_cards WHERE credit_id = #{creditId}
+	</delete>
+	
+	<insert id="insertCreditCardArea">
+		INSERT INTO mgt_credit_card_areas (zone_id, credit_id) VALUES (#{zoneId}, #{creditId})
+	</insert>
+	
+	<delete id="deleteCreditCardArea">
+		DELETE FROM mgt_credit_card_areas WHERE credit_id = #{creditId}
+	</delete>
+	
+	<select id="selectCity" resultType="com.jbb.mgt.core.domain.City">
+		SELECT cit.zone_id AS zoneId, cit.province_id AS zoneId, cit.province_name AS provinceName, cit.city_id AS cityId, cit.city_name AS cityName
+		FROM mgt_citys cit 
+	</select>
+	
+	<update id="deleteCreditCard">
+		UPDATE mgt_credit_cards 
+		SET 
+			is_deleted=1
+		WHERE 
+			credit_id=#{creditId}
+	</update>
+	
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.UserLcDeviceMapper">
+
+	<insert id="insertUserLcDevice">
+		INSERT INTO mgt_user_lc_devices(
+		object_id, user_id, device_type, installation_id, device_token, status, app_name
+		) VALUES (#{objectId}, #{userId}, #{deviceType}, #{installationId}, #{deviceToken}, #{status}, #{appName})
+		on duplicate key update user_id = VALUES(user_id), device_type = VALUES (device_type), installation_id = VALUES (installation_id),
+		device_token = VALUES (device_token), status = VALUES (status), app_name = VALUES (app_name)
+	</insert>
+
+	<sql id="UserLcDeviceInfo">
+		ud.object_id AS objectId, ud.user_id AS userId, ud.device_type AS deviceType, ud.installation_id AS installationId, ud.device_token AS deviceToken,
+		ud.creation_date AS creationDate, ud.update_date AS updateDate, ud.status AS status, ud.app_name AS appName
+	</sql>
+
+	<select id="selectUserLcDeviceListByUserId" resultType="com.jbb.mgt.core.domain.UserLcDevice">
+		SELECT <include refid="UserLcDeviceInfo"/>
+		FROM mgt_user_lc_devices ud
+		WHERE ud.user_id = #{userId} AND ud.status != 1
+	</select>
+
+	<select id="updateUserLcDevice">
+		UPDATE mgt_user_lc_devices SET status = #{status}
+		WHERE object_id = #{objectId} and user_id = #{userId}
+	</select>
+
+	<select id="selectUserLcDeviceListByObjectId" resultType="com.jbb.mgt.core.domain.UserLcDevice">
+		SELECT <include refid="UserLcDeviceInfo"/>
+		FROM mgt_user_lc_devices ud
+		WHERE ud.object_id = #{objectId}
+	</select>
+
+</mapper>

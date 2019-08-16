@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.UserFaceIdBizNoMapper" >
+	<sql id="userFaceIdBigNoCols">
+	    mufbz.user_id AS userId,
+	    mufbz.random_number AS randomNumber,
+	    mufbz.biz_no AS bizNo,
+	    mufbz.tokenrandomnumber AS tokenRandomNumber,
+	    mufbz.tokenvideo AS tokenVideo,
+	    mufbz.random_data AS randomData,
+	    mufbz.validatevideo_data AS validateVideoData,
+	    mufbz.verify_data AS verifyData
+	</sql>
+	<insert id="insertUserFaceIdBizNo">
+		INSERT INTO mgt_user_faceid_biz_no (user_id,random_number,biz_no,tokenrandomnumber,tokenvideo,random_data,validatevideo_data,verify_data)
+		VALUES (#{userId},#{randomNumber},#{bizNo},#{tokenRandomNumber},#{tokenVideo},#{randomData},#{validateVideoData},#{verifyData})
+	</insert>
+	
+	<select id="selectUserFaceIdBizNoByRandom" resultType="com.jbb.mgt.core.domain.UserFaceIdBizNo">
+        SELECT <include refid="userFaceIdBigNoCols"/>
+        FROM mgt_user_faceid_biz_no mufbz
+        WHERE mufbz.user_id = #{userId}
+		AND mufbz.random_number = #{randomNumber}
+    </select>
+    
+    <update id="updateUserFaceIdBizNo">
+		UPDATE mgt_user_faceid_biz_no mufbz
+		SET 
+			mufbz.random_number= #{randomNumber},
+			mufbz.tokenrandomnumber= #{tokenRandomNumber},
+			mufbz.tokenvideo= #{tokenVideo},
+			mufbz.random_data= #{randomData},
+			mufbz.validatevideo_data= #{validateVideoData},
+			mufbz.verify_data= #{verifyData}
+		WHERE 
+			mufbz.user_id = #{userId} AND mufbz.biz_no = #{bizNo}
+	</update>
+</mapper> 
+

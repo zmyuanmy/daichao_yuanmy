@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.BossOrderMapper" >
+
+    <sql id="bossOrderCols">
+        b.order_id AS orderId,
+        b.user_id AS userId,
+        b.apply_id AS applyId,
+        b.status AS status,
+        b.notify_status AS notifyStatus,
+        b.decision AS decision,
+        b.result AS result,
+        b.creation_date AS creationDate,
+        b.update_date AS updateDate
+    </sql>
+
+    <insert id="insertBossOrder">
+		INSERT INTO mgt_xjl_boss_order
+			(order_id, user_id, apply_id,status, notify_status, decision,result, creation_date, update_date)
+		VALUES
+			(#{orderId}, #{userId}, #{applyId}, #{status}, #{notifyStatus}, #{decision},#{result},#{creationDate},#{updateDate})
+	</insert>
+
+    <update id="updateBossOrder">
+		UPDATE mgt_xjl_boss_order
+		SET
+		status = #{status},
+		notify_status = #{notifyStatus},
+		decision = #{decision},
+		result = #{result},
+		update_date = #{updateDate}
+		WHERE order_id = #{orderId}
+	</update>
+
+    <select id="selectBossOrderByApplyId" resultType="com.jbb.mgt.core.domain.BossOrder">
+        SELECT <include refid="bossOrderCols"/>
+        FROM mgt_xjl_boss_order b
+        WHERE b.apply_id = #{applyId}
+    </select>
+
+    <select id="selectBossOrderByOrderId" resultType="com.jbb.mgt.core.domain.BossOrder">
+        SELECT <include refid="bossOrderCols"/>
+        FROM mgt_xjl_boss_order b
+        WHERE b.order_id = #{orderId}
+    </select>
+</mapper> 
+

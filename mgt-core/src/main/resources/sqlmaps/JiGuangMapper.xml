@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.JiGuangMapper">
+	<insert id="saveUserDevice">
+		INSERT INTO mgt_user_jiguang_devices (user_id, device_type, registration_id,alias,application_id,creation_date,status,tag)
+		VALUES (#{userId}, #{deviceType}, #{registrationId},#{alias},#{applicationId},#{creationDate},#{status},#{tag})
+		ON DUPLICATE KEY UPDATE  
+			user_id = #{userId},
+			status = #{status},
+			tag = #{tag},
+			alias = #{alias},
+			update_date = CURRENT_TIMESTAMP() 
+	</insert>
+</mapper>

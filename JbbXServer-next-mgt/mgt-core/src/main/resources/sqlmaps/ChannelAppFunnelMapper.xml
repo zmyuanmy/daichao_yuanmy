@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.ChannelAppFunnelMapper">
+
+    <resultMap id="channelAppFunnelMap" type="com.jbb.mgt.core.domain.ChannelAppFunnel">
+        <id property="statisticDate" column="statisticDate"/>
+        <id property="channelCode" column="channelCode"/>
+        <result property="channelName" column="channelName"/>
+        <result property="loginNum" column="loginNum"/>
+        <result property="loginNumNew" column="loginNumNew"/>
+        <result property="loginNumOld" column="loginNumOld"/>
+        <result property="uvCnt" column="uvCnt"/>
+        <result property="uvCntNew" column="uvCntNew"/>
+        <result property="uvCntOld" column="uvCntOld"/>
+        <result property="puvCnt" column="puvCnt"/>
+        <result property="puvCntNew" column="puvCntNew"/>
+        <result property="puvCntOld" column="puvCntOld"/>
+        <association property="salesAccount" javaType="com.jbb.mgt.core.domain.Account">
+            <id property="accountId" column="salesId"/>
+            <result property="nickname" column="nickname"/>
+        </association>
+    </resultMap>
+
+    <select id="getChannelAppFunnelDaily" resultMap="channelAppFunnelMap">
+        SELECT
+            mf.statistic_date as statisticDate,
+            SUM(mf.login_num) AS loginNum,
+            SUM(mf.login_num_new) AS loginNumNew,
+            SUM(mf.login_num_old) AS loginNumOld,
+            SUM(mf.uv_cnt) AS uvCnt,
+            SUM(mf.uv_cnt_new) AS uvCntNew,
+            SUM(mf.uv_cnt_old) AS uvCntOld,
+            SUM(mf.puv_cnt) AS puvCnt,
+            SUM(mf.puv_cnt_new) AS puvCntNew,
+            SUM(mf.puv_cnt_old) AS puvCntOld
+        FROM
+            mgt_channel_app_funnel mf
+            LEFT JOIN mgt_channels c ON mf.channel_code = c.channel_code
+        WHERE
+            mf.statistic_date &gt;= #{startDate}
+            <if test="channelCodes!=null">
+                AND mf.channel_code in
+                <foreach item="channelCode" index="index" collection="channelCodes" open="(" separator="," close=")">
+                    #{channelCode}
+                </foreach>
+            </if>
+            <if test="null != groupName">
+                <if test="groupName == 'undefined' ">
+                    AND c.group_name IS NULL
+                </if>
+                <if test="groupName != 'undefined' ">
+                    AND c.group_name = #{groupName}
+                </if>
+            </if>
+            <if test="salesId !=null">
+                AND c.creator = #{salesId}
+            </if>
+            <if test="endDate != null">
+                AND mf.statistic_date &lt; #{endDate}
+            </if>
+        GROUP BY mf.statistic_date
+        ORDER BY mf.statistic_date
+    </select>
+    <select id="getChannelAppFunnelCompare" resultMap="channelAppFunnelMap">
+        SELECT
+            mf.channel_code AS channelCode,
+            c.channel_name AS channelName,
+            SUM(mf.login_num) AS loginNum,
+            SUM(mf.login_num_new) AS loginNumNew,
+            SUM(mf.login_num_old) AS loginNumOld,
+            SUM(mf.uv_cnt) AS uvCnt,
+            SUM(mf.uv_cnt_new) AS uvCntNew,
+            SUM(mf.uv_cnt_old) AS uvCntOld,
+            SUM(mf.puv_cnt) AS puvCnt,
+            SUM(mf.puv_cnt_new) AS puvCntNew,
+            SUM(mf.puv_cnt_old) AS puvCntOld,
+            c.creator AS salesId,
+            ma.nickname AS nickname
+        FROM
+            mgt_channel_app_funnel mf
+            LEFT JOIN mgt_channels c ON mf.channel_code = c.channel_code
+            LEFT JOIN mgt_accounts ma ON ma.account_id = c.creator
+        WHERE
+            mf.statistic_date &gt;= #{startDate}
+            <if test="endDate != null">
+                AND mf.statistic_date &lt; #{endDate}
+            </if>
+            <if test="salesId !=null">
+                AND c.creator = #{salesId}
+            </if>
+        GROUP BY mf.channel_code
+    </select>
+</mapper> 
+

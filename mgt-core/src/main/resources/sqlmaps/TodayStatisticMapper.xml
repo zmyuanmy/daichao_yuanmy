@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.TodayStatisticMapper">
+
+	<select id="getTodayStatistic" resultType="com.jbb.mgt.core.domain.TodayStatistic">
+		SELECT registerCnt,cnt,t2.newCnt,t3.oldCnt,botCnt,t2.newBotCnt,t3.oldBotCnt,IFNULL(loanCnt/cnt,0) AS loanRate,
+        IFNULL(t2.newLoanCnt/cnt,0) AS newLoanRate, IFNULL(t3.oldLoanCnt/cnt,0) AS oldLoanRate, loanCnt,
+			 repaymentCnt,t4.torepaymentCnt,t4.loanAmount,t4.torepaymentFee,t4.torepaymentAmount,
+			t4.torepaymentTotalCnt,t4.loanTotalAmount,t4.torepaymentTotalFee,t4.torepaymentTotalAmount FROM (
+		SELECT COUNT(1) AS registerCnt FROM mgt_org_app_channel_users au1 
+		WHERE au1.org_id = #{orgId} AND au1.creation_date <![CDATA[>=]]> #{startDate} and au1.creation_date <![CDATA[<]]> #{endDate}
+		)t 
+		LEFT JOIN (
+		SELECT COUNT(case when DATEDIFF(xar.creation_date, NOW())=0 THEN 1 ELSE null END ) AS cnt,
+			 count(case when xar.`status` in(1,3,4,5,6,7,99) AND DATEDIFF(xar.creation_date, NOW())=0 then 1 else null end) as botCnt,
+			 count(case when xar.`status` in(3,4,5,99) AND DATEDIFF(xar.loan_date, NOW())=0 then 1 else null end) as loanCnt,
+	      	 count(case when xar.`status` =99 AND DATEDIFF(xar.actual_repayment_date, NOW())=0 then 1 else null end) as repaymentCnt
+	    FROM mgt_xjl_apply_records xar WHERE xar.org_id = #{orgId} 
+		) t1 ON 1=1
+		LEFT JOIN(
+		SELECT count(case when DATEDIFF(xar.creation_date, NOW())=0  then 1 else null end) as newCnt,
+	     	count(case when xar.`status` in(1,3,4,5,6,7,99) AND DATEDIFF(xar.creation_date, NOW())=0  then 1 else null end) as newBotCnt,
+			count(case when xar.`status` in(3,4,5,99) AND DATEDIFF(xar.loan_date, NOW())=0 then 1 else null end) as newLoanCnt
+     	FROM mgt_xjl_apply_records xar WHERE xar.org_id = #{orgId} AND xar.user_id 
+		NOT IN (SELECT xar.user_id FROM mgt_xjl_apply_records xar WHERE xar.`status` in(3,4,5,99)
+		AND xar.loan_date <![CDATA[<]]> #{startDate} AND xar.org_id = #{orgId} GROUP BY xar.user_id) 
+	  ) t2 ON 1=1
+	  	LEFT JOIN(
+	 	SELECT count(case when  DATEDIFF(xar.creation_date, NOW())=0  then 1 else null end) as oldCnt,
+	     	count(case when xar.`status` in(1,3,4,5,6,7,99) AND DATEDIFF(xar.creation_date, NOW())=0  then 1 else null end) as oldBotCnt,
+			count(case when xar.`status` in(3,4,5,99) AND DATEDIFF(xar.loan_date, NOW())=0 then 1 else null end) as oldLoanCnt
+	  	FROM mgt_xjl_apply_records xar WHERE xar.org_id = #{orgId}
+	  	AND xar.user_id IN (SELECT xar.user_id FROM mgt_xjl_apply_records xar WHERE xar.`status` in(3,4,5,99) 
+		AND xar.loan_date <![CDATA[<]]> #{startDate} AND xar.org_id = #{orgId} GROUP BY xar.user_id) 
+	)t3 ON 1=1
+		LEFT JOIN (
+		SELECT count(case when DATEDIFF(xar.repayment_date,NOW())=1 then 1 else null end) as torepaymentCnt,
+		    IFNULL(SUM(case when DATEDIFF(xar.repayment_date,NOW())=1 then xar.amount else 0 end),0) as loanAmount,
+		    IFNULL(SUM(case when DATEDIFF(xar.repayment_date,NOW())=1 then xar.service_fee else 0 end),0) as torepaymentFee,
+		    IFNULL(SUM(case when DATEDIFF(xar.repayment_date,NOW())=1 then xar.amount+xar.service_fee else 0 end),0) as torepaymentAmount,
+		    count(1) as torepaymentTotalCnt,
+			IFNULL(SUM(xar.amount),0) as loanTotalAmount,
+			IFNULL(SUM(xar.service_fee ),0) as torepaymentTotalFee,
+			IFNULL(SUM(xar.amount+xar.service_fee),0)as torepaymentTotalAmount
+        FROM mgt_xjl_apply_records xar WHERE xar.`status` in(3,4,5) AND xar.org_id = #{orgId} AND xar.repayment_date <![CDATA[>]]> #{startDate} ) t4 ON 1=1
+	</select>
+
+</mapper>

@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.ChannelFunnelMapper" >
+
+	<resultMap id="channelFunnelMap" type="com.jbb.mgt.core.domain.ChannelFunnel">
+		<id property="statisticDate" column="statisticDate" />
+		<id property="channelCode" column="channelCode" />
+		<result property="channelName" column="channelName" />
+		<result property="price" column="price" />
+		<result property="mode" column="mode" />
+		<result property="pv" column="pv" />
+		<result property="uv" column="uv" />
+		<result property="registerUv" column="registerUv" />
+		<result property="registerP" column="registerP" />
+		<result property="addmoreSubmitCnt" column="addmoreSubmitCnt" />
+		<result property="addmoreSubmitP" column="addmoreSubmitP" />
+		<result property="successDownloadCnt" column="successDownloadCnt" />
+		<result property="successDownloadP" column="successDownloadP" />
+		<result property="pUv" column="pUv" />
+		<result property="addmoreInitCnt" column="addmoreInitCnt" />
+		<result property="successInitCnt" column="successInitCnt" />
+		<result property="appLoginCnt" column="appLoginCnt" />
+		<result property="pClickCnt" column="pClickCnt" />
+		<result property="pClickUv" column="pClickUv" />
+		<result property="channleSettlementCnt" column="channleSettlementCnt" />
+        <result property="pUvCost" column="pUvCost" />
+		<association property="salesAccount" javaType="com.jbb.mgt.core.domain.Account">
+			<id property="accountId" column="salesId" />
+			<result property="nickname" column="nickname" />
+		</association>
+	</resultMap>
+
+	<select id="getChannelFunnelDaily" resultMap="channelFunnelMap">
+		SELECT
+				c1.statisticDate,
+				<if test="channelCodes!=null and channelCodes.length==1">
+				c3.price,
+				c3.mode,
+				</if>
+				c2.pv,
+				c2.uv,
+				c1.uv AS registerUv,
+				CASE  WHEN c1.uv IS NULL OR ifnull(c2.uv, 0) = 0 THEN 0
+			         ELSE  (c1.uv / c2.uv) END AS registerP,
+			    c1.addmoreSubmitCnt,
+			   CASE   WHEN c1.addmoreSubmitCnt IS NULL OR ifnull(c1.uv, 0) = 0 THEN 0
+			         ELSE (c1.addmoreSubmitCnt / c1.uv) END AS addmoreSubmitP,
+			   c1.successDownloadCnt,
+			   CASE   WHEN c1.successDownloadCnt IS NULL  OR ifnull(c1.addmoreSubmitCnt, 0) = 0 THEN 0
+			         ELSE (c1.successDownloadCnt / c1.addmoreSubmitCnt) END AS successDownloadP,
+			  c1.appLoginCnt,
+			  c1.pUv, c1.addmoreInitCnt AS addmoreInitCnt,
+			  c1.successInitCnt AS successInitCnt,
+			  c1.pClickCnt AS pClickCnt, c1.pClickUv AS pClickUv,
+			  c1.channleSettlementCnt AS channleSettlementCnt,
+			  IFNULL(c3.expense,0)/IFNULL(c1.pUv,0) AS pUvCost
+		FROM
+				(
+					SELECT
+						mcf.statistic_date AS statisticDate,
+						mcf.channel_code AS channelCode,
+						c.channel_name AS channelName,
+			            avg(ifnull(c.cpa_price, 0)) AS price,
+						mcf.h5_type AS h5Type,
+						mcf.is_delegate AS isDelegate,
+						sum(mcf.uv) AS uv,
+						sum(mcf.addmore_init_cnt) AS addmoreInitCnt,
+						sum(mcf.addmore_submit_cnt) AS addmoreSubmitCnt,
+						sum(mcf.success_init_cnt) AS successInitCnt,
+						sum(mcf.success_download_cnt) AS successDownloadCnt,
+						sum(mcf.app_login_cnt) AS appLoginCnt,
+						sum(mcf.p_click_cnt) AS pClickCnt,
+						sum(mcf.p_click_uv) AS pClickUv,
+						sum(mcf.p_uv) AS pUv,
+						sum(mcf.channle_settlement_cnt) AS channleSettlementCnt
+					FROM
+						mgt_channel_funnel mcf
+					LEFT JOIN mgt_channels c ON mcf.channel_code = c.channel_code
+					WHERE 1 = 1
+						<if test="channelCodes!=null">
+							AND mcf.channel_code in
+							<foreach item="channelCode" index="index" collection="channelCodes" open="(" separator="," close=")">
+								#{channelCode}
+							</foreach>
+						</if>
+						<if test="uType != null">
+						AND mcf.u_type = #{uType}
+						</if>
+						<if test="h5Type != null">
+						AND mcf.h5_type = #{h5Type}
+						</if>
+
+						<if test="isDelegate != null">
+							AND mcf.is_delegate = #{isDelegate}
+						</if>
+						<if test="salesId !=null">
+							AND c.creator = #{salesId}
+						</if>
+						GROUP BY mcf.statistic_date) c1
+		 LEFT JOIN (
+						SELECT
+							mcp.statistic_date,
+							mcp.channel_code,
+							sum(mcp.pv) AS pv,
+							sum(mcp.uv) AS uv
+						FROM
+							mgt_channel_pv mcp
+						WHERE
+		 					1 = 1
+						<if test="channelCodes!=null">
+							AND mcp.channel_code in
+							<foreach item="channelCode" index="index" collection="channelCodes" open="(" separator="," close=")">
+								#{channelCode}
+							</foreach>
+						</if>
+						<if test="h5Type != null">
+							AND mcp.h5_type = #{h5Type}
+						</if>
+						<if test="isDelegate != null">
+							AND mcp.is_delegate = #{isDelegate}
+						</if>
+						GROUP BY mcp.statistic_date
+						)c2 ON c1.statisticDate = c2.statistic_date
+		LEFT JOIN (
+					SELECT
+						msd.statistic_date,
+						msd.channel_code,
+						<if test="channelCodes!=null and channelCodes.length==1">
+							msd.mode,
+							msd.price,
+						</if>
+						SUM( msd.expense ) AS expense
+						FROM mgt_fin_channel_statistic_daily msd
+						WHERE msd.statistic_date != DATE( NOW( ) )
+						<if test="channelCodes!=null">
+							AND msd.channel_code in
+							<foreach item="channelCode" index="index" collection="channelCodes" open="(" separator="," close=")">
+								#{channelCode}
+							</foreach>
+						</if>
+						GROUP BY msd.statistic_date
+					<if test="flag">
+						UNION ALL
+							SELECT
+							mgtcf.statistic_date,
+							mgtcf.channel_code,
+							<if test="channelCodes!=null and channelCodes.length==1">
+								c.mode,
+								(case WHEN c.`mode`=4  THEN c.uv_price  ELSE c.cpa_price END) AS price,
+							</if>
+							SUM(( CASE WHEN c.`mode` = 4 THEN c.uv_price * IFNULL( mgtcp.uv, 0 ) ELSE c.cpa_price *  IFNULL(mgtcf.channleSettlementCnt,0) END )) AS expense
+							FROM
+							(
+							SELECT
+								mcf.statistic_date,
+								mcf.channel_code,
+								sum(mcf.channle_settlement_cnt) AS channleSettlementCnt
+							FROM
+							mgt_channel_funnel mcf
+							LEFT JOIN mgt_channels c ON mcf.channel_code = c.channel_code
+							WHERE mcf.statistic_date = DATE( NOW( ) )
+							<if test="channelCodes!=null">
+								AND mcf.channel_code in
+								<foreach item="channelCode" index="index" collection="channelCodes" open="(" separator="," close=")">
+									#{channelCode}
+								</foreach>
+							</if>
+							<if test="uType != null">
+								AND mcf.u_type = #{uType}
+							</if>
+							<if test="salesId !=null">
+								AND c.creator = #{salesId}
+							</if>
+							GROUP BY mcf.statistic_date) mgtcf
+							LEFT JOIN (
+							SELECT
+								mcp.statistic_date,
+								mcp.channel_code,
+								sum(mcp.uv) AS uv
+							FROM
+							mgt_channel_pv mcp
+							WHERE mcp.statistic_date = DATE( NOW( ) )
+							<if test="channelCodes!=null">
+								AND mcp.channel_code in
+								<foreach item="channelCode" index="index" collection="channelCodes" open="(" separator="," close=")">
+									#{channelCode}
+								</foreach>
+							</if>
+							GROUP BY mcp.statistic_date
+							)mgtcp ON mgtcf.statistic_date = mgtcp.statistic_date
+							LEFT JOIN mgt_channels c ON mgtcf.channel_code = c.channel_code
+							GROUP BY
+							mgtcf.statistic_date
+					</if>
+		              ) c3 on c1.statisticDate = c3.statistic_date
+				where
+				c1.statisticDate &gt;= #{startDate}
+				<if test="endDate != null">
+				AND c1.statisticDate &lt; #{endDate}
+				</if>
+				<if test="mode != null and channelCodes!=null and channelCodes.length==1 ">
+				AND	c3.mode=#{mode}
+				</if>
+			GROUP BY
+			c1.statisticDate
+			ORDER BY c1.statisticDate
+	</select>
+
+
+	<select id="getChannelFunnelCompare" resultMap="channelFunnelMap">
+	SELECT
+				c1.channelCode,
+				c1.channelName,
+				(case WHEN cc.`mode`=4  THEN cc.uv_price  ELSE cc.cpa_price END) AS price,
+				cc.mode,
+				c2.pv,
+				c2.uv,
+				c1.uv AS registerUv,
+				CASE  WHEN c1.uv IS NULL OR ifnull(c2.uv, 0) = 0 THEN 0
+			         ELSE  (c1.uv / c2.uv) END AS registerP,
+			    c1.addmoreSubmitCnt,
+			   CASE   WHEN c1.addmoreSubmitCnt IS NULL OR ifnull(c1.uv, 0) = 0 THEN 0
+			         ELSE (c1.addmoreSubmitCnt / c1.uv) END AS addmoreSubmitP,
+			   c1.successDownloadCnt,
+			   CASE   WHEN c1.successDownloadCnt IS NULL  OR ifnull(c1.addmoreSubmitCnt, 0) = 0 THEN 0
+			         ELSE (c1.successDownloadCnt / c1.addmoreSubmitCnt) END AS successDownloadP,
+			  c1.appLoginCnt,
+			  c1.pUv, c1.addmoreInitCnt AS addmoreInitCnt,
+			  c1.successInitCnt AS successInitCnt,
+			  c1.pClickCnt AS pClickCnt, c1.pClickUv AS pClickUv,
+			  c1.channleSettlementCnt AS channleSettlementCnt,
+			  c1.salesId AS salesId,c1.nickname AS nickname,
+			  TRUNCATE(IFNULL(c3.expense,0)/IFNULL(c1.pUv,0)/100,2) AS pUvCost
+		FROM
+				(
+					SELECT
+						mcf.channel_code AS channelCode,
+						c.channel_name AS channelName,
+			            avg(ifnull(c.cpa_price, 0)) AS price,
+						mcf.h5_type AS h5Type,
+						mcf.is_delegate AS isDelegate,
+						sum(mcf.uv) AS uv,
+						sum(mcf.addmore_init_cnt) AS addmoreInitCnt,
+						sum(mcf.addmore_submit_cnt) AS addmoreSubmitCnt,
+						sum(mcf.success_init_cnt) AS successInitCnt,
+						sum(mcf.success_download_cnt) AS successDownloadCnt,
+						sum(mcf.app_login_cnt) AS appLoginCnt,
+						sum(mcf.p_click_cnt) AS pClickCnt,
+						sum(mcf.p_click_uv) AS pClickUv,
+						sum(mcf.p_uv) AS pUv,
+						sum(mcf.channle_settlement_cnt) AS channleSettlementCnt,
+						c.creator AS salesId,
+						ma.nickname AS nickname
+					FROM
+						mgt_channel_funnel mcf
+					LEFT JOIN mgt_channels c ON mcf.channel_code = c.channel_code
+					LEFT JOIN mgt_accounts ma ON ma.account_id = c.creator
+					WHERE
+	            		mcf.statistic_date &gt;= #{startDate}
+					   <if test="endDate != null">
+					   AND mcf.statistic_date &lt; #{endDate}
+				       </if>
+						<if test="uType != null">
+						AND mcf.u_type = #{uType}
+						</if>
+						<if test="h5Type != null">
+						AND mcf.h5_type = #{h5Type}
+						</if>
+
+						<if test="isDelegate != null">
+							AND mcf.is_delegate = #{isDelegate}
+						</if>
+						<if test="salesId !=null">
+							AND c.creator = #{salesId}
+						</if>
+						GROUP BY mcf.channel_code) c1
+		 LEFT JOIN (
+						SELECT
+							mcp.channel_code,
+							sum(mcp.pv) AS pv,
+							sum(mcp.uv) AS uv
+						FROM
+							mgt_channel_pv mcp
+						WHERE
+						mcp.statistic_date &gt;= #{startDate}
+					   <if test="endDate != null">
+					   AND mcp.statistic_date &lt; #{endDate}
+				       </if>
+						<if test="h5Type != null">
+							AND mcp.h5_type = #{h5Type}
+						</if>
+						<if test="isDelegate != null">
+							AND mcp.is_delegate = #{isDelegate}
+						</if>
+						GROUP BY mcp.channel_code
+						)c2 ON c1.channelCode = c2.channel_code
+        LEFT JOIN (
+						SELECT
+							statistic_date,
+							channel_code,
+							SUM(expense) AS expense
+						FROM(
+						SELECT
+							msd.statistic_date,
+							msd.channel_code,
+							SUM( msd.expense ) AS expense
+						FROM mgt_fin_channel_statistic_daily msd
+						WHERE msd.statistic_date != DATE( NOW( ) )
+						AND msd.statistic_date &gt;= #{startDate}
+						<if test="endDate != null">
+							AND msd.statistic_date &lt; #{endDate}
+						</if>
+						GROUP BY msd.channel_code
+					  <if test="flag">
+						  UNION ALL
+						  SELECT
+						  	  mgtcf.statistic_date,
+						  	  mgtcf.channel_code,
+							  ( CASE WHEN c.`mode` = 4 THEN c.uv_price * IFNULL( mgtcp.uv, 0 ) ELSE c.cpa_price *  IFNULL(mgtcf.channleSettlementCnt,0) END ) AS expense
+						  FROM
+						  (
+						  SELECT
+							  mcf.statistic_date,
+							  mcf.channel_code,
+							  sum( mcf.channle_settlement_cnt ) AS channleSettlementCnt
+						  FROM
+						  mgt_channel_funnel mcf
+						  LEFT JOIN mgt_channels c ON mcf.channel_code = c.channel_code
+						  WHERE
+						  mcf.statistic_date = DATE( NOW( ) )
+						  <if test="uType != null">
+							  AND mcf.u_type = #{uType}
+						  </if>
+						  <if test="salesId !=null">
+							  AND c.creator = #{salesId}
+						  </if>
+						  GROUP BY
+						  mcf.channel_code
+						  ) mgtcf
+						  LEFT JOIN (
+						  SELECT
+							  mcp.channel_code,
+							  sum( mcp.uv ) AS uv
+						  FROM
+						  mgt_channel_pv mcp
+						  WHERE
+						  mcp.statistic_date = DATE( NOW( ) )
+						  GROUP BY
+						  mcp.channel_code
+						  ) mgtcp ON mgtcf.channel_code = mgtcp.channel_code
+						  LEFT JOIN mgt_channels c ON mgtcf.channel_code = c.channel_code
+						  GROUP BY
+						  mgtcf.channel_code
+					  </if>
+						) msd
+                        GROUP BY msd.channel_code
+                      ) c3 on c1.channelCode = c3.channel_code
+		   LEFT JOIN mgt_channels cc ON cc.channel_code=c1.channelCode
+		   WHERE 1=1
+				<if test="mode!= null">
+				AND	cc.mode=#{mode}
+				</if>
+				GROUP BY
+				c1.channelCode
+				ORDER BY c1.uv DESC
+			</select>
+
+		<select id="getChannelFunnelCompare_COUNT" resultType="Long">
+			SELECT
+				COUNT( DISTINCT mcf.channel_code )
+				FROM
+			mgt_channel_funnel mcf
+			LEFT JOIN mgt_channels c ON mcf.channel_code = c.channel_code
+			LEFT JOIN mgt_accounts ma ON ma.account_id = c.creator
+			WHERE
+			mcf.statistic_date &gt;= #{startDate}
+			<if test="endDate != null">
+				AND mcf.statistic_date &lt; #{endDate}
+			</if>
+			<if test="uType != null">
+				AND mcf.u_type = #{uType}
+			</if>
+			<if test="h5Type != null">
+				AND mcf.h5_type = #{h5Type}
+			</if>
+
+			<if test="isDelegate != null">
+				AND mcf.is_delegate = #{isDelegate}
+			</if>
+			<if test="salesId !=null">
+				AND c.creator = #{salesId}
+			</if>
+			<if test="mode!= null">
+				AND	c.mode=#{mode}
+			</if>
+		</select>
+
+
+	<select id="getChannelFunnelCompareTotal" resultType="com.jbb.mgt.core.domain.ChannelFunnel">
+		SELECT
+			SUM( c2.pv ) AS pv,
+			SUM( c2.uv ) AS uv,
+			SUM( c1.uv ) AS registerUv,
+			SUM( c1.appLoginCnt ) AS appLoginCnt,
+			SUM( c1.pUv ) AS pUv,
+			SUM( c1.successDownloadCnt ) AS successDownloadCnt,
+			SUM( c1.pClickUv ) AS pClickUv,
+			SUM( c1.channleSettlementCnt ) AS channleSettlementCnt,
+			TRUNCATE(SUM( IFNULL( c3.expense, 0 ) ) / SUM( c1.pUv )/100,2)  AS pUvCost
+		FROM
+		(
+		SELECT
+			mcf.channel_code AS channelCode,
+			sum(mcf.uv) AS uv,
+			sum(mcf.success_download_cnt) AS successDownloadCnt,
+			sum(mcf.app_login_cnt) AS appLoginCnt,
+			sum(mcf.p_click_uv) AS pClickUv,
+			sum(mcf.p_uv) AS pUv,
+			sum(mcf.channle_settlement_cnt) AS channleSettlementCnt
+		FROM
+		mgt_channel_funnel mcf
+		LEFT JOIN mgt_channels c ON mcf.channel_code = c.channel_code
+		LEFT JOIN mgt_accounts ma ON ma.account_id = c.creator
+		WHERE
+		mcf.statistic_date &gt;= #{startDate}
+		<if test="endDate != null">
+			AND mcf.statistic_date &lt; #{endDate}
+		</if>
+		<if test="uType != null">
+			AND mcf.u_type = #{uType}
+		</if>
+		<if test="salesId !=null">
+			AND c.creator = #{salesId}
+		</if>
+		GROUP BY mcf.channel_code) c1
+		LEFT JOIN (
+		SELECT
+			mcp.channel_code,
+			sum(mcp.pv) AS pv,
+			sum(mcp.uv) AS uv
+		FROM
+		mgt_channel_pv mcp
+		WHERE
+		mcp.statistic_date &gt;= #{startDate}
+		<if test="endDate != null">
+			AND mcp.statistic_date &lt; #{endDate}
+		</if>
+		GROUP BY mcp.channel_code
+		)c2 ON c1.channelCode = c2.channel_code
+		LEFT JOIN (
+		SELECT
+			channel_code,
+			SUM(expense) AS expense
+		FROM(
+		SELECT
+			msd.channel_code,
+			SUM( msd.expense ) AS expense
+		FROM mgt_fin_channel_statistic_daily msd
+		WHERE msd.statistic_date != DATE( NOW( ) )
+		AND msd.statistic_date &gt;= #{startDate}
+		<if test="endDate != null">
+			AND msd.statistic_date &lt; #{endDate}
+		</if>
+		GROUP BY msd.channel_code
+		<if test="flag">
+			UNION ALL
+			SELECT
+				mgtcf.channel_code,
+				( CASE WHEN c.`mode` = 4 THEN c.uv_price * IFNULL( mgtcp.uv, 0 ) ELSE c.cpa_price *  IFNULL(mgtcf.channleSettlementCnt,0) END ) AS expense
+			FROM
+			(
+			SELECT
+				mcf.channel_code,
+				sum( mcf.channle_settlement_cnt ) AS channleSettlementCnt
+			FROM
+			mgt_channel_funnel mcf
+			LEFT JOIN mgt_channels c ON mcf.channel_code = c.channel_code
+			WHERE
+			mcf.statistic_date = DATE( NOW( ) )
+			<if test="uType != null">
+				AND mcf.u_type = #{uType}
+			</if>
+			<if test="salesId !=null">
+				AND c.creator = #{salesId}
+			</if>
+			GROUP BY
+			mcf.channel_code
+			) mgtcf
+			LEFT JOIN (
+			SELECT
+				mcp.channel_code,
+				sum( mcp.uv ) AS uv
+			FROM
+			mgt_channel_pv mcp
+			WHERE
+			mcp.statistic_date = DATE( NOW( ) )
+			GROUP BY
+			mcp.channel_code
+			) mgtcp ON mgtcf.channel_code = mgtcp.channel_code
+			LEFT JOIN mgt_channels c ON mgtcf.channel_code = c.channel_code
+			GROUP BY
+			mgtcf.channel_code
+		</if>
+		) msd
+		GROUP BY msd.channel_code
+		) c3 on c1.channelCode = c3.channel_code
+		LEFT JOIN mgt_channels cc ON cc.channel_code=c1.channelCode
+		WHERE 1=1
+		<if test="mode!= null">
+			AND	cc.mode=#{mode}
+		</if>
+	</select>
+
+</mapper>
+

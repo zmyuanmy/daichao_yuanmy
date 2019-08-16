@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jbb.mgt.core.dao.mapper.UserCardMapper">
+
+
+	<sql id="userCardCols">
+        u.user_id AS userId,
+        u.bank_code AS bankCode,
+        u.pay_product_id AS payProductId,
+        u.card_no AS cardNo,
+        u.phone_number AS phoneNumber,
+        u.is_deleted AS isDeleted,
+        u.creation_date AS creationDate,
+        u.delete_date AS deleteDate,
+        u.is_accept_loan_card AS isAcceptLoanCard
+    </sql>
+
+	<insert id="insertUserCard">
+		INSERT INTO mgt_xjl_user_cards (user_id  , bank_code , pay_product_id , card_no  , phone_number ,is_deleted ,creation_date ,delete_date ,is_accept_loan_card)
+		VALUES (#{userId}, #{bankCode}, #{payProductId}, #{cardNo}, #{phoneNumber},#{isDeleted},#{creationDate},#{deleteDate},#{isAcceptLoanCard})
+	</insert>
+	
+	<select id="selectUserCards" resultType="com.jbb.mgt.core.domain.UserCard">
+		SELECT <include refid="userCardCols"/>,p.bank_name AS bankName,p.bank_color AS bankColor,p.bank_logo AS bankLogo 
+		FROM mgt_xjl_user_cards u
+		LEFT JOIN mgt_xjl_pay_banks p
+		on u.bank_code = p.bank_code
+		WHERE u.user_id = #{userId}
+		AND u.pay_product_id = #{payProductId}
+		<if test="accept">
+		AND u.is_accept_loan_card=1
+		</if>
+		AND u.is_deleted = false
+		ORDER BY u.is_accept_loan_card DESC,p.bank_card_number ASC
+	</select>
+
+	<select id="selectUserCardByCardNo" resultType="com.jbb.mgt.core.domain.UserCard">
+		SELECT <include refid="userCardCols"/>
+		FROM mgt_xjl_user_cards u
+		WHERE u.pay_product_id = #{payProductId}
+		AND u.card_no = #{cardNo}
+		AND u.user_id = #{userId}
+	</select>
+
+	<update id="updateUserCard">
+		UPDATE mgt_xjl_user_cards
+		SET
+		is_deleted = #{isDeleted},
+		delete_date = #{deleteDate},
+		is_accept_loan_card = #{isAcceptLoanCard}
+		WHERE
+		pay_product_id = #{payProductId}
+		AND
+		card_no = #{cardNo}
+	</update>
+
+	<update id="removeUserCardAccept">
+		UPDATE mgt_xjl_user_cards
+		SET
+		is_accept_loan_card = false
+		WHERE
+		user_id = #{userId}
+	</update>
+
+	<update id="acceptUserCard">
+		UPDATE mgt_xjl_user_cards
+		SET
+		is_accept_loan_card = true
+		WHERE
+		pay_product_id = #{payProductId}
+		AND
+		card_no = #{cardNo}
+	</update>
+
+
+</mapper>

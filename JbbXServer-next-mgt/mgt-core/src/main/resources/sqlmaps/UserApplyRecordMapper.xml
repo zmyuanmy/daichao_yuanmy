@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.UserApplyRecordMapper" >
+
+    <sql id="userApplyRecordCols">
+        c.apply_id AS applyId , c.user_id AS userId , c.org_id AS orgId, c.status AS status,
+        c.assign_acc_id AS assignAccId,c.assing_date AS assingDate,c.init_acc_id AS initAccId,
+        c.init_amount AS initAmount,c.init_date AS initDate,c.final_acc_id AS finalAccId,
+        c.final_amount AS finalAmount,c.final_date AS finalDate,c.loan_acc_id AS loanAccId,
+        c.loan_amount AS loanAmount,c.loan_date AS loanDate, c.creation_date AS creationDate,
+        c.init_mark AS initMark, c.final_mark AS finalMark,c.reject_date AS rejectDate,c.hangup_date AS hangupDate,
+        c.s_channel_code as sChannelCode, c.s_org_id as sOrgId, c.s_user_type as sUserType, c.flag as flag
+    </sql>
+
+    <resultMap id="UserApplyRecordMap" type="com.jbb.mgt.core.domain.UserApplyRecord">
+		<id property="applyId" column="applyId" />
+		<result property="userId" column="userId" />
+		<result property="orgId" column="orgId" />
+		<result property="status" column="status" />
+		<result property="assignAccId" column="assignAccId" />
+		<result property="assingDate" column="assingDate" />
+		<result property="initAccId" column="initAccId" />
+		<result property="initDate" column="initDate" />
+		<result property="initAmount" column="initAmount" />
+		<result property="finalAccId" column="finalAccId" />
+		<result property="finalAmount" column="finalAmount" />
+		<result property="finalDate" column="finalDate" />
+		<result property="loanAccId" column="loanAccId" />
+		<result property="loanAmount" column="loanAmount" />
+		<result property="loanDate" column="loanDate" />
+		<result property="creationDate" column="creationDate" />
+		<result property="initMark" column="initMark" />
+		<result property="finalMark" column="finalMark"/>
+		<result property="rejectDate" column="rejectDate" />
+		<result property="hangupDate" column="hangupDate" />
+		<result property="sChannelCode" column="sChannelCode" />
+		<result property="sOrgId" column="sOrgId" />
+		<result property="sUserType" column="sUserType" />
+		<result property="flag" column="flag" />
+		<association property="user" javaType="com.jbb.mgt.core.domain.User">
+			<id property="userId" column="userId" jdbcType="INTEGER" />
+			<result property="phoneNumber" column="phoneNumber" jdbcType="VARCHAR" />
+			<result property="userName" column="userName" jdbcType="VARCHAR"/>
+			<result property="idCard" column="idcard" jdbcType="VARCHAR"/>
+			<result property="ipAddress" column="ipAddress" jdbcType="VARCHAR"/>
+			<result property="ipArea" column="ipArea" jdbcType="VARCHAR"/>
+			<result property="sex" column="sex" jdbcType="VARCHAR"/>
+			<result property="age" column="age" jdbcType="INTEGER"/>
+			<result property="jbbUserId" column="jbbUserId" jdbcType="INTEGER"/>
+			<result property="census" column="census" jdbcType="VARCHAR"/>
+			<result property="zhimaScore" column="zhimaScore" jdbcType="INTEGER"/>
+			<result property="qq" column="qq" jdbcType="VARCHAR"/>
+			<result property="wechat" column="wechat" jdbcType="VARCHAR"/>
+			<result property="channelCode" column="channelCode" jdbcType="VARCHAR" />
+			<result property="realnameVerified" column="realnameVerified" jdbcType="TINYINT"/>
+			<result property="mobileVerified" column="mobileVerified" jdbcType="TINYINT"/>
+			<result property="zhimaVerified" column="zhimaVerified" jdbcType="TINYINT"/>
+			<result property="creationDate" column="userCreationDate" jdbcType="TIMESTAMP"/>
+		</association>
+		<association property="assignAccount" javaType="com.jbb.mgt.core.domain.Account">
+			<id property="accountId" column="assignAccId" jdbcType="INTEGER" />
+			<result property="username" column="assingUsername" jdbcType="VARCHAR" />
+			<result property="nickname" column="assignNickName" jdbcType="VARCHAR"/>
+		</association>
+		<association property="initAccount" javaType="com.jbb.mgt.core.domain.Account">
+			<id property="accountId" column="initAccountId" jdbcType="INTEGER" />
+			<result property="username" column="initUsername" jdbcType="VARCHAR" />
+			<result property="nickname" column="initNickName" jdbcType="VARCHAR"/>
+		</association>
+		<association property="finalAccount" javaType="com.jbb.mgt.core.domain.Account">
+			<id property="accountId" column="finalAccId" jdbcType="INTEGER" />
+			<result property="username" column="finalUsername" jdbcType="VARCHAR" />
+			<result property="nickname" column="finalNickName" jdbcType="VARCHAR"/>
+		</association>
+		<association property="loanAccount" javaType="com.jbb.mgt.core.domain.Account">
+			<id property="accountId" column="loanAccId" jdbcType="INTEGER" />
+			<result property="username" column="loanUsername" jdbcType="VARCHAR" />
+			<result property="nickname" column="loanNickName" jdbcType="VARCHAR"/>
+		</association>
+		<association property="channel" javaType="com.jbb.mgt.core.domain.Channel">
+			<id property="channelCode" column="channelCode" jdbcType="VARCHAR" />
+			<result property="channelName" column="channelName" jdbcType="VARCHAR" />
+		</association>
+		<association property="feedback" javaType="com.jbb.mgt.core.domain.UserApplyFeedback">
+			<id property="applyId" column="applyId" jdbcType="INTEGER" />
+			<result property="reason" column="reason" jdbcType="VARCHAR" />
+			<result property="reasonDesc" column="reasonDesc" jdbcType="VARCHAR" />
+			<result property="point" column="point" jdbcType="INTEGER" />
+			<result property="zjFlag" column="zjFlag" jdbcType="TINYINT"/>
+		</association>
+	</resultMap>
+
+	 <select id="selectUserApplyRecords" resultMap="UserApplyRecordMap">
+        SELECT  <include refid="userApplyRecordCols"/>
+        	, accA.username AS assingUsername, accA.nickName AS assignNickName
+        	, accI.username AS initUsername, accI.nickName AS initNickName
+        	, accF.username AS finalUsername, accF.nickName AS finalNickName
+        	, accL.username AS loanUsername, accL.nickName AS loanNickName
+        	, channel.channel_code AS channelCode
+        	, CASE 
+        		WHEN c.s_org_id = 1 AND c.s_user_type = 1 THEN '纯进件导流' 
+        		WHEN c.s_org_id = 1 AND c.s_user_type = 2 THEN '非纯进件导流' 
+        		ELSE channel.channel_name END AS 'channelName'
+        	, u.phone_number as phoneNumber, u.username as userName,  u.idcard as idcard
+        	, u.ip_address as ipAddress, u.zhima_score as zhimaScore, u.qq as qq, u.wechat
+        	, u.realname_verified as realnameVerified,u.zhima_verified as zhimaVerified
+        	, u.mobile_verified as mobileVerified, u.creation_date as userCreationDate
+        	, u.jbb_user_id as jbbUserId, u.ip_area as ipArea
+        	, (YEAR(NOW()) - substring(u.idCard,7,4)) as age
+			, CASE
+				WHEN substring(u.idCard,17,1)%2=1 THEN '男'
+				WHEN substring(u.idCard,17,1)%2=0 THEN '女'
+			END AS 'sex'
+			, az.areazone as 'census'
+			<if test="feedback">
+			, uaf.reason as reason, uaf.reason_desc as reasonDesc, uaf.point , uaf.zj_flag as zjFlag
+			</if>
+        FROM  mgt_user_apply_records c
+        LEFT JOIN mgt_org_users ou ON ou.user_id = c.user_id AND ou.org_id = c.org_id
+        LEFT JOIN mgt_users u on u.user_id = c.user_id
+        LEFT JOIN mgt_accounts accA ON c.assign_acc_id = accA.account_id
+        LEFT JOIN mgt_accounts accI ON c.init_acc_id = accI.account_id
+        LEFT JOIN mgt_accounts accF ON c.final_acc_id = accF.account_id
+        LEFT JOIN mgt_accounts accL ON c.loan_acc_id = accL.account_id
+        LEFT JOIN mgt_channels channel ON channel.channel_code = c.s_channel_code
+        LEFT JOIN areazones az ON left(u.idCard,6) = az.zone
+        <if test="feedback"> LEFT JOIN mgt_user_apply_feedback uaf ON uaf.apply_id = c.apply_id</if>
+        WHERE c.is_hidden=0
+        	<if test="applyId!=null"> AND c.apply_id=#{applyId}</if>
+        	<if test="accountId!=null">
+        		<choose>
+        		<when test="op=='assign'"> AND 1=1</when>
+        		<when test="op=='hangup'"> AND  (c.init_acc_id = #{accountId} OR c.final_acc_id = #{accountId})</when>
+        		<when test="op=='reject'"> AND  (c.init_acc_id = #{accountId} OR c.final_acc_id = #{accountId})</when>
+        		<when test="op=='init'"> AND c.init_acc_id = #{accountId}</when>
+        		<when test="op=='final'"> AND c.final_acc_id = #{accountId}</when>
+        		<when test="op=='iou'"> AND c.loan_acc_id = #{accountId}</when>
+        		<when test="op=='mgt'"> AND 1=1</when>
+	            <otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+	            </choose>
+        	</if>
+        	
+        	<if test="sOrgId!=null"> AND c.s_org_id=#{sOrgId}</if>
+        	<if test="sUserType!=null"> AND c.s_user_type=#{sUserType}</if>
+        	<if test="startDate!=null"> AND c.creation_date <![CDATA[>=]]> #{startDate}</if>
+        	<if test="endDate!=null"> AND c.creation_date <![CDATA[<]]> #{endDate}</if>
+        	<if test="initAccountId!=null"> AND c.init_acc_id = #{initAccountId}</if>
+        	<if test="finalAccountId!=null"> AND c.final_acc_id = #{finalAccountId}</if>
+        	<if test="loanAccountId!=null"> AND c.loan_acc_id = #{loanAccountId}</if>
+        	<if test="channelCode!=null"> AND channel.channel_code = #{channelCode}</if>
+        	<if test="currentAccountId!=null"> 
+        		AND (
+        			(c.status in (2,3,4,5) AND c.init_acc_id = #{currentAccountId})
+        			OR (c.status in (6,7,8,9) AND c.final_acc_id = #{currentAccountId})
+        			OR (c.status in (10) AND c.loan_acc_id = #{currentAccountId})
+        		)
+        	</if>
+        	
+        	<if test="orgId!=null"> AND c.org_id=#{orgId}</if>
+        	<if test="userId!=null"> AND c.user_id = #{userId}</if> <!-- 用户ID查询申请记录 -->
+        	<if test="statuses != null and statuses.length > 0">
+        		AND c.status IN
+        		<foreach item="status" index="index" collection="statuses" open="(" separator="," close=")">
+					#{status}
+				</foreach>
+        	</if>
+        	<if test="phoneNumberSearch != null or channelSearch!=null or usernameSearch!=null or assignNameSearch!=null or initNameSearch!=null or finalNameSearch!=null or loanNameSearch!=null or jbbIdSearch!=null or idcardSearch!=null">
+        		AND ( 1 = 0 <!-- 方便后面拼写 -->
+	        	<if test="phoneNumberSearch!=null"> OR u.phone_number LIKE CONCAT('%',#{phoneNumberSearch},'%')</if>
+	        	<if test="channelSearch!=null"> OR (channel.channel_code LIKE CONCAT('%',#{channelSearch},'%') OR channel.channel_name LIKE CONCAT('%',#{channelSearch},'%'))</if>
+	        	<if test="usernameSearch!=null"> OR u.username LIKE CONCAT('%',#{usernameSearch},'%')</if>
+	        	<if test="assignNameSearch!=null"> OR accA.nickname LIKE  CONCAT('%',#{assignNameSearch},'%')</if>
+	        	<if test="initNameSearch!=null"> OR accI.nickname LIKE  CONCAT('%',#{initNameSearch},'%')</if>
+	        	<if test="finalNameSearch!=null"> OR accF.nickname LIKE  CONCAT('%',#{finalNameSearch},'%')</if>
+	        	<if test="loanNameSearch!=null"> OR accL.nickname LIKE  CONCAT('%',#{loanNameSearch},'%')</if>
+	       		<if test="jbbIdSearch!=null"> OR u.jbb_user_id LIKE  CONCAT('%',#{jbbIdSearch},'%')</if>
+	        	<if test="idcardSearch!=null"> OR u.idCard LIKE CONCAT('%',#{idcardSearch},'%')</if>
+        		)
+        	</if>
+        	<if test="verified!=null">
+        		<choose>
+        		<when test="verified"> AND (u.realname_verified=1 OR u.mobile_verified=1)</when>
+        		<when test="!verified"> AND  u.realname_verified=0 AND u.mobile_verified=0</when>
+	            <otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+	            </choose>
+        	</if>
+        ORDER BY c.apply_id DESC
+    </select>
+    
+    <select id="selectUserApplyRecords_COUNT" resultType="Long">
+        SELECT COUNT(1) 
+        FROM  mgt_user_apply_records c
+        LEFT JOIN mgt_org_users ou ON ou.user_id = c.user_id AND ou.org_id = c.org_id
+        LEFT JOIN mgt_users u on u.user_id = c.user_id
+        LEFT JOIN mgt_accounts accA ON c.assign_acc_id = accA.account_id
+        LEFT JOIN mgt_accounts accI ON c.init_acc_id = accI.account_id
+        LEFT JOIN mgt_accounts accF ON c.final_acc_id = accF.account_id
+        LEFT JOIN mgt_accounts accL ON c.loan_acc_id = accL.account_id
+        LEFT JOIN mgt_channels channel ON channel.channel_code = c.s_channel_code
+        WHERE c.is_hidden=0
+        	<if test="applyId!=null"> AND c.apply_id=#{applyId}</if>
+        	<if test="accountId!=null">
+        		<choose>
+        		<when test="op=='assign'"> AND 1=1</when>
+        		<when test="op=='hangup'"> AND  (c.init_acc_id = #{accountId} OR c.final_acc_id = #{accountId})</when>
+        		<when test="op=='reject'"> AND  (c.init_acc_id = #{accountId} OR c.final_acc_id = #{accountId})</when>
+        		<when test="op=='init'"> AND c.init_acc_id = #{accountId}</when>
+        		<when test="op=='final'"> AND c.final_acc_id = #{accountId}</when>
+        		<when test="op=='iou'"> AND c.loan_acc_id = #{accountId}</when>
+        		<when test="op=='mgt'"> AND 1=1</when>
+	            <otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+	            </choose>
+        	</if>
+        	<if test="orgId!=null"> AND c.org_id=#{orgId}</if>
+        	
+        	<if test="sOrgId!=null"> AND c.s_org_id=#{sOrgId}</if>
+        	<if test="sUserType!=null"> AND c.s_user_type=#{sUserType}</if>
+        	<if test="startDate!=null"> AND c.creation_date <![CDATA[>=]]> #{startDate}</if>
+        	<if test="endDate!=null"> AND c.creation_date <![CDATA[<]]> #{endDate}</if>
+        	<if test="initAccountId!=null"> AND c.init_acc_id = #{initAccountId}</if>
+        	<if test="finalAccountId!=null"> AND c.final_acc_id = #{finalAccountId}</if>
+        	<if test="loanAccountId!=null"> AND c.loan_acc_id = #{loanAccountId}</if>
+        	<if test="channelCode!=null"> AND channel.channel_code = #{channelCode}</if>
+        	<if test="currentAccountId!=null"> 
+        		AND (
+        			(c.status in (2,3,4,5) AND c.init_acc_id = #{currentAccountId})
+        			OR (c.status in (6,7,8,9) AND c.final_acc_id = #{currentAccountId})
+        			OR (c.status in (10) AND c.loan_acc_id = #{currentAccountId})
+        		)
+        	</if>
+        	
+        	<if test="userId!=null"> AND c.user_id = #{userId}</if> <!-- 用户ID查询申请记录 -->
+        	<if test="statuses != null and statuses.length > 0">
+        		AND c.status IN
+        		<foreach item="status" index="index" collection="statuses" open="(" separator="," close=")">
+					#{status}
+				</foreach>
+        	</if>
+        	<if test="phoneNumberSearch != null or channelSearch!=null or usernameSearch!=null or assignNameSearch!=null or initNameSearch!=null or finalNameSearch!=null or loanNameSearch!=null or jbbIdSearch!=null or idcardSearch!=null">
+        		AND ( 1 = 0 <!-- 方便后面拼写 -->
+	        	<if test="phoneNumberSearch!=null"> OR u.phone_number LIKE CONCAT('%',#{phoneNumberSearch},'%')</if>
+	        	<if test="channelSearch!=null"> OR (channel.channel_code LIKE CONCAT('%',#{channelSearch},'%') OR channel.channel_name LIKE CONCAT('%',#{channelSearch},'%'))</if>
+	        	<if test="usernameSearch!=null"> OR u.username LIKE CONCAT('%',#{usernameSearch},'%')</if>
+	        	<if test="assignNameSearch!=null"> OR accA.nickname LIKE  CONCAT('%',#{assignNameSearch},'%')</if>
+	        	<if test="initNameSearch!=null"> OR accI.nickname LIKE  CONCAT('%',#{initNameSearch},'%')</if>
+	        	<if test="finalNameSearch!=null"> OR accF.nickname LIKE  CONCAT('%',#{finalNameSearch},'%')</if>
+	        	<if test="loanNameSearch!=null"> OR accL.nickname LIKE  CONCAT('%',#{loanNameSearch},'%')</if>
+	       		<if test="jbbIdSearch!=null"> OR u.jbb_user_id LIKE  CONCAT('%',#{jbbIdSearch},'%')</if>
+	        	<if test="idcardSearch!=null"> OR u.idCard LIKE CONCAT('%',#{idcardSearch},'%')</if>
+        		)
+        	</if>
+        	<if test="verified!=null">
+        		<choose>
+        		<when test="verified"> AND (u.realname_verified=1 OR u.mobile_verified=1)</when>
+        		<when test="!verified"> AND  u.realname_verified=0 AND u.mobile_verified=0</when>
+	            <otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+	            </choose>
+        	</if>
+    </select>
+
+    <select id="selectUnassignUserApplyRecords" resultMap="UserApplyRecordMap">
+        SELECT  <include refid="userApplyRecordCols"/>
+        FROM  mgt_user_apply_records c
+        WHERE c.status = 1 AND c.assign_acc_id IS NULL
+        AND c.org_id = #{orgId}
+        <if test="limit">
+        	LIMIT #{limit}
+		</if>
+    </select>
+
+
+    <insert id="insertUserApplyRecord">
+    	 INSERT INTO mgt_user_apply_records
+        	(user_id, org_id, status, creation_date,assign_acc_id,assing_date,init_acc_id, s_channel_code, s_org_id, s_user_type, flag)
+       	 VALUES
+        	(#{userId},  #{orgId}, #{status} , #{creationDate},#{assignAccId},#{assingDate},#{initAccId}, #{sChannelCode},  #{sOrgId},  #{sUserType},  #{flag})
+    </insert>
+
+    <update id="updateUserAppayRecord">
+        UPDATE mgt_user_apply_records
+        SET status=#{status},assign_acc_id=#{assignAccId},assing_date=#{assingDate},
+        	init_acc_id=#{initAccId},init_amount=#{initAmount},init_date=#{initDate},
+        	final_acc_id=#{finalAccId},final_amount=#{finalAmount},final_date=#{finalDate},
+        	loan_acc_id=#{loanAccId},loan_amount=#{loanAmount},loan_date=#{loanDate},
+        	init_mark=#{initMark},final_mark=#{finalMark},reject_date=#{rejectDate},hangup_date=#{hangupDate}
+        WHERE apply_id=#{applyId}
+    </update>
+
+
+     <update id="updateUserAppayRecordAssignAccIdInBatch">
+        UPDATE mgt_user_apply_records
+        SET assign_acc_id=#{assignAccId}, assing_date=#{assignDate}, status = 2, init_acc_id = #{initAccId}
+        WHERE assign_acc_id is NULL AND apply_id IN
+        		<foreach item="applyId" index="index" collection="applyIds" open="(" separator="," close=")">
+					#{applyId}
+				</foreach>
+    </update>
+
+    <select id="countUserApplyRecords"  resultType="java.lang.Integer">
+        SELECT count(1) FROM mgt_user_apply_records apply
+        LEFT JOIN  mgt_users users u  ON apply.`user_id`=users.`user_id`
+        LEFT JOIN  mgt_channels channel ON apply.s_channel_code=channel.channel_code
+        WHERE apply.org_id = #{orgId} <!-- 统计哪个组织的数据  -->
+        <if test="startDate!=null">
+            AND DATE_FORMAT(apply.creation_date,'%Y-%m-%d')<![CDATA[>=]]>DATE_FORMAT(#{startDate},'%Y-%m-%d')
+        </if>
+        <if test="endDate!=null">
+            AND DATE_FORMAT(apply.creation_date,'%Y-%m-%d')<![CDATA[<=]]>DATE_FORMAT(#{endDate},'%Y-%m-%d')
+        </if>
+        <choose>
+            <when test="isJbbChannel==true">   <!-- 帮帮导流 -->
+                AND apply.org_id !=  apply.s_org_id
+                AND apply.s_org_id = 1
+            </when>
+            <otherwise>
+                AND apply.org_id = apply.s_org_id  <!-- 自有渠道 -->
+            </otherwise>
+        </choose>
+        <if test="includeHidden == false">  <!-- 是否包含隐藏渠道 -->
+            AND  channel.is_hidden = 0
+        </if>
+    </select>
+
+    <select id="selectUserAppayRecordsCountByApplyId"  resultType="com.jbb.mgt.core.domain.Statistics">
+        SELECT org_id,COUNT(m.user_id) as entryNum,
+        sum(IF(final_date IS NOT NULL,1,0)) as auditingNum,
+        sum(IF(loan_date IS NOT NULL,1,0)) as loanNum,
+		sum(IF(init_date IS NOT NULL,1,0)) as initNum,
+		sum(IF(init_mark IS NOT NULL OR final_mark IS NOT NULL,1,0)) as friendsNum
+        FROM mgt_user_apply_records c 
+	    LEFT JOIN mgt_user_properties m ON m.user_id = c.user_id
+        WHERE
+        org_id = #{orgId}
+        <if test="startDate!=null">
+            AND creation_date <![CDATA[>=]]> #{startDate}
+        </if>
+        <if test="endDate!=null">
+            AND creation_date <![CDATA[<=]]> #{endDate}
+        </if>
+        GROUP BY org_id
+    </select>
+
+	<select id="selectUserApplyRecordInfoByApplyId"  resultType="com.jbb.mgt.core.domain.UserApplyRecord">
+		SELECT <include refid="userApplyRecordCols"/>
+		FROM mgt_user_apply_records c
+		WHERE
+		c.apply_id = #{applyId}
+	</select>
+
+	<select id="getStatisticsNumber" resultType="Integer">
+		SELECT count(apply_id)
+		FROM mgt_user_apply_records
+		WHERE
+			<if test="statuses != null and statuses.length > 0">
+				status IN
+				<foreach item="status" index="index" collection="statuses" open="(" separator="," close=")">
+					#{status}
+				</foreach>
+			</if>
+			<if test="startDate!=null">
+				AND creation_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate!=null">
+				AND creation_date <![CDATA[<=]]> #{endDate}
+			</if>
+	</select>
+
+	<select id="getDiversionCount" resultType="java.lang.Integer">
+	        SELECT count(DISTINCT m.user_id) FROM mgt_user_apply_records m
+			WHERE m.org_id = #{orgId} AND NOT EXISTS(
+                SELECT u.user_id FROM mgt_users u
+				JOIN mgt_org_users ou on u.user_id = ou.user_id
+				WHERE ou.org_id = #{orgId})
+	        <if test="type != null"> AND  to_days(m.creation_date) = to_days(now())</if>
+    </select>
+
+    <select id="countUserApply" resultType="java.lang.Integer">
+   		select COUNT(1) 
+   		from mgt_user_apply_records a
+		LEFT JOIN mgt_users u ON a.user_id=u.user_id
+		WHERE a.s_org_id = 1 
+			AND a.org_id=#{orgId} AND a.s_org_id !=a.org_id
+		    <if test="userType!=null and userType>0">
+		    	AND a.user_type=#{userType}
+		    </if>
+			<if test="startDate!=null">
+           		 AND a.creation_date<![CDATA[>=]]>#{startDate}
+      	    </if>
+       		<if test="endDate!=null">
+            	AND a.creation_date<![CDATA[<=]]>#{endDate}
+       		</if>
+    </select>
+
+	<sql id="userSql">
+		u.jbb_user_id as jbbUserId, u.ip_area as ipArea, u.username AS userName , u.phone_number AS phoneNumber ,
+		u.idcard AS idCard,u.ip_address AS ipAddress,u.zhima_score AS zhimaScore,
+		u.qq,u.wechat AS wechat,u.idcard_rear AS idcardRear,u.idcard_back AS idcardBack,u.idcard_info AS idcardInfo,
+		u.vidoe_screen_shot AS vidoeScreenShot,u.platform AS platform,u.mobile_manufacture AS mobileManufacture,
+		u.idcard_address AS idcardAddress,u.race AS race,
+		u.contract1_relation AS contract1Relation,u.contract1_username AS contract1Username,u.contract1_phonenumber AS contract1Phonenumber,
+		u.contract2_relation AS contract2Relation,u.contract2_username AS contract2Username,u.contract2_phonenumber AS contract2Phonenumber,
+		u.realname_verified AS realnameVerified,u.mobile_verified AS mobileVerified,u.zhima_verified AS zhimaVerified,u.jingdong_verified AS jingdongVerified,
+		u.si_verified AS siVerified,u.gjj_verified AS gjjVerified,u.chsi_verified AS chsiVerified,u.is_hidden AS isHidden,
+		u.creation_date AS userCreationDate,
+		(YEAR(NOW()) - substring(u.idCard,7,4)) as age,
+		CASE
+			WHEN substring(u.idCard,17,1)%2=1 THEN '男'
+			WHEN substring(u.idCard,17,1)%2=0 THEN '女'
+		END AS 'sex', az.areazone as 'census'
+	</sql>
+
+	<select id="selectUserApplyRecordsByOrgId" resultMap="UserApplyRecordMap">
+		SELECT <include refid="userApplyRecordCols"/>,<include refid="userSql" />,
+		channel.channel_code as channelCode,channel.channel_name as channelName
+		, uaf.reason as reason, uaf.reason_desc as reasonDesc, uaf.point , uaf.zj_flag as zjFlag
+		  FROM mgt_user_apply_records c 
+		  LEFT JOIN mgt_users u ON c.user_id = u.user_id
+		  LEFT JOIN mgt_org_users ou ON ou.user_id = u.user_id AND c.org_id = ou.org_id
+		  LEFT JOIN mgt_org_users ou1 ON ou.user_id=ou1.user_id AND ou1.jbb_flag=0 AND ou1.org_id=1
+		  LEFT JOIN mgt_channels channel ON ou1.s_channel_code = channel.channel_code
+		  LEFT JOIN areazones az ON left(u.idCard,6) = az.zone
+		  LEFT JOIN mgt_user_apply_feedback uaf ON uaf.apply_id = c.apply_id
+		WHERE c.org_id = #{orgId} 
+		<if test="userType!=null and userType>0">
+			<choose>
+        		<when test="userType==3"> AND ou.jbb_flag=1 AND ou.org_id!=1</when>
+        		<otherwise>AND c.s_user_type=#{userType} AND c.s_org_id = 1 AND c.org_id != c.s_org_id</otherwise> 
+	         </choose>
+		</if>
+		<if test="startDate != null">
+			AND c.creation_date <![CDATA[>=]]> #{startDate}
+		</if>
+		<if test="endDate != null">
+			AND c.creation_date <![CDATA[<]]> #{endDate}
+		</if>
+		AND 
+		((c.s_org_id = 1 AND c.org_id != c.s_org_id) OR (ou.jbb_flag=1 AND ou.org_id!=1))
+		GROUP BY c.user_id
+		ORDER BY c.creation_date DESC
+	</select>
+
+	<select id="selectUserApplyRecordsByOrgId_COUNT" resultType="Long">
+		SELECT COUNT(c.apply_id) 
+		FROM mgt_user_apply_records c 
+		LEFT JOIN mgt_users u ON c.user_id = u.user_id
+		LEFT JOIN mgt_org_users ou ON ou.user_id = u.user_id AND c.org_id = ou.org_id
+		WHERE c.org_id = #{orgId}
+		<if test="userType!=null and userType>0">
+			<choose>
+        		<when test="userType==3"> AND ou.jbb_flag=1 AND ou.org_id!=1</when>
+        		<otherwise>AND c.s_user_type=#{userType} AND c.s_org_id = 1 AND c.org_id != c.s_org_id</otherwise> 
+	         </choose>
+		</if>
+		<if test="startDate != null">
+			AND c.creation_date <![CDATA[>=]]> #{startDate}
+		</if>
+		<if test="endDate != null">
+			AND c.creation_date <![CDATA[<]]> #{endDate}
+		</if>
+		AND 
+		((c.s_org_id = 1 AND c.org_id != c.s_org_id) OR (ou.jbb_flag=1 AND ou.org_id!=1))
+	</select>
+	
+	<select id="checkExist" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM mgt_user_apply_records m WHERE m.user_id=#{userId} AND m.org_id=#{orgId}
+		<if test="applyId != null">
+			AND m.apply_id= #{applyId}
+		</if>
+		)
+	</select>
+	
+	<resultMap id="UserApplyCountMap" type="com.jbb.mgt.core.domain.OrgUserCounts">
+		<id property="orgId" column="orgId" />
+		<collection property="dateCounts" javaType="ArrayList"
+			ofType="com.jbb.mgt.core.domain.UserCounts">
+			<result property="statisDate" column="statisDate" />
+			<result property="entryCnt" column="entryCnt" />
+			<result property="regCnt" column="regCnt" />
+			<result property="idCnt" column="idCnt" />
+			<result property="noidCnt" column="noidCnt" />
+		</collection>
+	</resultMap>
+	
+    <update id="deleteUserApplys">
+    	UPDATE mgt_user_apply_records uar
+		SET uar.is_hidden = 1
+		WHERE
+			uar.org_id =#{orgId}
+		AND uar.`status` IN (2, 5)
+		AND uar.is_hidden=0
+		AND uar.org_id != uar.s_org_id
+		AND uar.creation_date <![CDATA[>=]]> #{startDate}
+		AND uar.creation_date <![CDATA[<]]> #{endDate}
+    
+    </update>
+    
+    <select id="countDeleteUserApplys" resultType="java.lang.Integer">
+     SELECT count(1) FROM mgt_user_apply_records uar
+       
+        WHERE 
+        	uar.org_id =#{orgId}
+		AND uar.`status` IN (2, 5)
+		AND uar.org_id != uar.s_org_id
+		AND uar.creation_date <![CDATA[>=]]> #{startDate}
+		AND uar.creation_date <![CDATA[<]]> #{endDate}
+		AND uar.is_hidden=0
+    </select>
+    
+	
+</mapper>
+

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.ReportSummaryMapper">
+	
+	<select id="getSummaryByDate" resultType="com.jbb.mgt.core.domain.ReportSummary">
+		select
+			c1.statistic_date  as statisticDate-- 统计日期
+			, c2.cCpaRegisterCnt as cCpaCnt -- CPA计价 渠道量
+			, c1.cCpaPayCnt -- CPA量 - 应付量
+			, c1.cCpaExpense -- CPA应付额
+			, c1.cCpaExpense/c1.cCpaPayCnt as cCpaPrice  -- CPA应付单价
+			, c1.cUvCnt -- UV量，实际计价表
+			, c1.cUvExpense -- UV应付额
+			, c1.cUvExpense/c1.cUvCnt as cUvPrice -- UV均价
+			, c2.cTotalRegisterCnt -- 总供应量
+			, c1.cCnt  as payCnt -- 实际结算注册量
+			, c1.cExpense -- 总采购额
+			, c1.cAmount -- 付款额
+			, c1.cBalance -- 付款余额
+			, c1.cExpense/c1.cCnt as cTotalCpaPrice -- 应付均价
+			, c1.cExpense/c2.cUvCnt as cTotalUvPrice -- UV成本
+			, c3.cpaCnt -- 产品  CPA消耗量
+			, c3.cpaExpense -- 产品  CPA消耗额
+			, c3.cpaExpense/c3.cpaCnt as cpaPrice -- 产品  CPA消耗均价
+			, c3.puvCnt -- 产品  UV消耗量
+			, c3.uvExpense -- 产品  UV消耗额
+			, c3.uvExpense/c3.puvCnt as uvPrice -- 产品  UV消耗均价
+			, c3.expense -- 应收款项
+			, c3.amount -- 收款额
+			, c3.balance -- 收款余额
+			, c3.uvCnt -- 总UV数
+			, c3.expense/c3.uvCnt as totalUvPrice -- 总UV均价
+			, c3.expense - c1.cExpense as grossProfile -- 总毛利
+			from (
+			-- 渠道统计1
+			select
+			csd.statistic_date
+			, sum(case when csd.`mode` is null or csd.`mode` = 0 or csd.`mode` = 1 then csd.cnt else 0 end ) as cCpaPayCnt -- CPA应付量
+			, sum(csd.cnt) as cCnt -- 结算注册量
+			, sum(case when csd.`mode` is null or csd.`mode` = 0 or csd.`mode` = 1 then csd.expense else 0 end ) as cCpaExpense -- CPA应付额
+			, sum(case when csd.`mode` = 4 then csd.uv_cnt else 0 end ) as cUvCnt -- UV量
+			, sum(case when csd.`mode` = 4 then csd.expense else 0 end ) as cUvExpense -- UV应付额
+			, sum(csd.expense) as cExpense -- 总采购额
+			, sum(csd.amount) as cAmount -- 付款额
+			, sum(csd.balance) as cBalance -- 付款未消耗额
+
+			from mgt_fin_channel_statistic_daily csd
+			where csd.statistic_date &gt;= #{startDate} and csd.statistic_date &lt; #{endDate}
+			group by csd.statistic_date
+			) c1 left join(
+			-- 渠道统计2
+			SELECT
+			scd.statistic_date -- 统计日期
+			, sum(scd.total_register_cnt) AS cTotalRegisterCnt   -- 总供应量
+			, sum(scd.hidden_register_cnt) AS cHiddenCnt  -- 隐藏供应量
+			, sum(scd.uv_cnt) AS cUvCnt  -- 总UV量
+			, sum(case when csd.`mode` is null or csd.`mode` = 0 or csd.`mode` = 1 then scd.total_register_cnt  else 0 end ) as cCpaRegisterCnt -- CPA计价 - 供应量
+			, sum(case when csd.`mode` is null or csd.`mode` = 0 or csd.`mode` = 1 then scd.hidden_register_cnt  else 0 end ) as cCpaHiddenCnt -- CPA计价 - 隐藏量
+			, sum(case when csd.`mode` is null or csd.`mode` = 0 or csd.`mode` = 1 then scd.uv_cnt  else 0 end ) as cCpaUvCnt -- CPA计价 - UV量
+			, sum(case when csd.`mode` = 4 then scd.total_register_cnt  else 0 end ) as cUvRegisterCnt -- UV 计价 - 供应量
+			, sum(case when csd.`mode` = 4 then scd.hidden_register_cnt  else 0 end ) as cUvHiddenCnt -- UV计价 - 隐藏量
+			, sum(case when csd.`mode` = 4 then scd.uv_cnt  else 0 end ) as cUvUvCnt -- UV计价 - UV量
+			FROM mgt_statistic_channel_daily scd
+			LEFT JOIN mgt_fin_channel_statistic_daily csd
+			ON scd.statistic_date = csd.statistic_date AND scd.channel_code = csd.channel_code
+			WHERE scd.statistic_date &gt;= #{startDate} and scd.statistic_date &lt; #{endDate}
+			GROUP BY scd.statistic_date
+			) c2 on c1.statistic_date = c2.statistic_date
+			left join (
+			-- 甲方产品统计
+			select
+			lps.statistic_date
+			, sum(lps.cnt) as cpaCnt  -- CPA消耗量
+			, sum(case when lps.cnt > 0 then lps.expense else 0 end) as cpaExpense  -- CPA 消耗额
+			, sum(lps.puv_cnt) as puvCnt -- UV消耗量
+			, sum(case when lps.puv_cnt > 0 then lps.expense else 0 end) as uvExpense -- UV消耗额
+			, sum(lps.expense) as expense -- 应收款额
+			, sum(lps.amount) as amount -- 收款额
+			, sum(lps.balance) as balance -- 收款未消耗额
+			, sum(lps.uv_cnt) as uvCnt  -- 总UV量
+			from mgt_loan_platform_statistic lps
+			where lps.statistic_date &gt;= #{startDate} and lps.statistic_date &lt; #{endDate}
+			group by lps.statistic_date
+			)c3 on c1.statistic_date = c3.statistic_date
+			
+			order by c1.statistic_date DESC
+	</select>
+</mapper> 

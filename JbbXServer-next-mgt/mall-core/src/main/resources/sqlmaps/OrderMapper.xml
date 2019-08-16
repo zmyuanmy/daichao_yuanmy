@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mall.core.dao.mapper.OrderMapper">
+	
+	<sql id="orderCols">
+		mo.order_id AS orderId, mo.user_id AS userId, mo.product_id AS productId, mo.price AS price, mo.creation_date AS creationDate,
+		mo.update_date AS updateDate, mo.delivery_date AS deliveryDate, mo.`status` AS status, mo.address AS address,
+		mo.custome_name AS customeName, mo.card_msg AS cardMsg, mo.`comment` AS comment, mo.is_deleted AS isDeleted
+	</sql>
+	
+	<sql id="producCols">
+		mp.product_id AS productId, mp.product_type AS productType, mp.title AS title,
+		mp.price AS price, mp.discount_price AS discountPrice, mp.`desc` AS `desc`
+	</sql>
+	
+	<resultMap id="orderMap" type="com.jbb.mall.core.dao.domain.Order">
+		<id property="orderId" column="orderId"/>
+		<result property="userId" column="userId"/>
+		<result property="productId" column="productId"/>
+		<result property="price" column="price"/>
+		<result property="creationDate" column="creationDate"/>
+		<result property="updateDate" column="updateDate"/>
+		<result property="deliveryDate" column="deliveryDate"/>
+		<result property="status" column="status"/>
+		<result property="address" column="address"/>
+		<result property="customeName" column="customeName"/>
+		<result property="cardMsg" column="cardMsg"/>
+		<result property="comment" column="comment"/>
+		<result property="isDeleted" column="isDeleted"/>
+		<association property="product" javaType="com.jbb.mall.core.dao.domain.Product">
+			<id property="productId" column="productId"/>
+			<result property="productType" column="productType"/>
+			<result property="title" column="title"/>
+			<result property="price" column="price"/>
+			<result property="discountPrice" column="discountPrice"/>
+			<result property="desc" column="desc"/>
+		</association>
+		<association property="productImg" javaType="com.jbb.mall.core.dao.domain.ProductImg">
+			<id property="productId" column="productId"/>
+			<result property="imgUrl" column="imgUrl"/>
+			<result property="indexNo" column="indexNo"/>
+		</association>
+	</resultMap>
+	
+	<select id="selectOrderList" resultMap="orderMap">
+		SELECT <include refid="orderCols"/>,<include refid="producCols"/>,mpi.img_url AS imgUrl,mpi.index_no AS indexNo
+		FROM mall_orders mo 
+		JOIN mall_products mp ON mo.product_id = mp.product_id AND mp.product_type = #{type}
+		JOIN (SELECT img_url,product_id,index_no FROM (SELECT img_url,product_id,index_no FROM mall_product_imgs
+		ORDER BY product_id,index_no IS NOT NULL DESC,index_no ASC) t1 GROUP BY t1.product_id) mpi ON mo.product_id =mpi.product_id
+		WHERE mo.is_deleted=0 AND mo.user_id=#{userId}
+			<if test="status != null">
+				AND	mo.`status`=#{status}
+			</if>
+		ORDER BY mo.creation_date DESC
+	</select>
+	
+	<select id="selectOrderById" resultType="com.jbb.mall.core.dao.domain.Order">
+		SELECT <include refid="orderCols"/> FROM mall_orders mo
+		WHERE mo.order_id=#{orderId}
+	</select>
+
+	<insert id="insertOrder" useGeneratedKeys="true" keyProperty="orderId">
+		INSERT INTO mall_orders(user_id, product_id, price, creation_date, delivery_date, status, address, custome_name, card_msg, comment,is_deleted) 
+		VALUES (#{userId}, #{productId}, #{price}, #{creationDate}, #{deliveryDate}, #{status}, #{address}, #{customeName}, #{cardMsg}, #{comment}, 0)
+	</insert>
+	
+	<update id="updateOrder">
+		UPDATE mall_orders SET user_id = #{userId}, product_id = #{productId}, price = #{price}, update_date = #{updateDate}, 
+		delivery_date = #{deliveryDate}, status = #{status}, address =  #{address}, custome_name = #{customeName}, card_msg = #{cardMsg},
+		comment = #{comment}, is_deleted = #{isDeleted} WHERE order_id = #{orderId}
+	</update>
+	
+	<update id="deleteOder">
+		UPDATE mall_orders SET is_deleted = 1 WHERE order_id = #{orderId}
+	</update>
+
+	<update id="updateOrderStatus">
+		UPDATE mall_orders SET `status` = #{status} WHERE order_id = #{orderId}
+	</update>
+
+</mapper>

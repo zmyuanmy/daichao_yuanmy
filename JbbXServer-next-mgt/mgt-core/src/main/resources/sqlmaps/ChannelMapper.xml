@@ -1,0 +1,666 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.ChannelMapper">
+
+	<sql id="channelInfo">
+		c.channel_code AS channelCode , c.channel_name AS channelName ,
+		c.channel_url AS channelUrl, c.service_qq as serviceQQ,
+		c.service_wechat AS serviceWechat,c.status as status,
+		c.mode as mode, c.source_phone_number as sourcePhoneNumber,
+		c.source_password as sourcePassword,
+		c.creator AS creator,c.creation_date AS creationDate,
+		c.qq_required as qqRequired,c.wechat_required as wechatRequired,
+		c.zhima_required as zhimaRequired,
+		c.idcard_info_required as idcardInfoRequired,
+		c.idcard_back_required as idcardBackRequired,
+		c.idcard_rear_required as idcardRearRequired,
+		c.header_required as headerRequired,
+		c.mobile_contract1_required as mobileContract1Required,
+		c.mobile_contract2_required as mobileContract2Required,
+		c.mobile_service_info_required as mobileServiceInfoRequired,
+		c.cpa_price as cpaPrice,c.cps_price as cpsPrice,
+		c.uv_price as uvPrice,
+		c.receive_mode as receiveMode,c.is_hidden as hidden,
+		c.taobao_required as taobaoRequired,c.jingdong_required as jingdongRequired,
+		c.gjj_required as gjjRequired,c.sj_required as sjRequired,
+		c.chsi_required as chsiRequired,c.check_wool AS checkWool,
+		c.check_mobile AS checkMobile, c.delegate_enabled AS delegateEnabled,
+		c.is_delegate AS delegate,c.redirect_url AS redirectUrl, c.merchant_id AS merchantId,
+		c.msg_times AS msgTimes, c.channel_app_name AS channelAppName, c.h5_theme AS h5Theme,
+		c.download_app AS downloadApp, c.test_flag AS testFlag, c.group_name AS groupName,
+		c.merchant_id2 AS merchantId2, c.delegate_org_id AS delegateOrgId, c.company_required AS companyRequired
+	</sql>
+
+	<sql id="channelInfoAndCreator">
+		acc.account_id AS accountId , acc.username AS username ,
+		acc.phone_number as phoneNumber,
+		acc.jbb_user_id AS jbbUserId,acc.password as password,
+		acc.org_id as orgId, acc.creator as creator,
+		acc.creation_date as creationDate,
+		acc.nickname as nickname,
+		acc.is_deleted AS deleted,acc.is_freeze AS freeze
+	</sql>
+
+	<insert id="insertChannal">
+		INSERT INTO mgt_channels
+		(channel_code, channel_name,channel_url,service_qq,
+		service_wechat,status, mode,source_phone_number,source_password,
+		creator,creation_date,qq_required,wechat_required,zhima_required,
+		idcard_info_required,idcard_back_required,idcard_rear_required,
+		header_required,mobile_contract1_required,mobile_contract2_required,
+		mobile_service_info_required,cpa_price,cps_price,uv_price,receive_mode,is_hidden,
+		taobao_required,jingdong_required,gjj_required,sj_required,check_wool,
+		check_mobile,is_delegate,redirect_url,merchant_id,msg_times,channel_app_name,
+		h5_theme, download_app, test_flag, group_name, merchant_id2, delegate_org_id,
+		delegate_enabled, company_required)
+		VALUES
+		(#{channelCode},#{channelName},#{channelUrl},
+		#{serviceQQ},#{serviceWechat},#{status},
+		#{mode},#{sourcePhoneNumber},#{sourcePassword},
+		#{creator},now(),
+		#{qqRequired},#{wechatRequired},#{zhimaRequired},
+		#{idcardInfoRequired},#{idcardBackRequired},#{idcardRearRequired},
+		#{headerRequired},#{mobileContract1Required},#{mobileContract2Required},
+		#{mobileServiceInfoRequired},#{cpaPrice},#{cpsPrice},#{uvPrice},#{receiveMode},#{hidden},
+		#{taobaoRequired},#{jingdongRequired},#{gjjRequired},#{sjRequired},#{checkWool},
+		#{checkMobile},#{delegate},#{redirectUrl},#{merchantId},#{msgTimes},
+		#{channelAppName}, #{h5Theme}, #{downloadApp}, #{testFlag}, #{groupName},
+		#{merchantId2}, #{delegateOrgId}, #{delegateEnabled}, #{companyRequired})
+	</insert>
+
+	<update id="updateChannel">
+		UPDATE mgt_channels
+		SET
+		<if test="companyRequired != null">
+			company_required = #{companyRequired},
+		</if>
+		delegate_org_id = #{delegateOrgId},
+		<if test="channelName != null">
+			channel_name = #{channelName},
+		</if>
+		<if test="channelUrl != null">
+			channel_url=#{channelUrl},
+		</if>
+		<if test="serviceQQ != null">
+			service_qq=#{serviceQQ},
+		</if>
+		<if test="serviceQQ != null">
+			service_wechat=#{serviceQQ},
+		</if>
+		<if test="status != null">
+			status=#{status},
+		</if>
+		<if test="mode != null">
+			mode=#{mode},
+		</if>
+		<if test="sourcePhoneNumber != null">
+			source_phone_number=#{sourcePhoneNumber},
+		</if>
+		<if test="sourcePassword != null">
+			source_password=#{sourcePassword},
+		</if>
+		<if test="creationDate != null">
+			creation_date=#{creationDate},
+		</if>
+		<if test="qqRequired != null">
+			qq_required =#{qqRequired},
+		</if>
+		<if test="wechatRequired != null">
+			wechat_required=#{wechatRequired},
+		</if>
+		<if test="zhimaRequired != null">
+			zhima_required=#{zhimaRequired}, 
+		</if>
+		<if test="idcardInfoRequired != null">
+			idcard_info_required =#{idcardInfoRequired},
+		</if>
+		<if test="idcardBackRequired != null">
+			idcard_back_required=#{idcardBackRequired},
+		</if>
+		<if test="idcardRearRequired != null">
+			idcard_rear_required=#{idcardRearRequired},
+		</if>
+		<if test="headerRequired != null">
+			header_required=#{headerRequired},
+		</if>
+		<if test="mobileContract1Required != null">
+			mobile_contract1_required=#{mobileContract1Required},
+		</if>
+		<if test="mobileContract2Required != null">
+			mobile_contract2_required=#{mobileContract2Required},
+		</if>
+		<if test="mobileServiceInfoRequired != null">
+			mobile_service_info_required=#{mobileServiceInfoRequired},
+		</if>
+		<if test="cpaPrice != null">
+			cpa_price=#{cpaPrice},
+		</if>
+		<if test="cpsPrice != null">
+			cps_price=#{cpsPrice},
+		</if>
+		<if test="uvPrice != null">
+			uv_price=#{uvPrice},
+		</if>
+		<if test="receiveMode != null">
+			receive_mode=#{receiveMode},
+		</if>
+		<if test="taobaoRequired != null">
+			is_hidden=#{hidden},taobao_required=#{taobaoRequired},
+		</if>
+		<if test="jingdongRequired != null">
+			jingdong_required=#{jingdongRequired},
+		</if>
+		<if test="gjjRequired != null">
+			gjj_required=#{gjjRequired},
+		</if>
+		<if test="sjRequired != null">
+			sj_required=#{sjRequired},
+		</if>
+		<if test="chsiRequired != null">
+			chsi_required=#{chsiRequired},
+		</if>
+		<if test="checkWool != null">
+			check_wool=#{checkWool},
+		</if>
+		<if test="checkMobile != null">
+			check_mobile=#{checkMobile},
+		</if>
+		<if test="redirectUrl != null">
+			redirect_url=#{redirectUrl},
+		</if>
+			merchant_id = #{merchantId},
+			merchant_id2 = #{merchantId2},
+		<if test="delegateEnabled != null">
+			delegate_enabled = #{delegateEnabled },
+		</if>
+		<if test="channelAppName != null">
+			channel_app_name = #{channelAppName}, 
+		</if>
+		<if test="h5Theme != null">
+			h5_theme = #{h5Theme}, 
+		</if>
+		<if test="downloadApp != null">
+			download_app = #{downloadApp},
+		</if>
+		<if test="testFlag != null">
+			test_flag = #{testFlag},
+		</if>
+		 	group_name = #{groupName},
+		<if test="reduceEnable != null">
+			reduce_enable = #{reduceEnable}, 
+		</if>
+		<if test="reducePercent != null">
+			reduce_percent = #{reducePercent}
+		</if>
+		WHERE
+		channel_code = #{channelCode}
+	</update>
+
+	<update id="deleteChannel">
+		UPDATE mgt_channels
+		SET status = 1
+		WHERE channel_code = #{channelCode}
+	</update>
+
+	<select id="selectChannelByCode" resultMap="channels">
+		SELECT <include refid="channelInfo"></include>,<include refid="channelInfoAndCreator"></include>,
+		c.reduce_enable AS reduceEnable, c.reduce_percent AS reducePercent
+		FROM mgt_channels c JOIN mgt_accounts acc ON c.creator = acc.account_id
+		WHERE c.channel_code = #{channelCode}
+	</select>
+
+	<select id="selectChannelBySourcePhoneNumber" resultMap="channels">
+		SELECT <include refid="channelInfo"></include>, <include refid="channelInfoAndCreator"></include>
+		FROM mgt_channels c
+		JOIN mgt_accounts acc on c.creator = acc.account_id
+		WHERE c.source_phone_number = #{sourcePhoneNumber}
+		LIMIT 1
+	</select>
+
+	<resultMap id="channels" type="com.jbb.mgt.core.domain.Channel">
+		<id column="channelCode" jdbcType="VARCHAR" property="channelCode" />
+		<result column="channelName" jdbcType="VARCHAR" property="channelName"/>
+		<result column="channelUrl" jdbcType="VARCHAR" property="channelUrl"/>
+		<result column="serviceQQ" jdbcType="VARCHAR" property="serviceQQ"/>
+		<result column="serviceWechat" jdbcType="VARCHAR" property="serviceWechat"/>
+		<result column="status" jdbcType="INTEGER" property="status"/>
+		<result column="mode" jdbcType="INTEGER" property="mode"/>
+		<result column="sourcePhoneNumber" jdbcType="VARCHAR" property="sourcePhoneNumber"/>
+		<result column="sourcePassword" jdbcType="VARCHAR" property="sourcePassword"/>
+		<result column="creator" jdbcType="INTEGER" property="creator"/>
+		<result column="creationDate" jdbcType="TIMESTAMP" property="creationDate"/>
+		<result column="qqRequired" jdbcType="TINYINT" property="qqRequired"/>
+		<result column="wechatRequired" jdbcType="TINYINT" property="wechatRequired"/>
+		<result column="zhimaRequired" jdbcType="TINYINT" property="zhimaRequired"/>
+		<result column="idcardInfoRequired" jdbcType="TINYINT" property="idcardInfoRequired"/>
+		<result column="idcardBackRequired" jdbcType="TINYINT" property="idcardBackRequired"/>
+		<result column="idcardRearRequired" jdbcType="TINYINT" property="idcardRearRequired"/>
+		<result column="headerRequired" jdbcType="TINYINT" property="headerRequired"/>
+		<result column="mobileContract1Required" jdbcType="TINYINT" property="mobileContract1Required"/>
+		<result column="mobileContract2Required" jdbcType="TINYINT" property="mobileContract2Required"/>
+		<result column="mobileServiceInfoRequired" jdbcType="TINYINT" property="mobileServiceInfoRequired"/>
+		<result column="cpaPrice" jdbcType="INTEGER" property="cpaPrice"/>
+		<result column="cpsPrice" jdbcType="INTEGER" property="cpsPrice"/>
+		<result column="uvPrice" jdbcType="INTEGER" property="uvPrice"/>
+		<result column="receiveMode" jdbcType="INTEGER" property="receiveMode"/>
+		<result column="hidden" jdbcType="TINYINT" property="hidden"/>
+		<result column="taobaoRequired" jdbcType="TINYINT" property="taobaoRequired"/>
+		<result column="jingdongRequired" jdbcType="TINYINT" property="jingdongRequired"/>
+		<result column="gjjRequired" jdbcType="TINYINT" property="gjjRequired"/>
+		<result column="sjRequired" jdbcType="TINYINT" property="sjRequired"/>
+		<result column="chsiRequired" jdbcType="TINYINT" property="chsiRequired"/>
+		<result column="checkWool" jdbcType="TINYINT" property="checkWool"/>
+		<result column="checkMobile" jdbcType="TINYINT" property="checkMobile"/>
+		<result column="delegate" jdbcType="TINYINT" property="delegate"/>
+		<result column="redirectUrl" jdbcType="VARCHAR" property="redirectUrl"/>
+		<result column="merchantId" jdbcType="INTEGER" property="merchantId"/>
+		<result column="merchantId2" jdbcType="INTEGER" property="merchantId2"/>
+		<result column="delegateEnabled" jdbcType="TINYINT" property="delegateEnabled"/>
+		<result column="msgTimes" jdbcType="TINYINT" property="msgTimes"/>
+		<result column="channelAppName" jdbcType="VARCHAR" property="channelAppName"/>
+		<result column="h5Theme" jdbcType="VARCHAR" property="h5Theme"/>
+		<result column="downloadApp" jdbcType="VARCHAR" property="downloadApp"/>
+		<result column="testFlag" jdbcType="TINYINT" property="testFlag"/>
+		<result column="groupName" jdbcType="VARCHAR" property="groupName"/>
+		<result column="reduceEnable" jdbcType="TINYINT" property="reduceEnable"/>
+		<result column="reducePercent" jdbcType="INTEGER" property="reducePercent"/>
+		<result  column="delegateOrgId" jdbcType="INTEGER" property="delegateOrgId"/>
+		<result  column="companyRequired" jdbcType="TINYINT" property="companyRequired"/>
+		<association property="account" javaType="com.jbb.mgt.core.domain.Account">
+			<id column="accountId" jdbcType="INTEGER" property="accountId"/>
+			<result  column="username" jdbcType="VARCHAR" property="username"/>
+			<result  column="nickname" jdbcType="VARCHAR" property="nickname"/>
+			<result  column="phoneNumber" jdbcType="VARCHAR" property="phoneNumber"/>
+			<result  column="jbbUserId" jdbcType="INTEGER" property="jbbUserId"/>
+			<result  column="orgId" jdbcType="INTEGER" property="orgId"/>
+			<result  column="creator" jdbcType="INTEGER" property="creator"/>
+			<result  column="creationDate" jdbcType="TIMESTAMP" property="creationDate"/>
+			<result  column="deleted" jdbcType="TINYINT" property="deleted"/>
+			<result  column="freeze" jdbcType="TINYINT" property="freeze"/>
+		</association>
+		<association property="statistic" javaType="com.jbb.mgt.core.domain.ChannelStatistic">
+			<result column="clickCnt" jdbcType="INTEGER" property="clickCnt"/>
+			<result column="clickCnt1" jdbcType="INTEGER" property="clickCnt1"/>
+			<result column="clickCnt2" jdbcType="INTEGER" property="clickCnt2"/>
+			<result column="submitCnt" jdbcType="INTEGER" property="submitCnt"/>
+			<result column="submitCnt1" jdbcType="INTEGER" property="submitCnt1"/>
+			<result column="submitCnt2" jdbcType="INTEGER" property="submitCnt2"/>
+			<result column="registerCnt" jdbcType="INTEGER" property="registerCnt"/>
+			<result column="registerCnt1" jdbcType="INTEGER" property="registerCnt1"/>
+			<result column="registerCnt2" jdbcType="INTEGER" property="registerCnt2"/>
+			<result column="registerNewCnt2" jdbcType="INTEGER" property="registerNewCnt2"/>
+			<result column="registerOldCnt" jdbcType="INTEGER" property="registerOldCnt"/>
+			<result column="registerNewCnt" jdbcType="INTEGER" property="registerNewCnt"/>
+			<result column="decrementNewCnt" jdbcType="INTEGER" property="decrementNewCnt"/>
+			<result column="decrementOldCnt" jdbcType="INTEGER" property="decrementOldCnt"/>
+			<result column="idCnt2" jdbcType="INTEGER" property="idCnt2"/>
+			<result column="noidCnt2" jdbcType="INTEGER" property="noidCnt2"/>
+			<result column="loanCnt" jdbcType="INTEGER" property="loanCnt"/>
+			<result column="uvCnt" jdbcType="INTEGER" property="uvCnt"/>
+			<result column="uvCnt1" jdbcType="INTEGER" property="uvCnt1"/>
+			<result column="uvCnt2" jdbcType="INTEGER" property="uvCnt2"/>
+			<result column="toSellCnt" jdbcType="INTEGER" property="toSellNumber"/>
+			<result column="adCnt" jdbcType="INTEGER" property="adCnt"/>
+			<result column="woolCheckB1Cnt" jdbcType="INTEGER" property="woolCheckB1Cnt"/>
+			<result column="woolCheckB2Cnt" jdbcType="INTEGER" property="woolCheckB2Cnt"/>
+			<result column="mobileCheckCnt" jdbcType="INTEGER" property="mobileCheckCnt"/>
+			<result column="decrementCnt" jdbcType="INTEGER" property="decrementCnt"/>
+			<result column="hiddenCnt" jdbcType="INTEGER" property="hiddenCnt"/>
+			<result column="profitTotal" jdbcType="INTEGER" property="profitTotal"/>
+			<result column="h5RegisterCnt" jdbcType="INTEGER" property="h5RegisterCnt"/>
+			<result column="appLoginCnt" jdbcType="INTEGER" property="appLoginCnt"/>
+			<result column="loanAmount" jdbcType="INTEGER" property="loanAmount"/>
+			<result column="borrowingCnt" jdbcType="INTEGER" property="borrowingCnt"/>
+		</association>
+	</resultMap>   
+    
+
+	<sql id="date">
+		<if test="startDate != null">
+			AND s.creation_date <![CDATA[>=]]> #{startDate}
+		</if>
+		<if test="endDate != null">
+			AND s.creation_date <![CDATA[<]]> #{endDate}
+		</if>
+	</sql>
+
+	<select id="selectChannels" resultMap="channels">
+		SELECT
+			<include refid="channelInfo"/>,
+			acc.nickname AS nickname,
+			tlogs.clickCnt AS clickCnt, 
+			tlogs.clickCnt1 AS clickCnt1,
+			tlogs.clickCnt2 AS clickCnt2,
+			tlogs.uvCnt AS uvCnt,
+			tlogs.uvCnt1 AS uvCnt1,
+			tlogs.uvCnt2 AS uvCnt2,
+			tcnt.registerCnt as registerCnt,
+			tcnt.registerCnt1 as registerCnt1,
+			tcnt.registerCnt2 as registerCnt2,
+			tcnt.registerNewCnt2 as registerNewCnt2,
+			tcnt.registerOldCnt as registerOldCnt,
+			tcnt.registerNewCnt as registerNewCnt,
+			tcnt.decrementNewCnt as decrementNewCnt,
+			tcnt.decrementOldCnt as decrementOldCnt,
+			tcnt.idCnt2 as idCnt2,
+			tcnt.noidCnt2 as noidCnt2,
+			tcnt.entryCnt as submitCnt,
+			tcnt.entryCnt1 as submitCnt1,
+			tcnt.entryCnt2 as submitCnt2,
+			tcnt.sellEntryCnt as toSellCnt,
+			tcnt.hiddenCnt as hiddenCnt, 
+			tcnt.woolCheckB1Cnt as woolCheckB1Cnt, 
+			tcnt.woolCheckB2Cnt as woolCheckB2Cnt, 
+			tcnt.mobileCheckCnt as mobileCheckCnt, 
+			tcnt.decrementCnt as decrementCnt,
+			<if test="getAdStatistic" >
+			tcnt.adCnt as adCnt,
+			</if>
+			tcnt.loanCnt as loanCnt
+			<if test="getReducePercent">
+				, c.reduce_enable AS reduceEnable, c.reduce_percent AS reducePercent
+			</if>
+			FROM mgt_channels c
+			JOIN mgt_accounts acc ON c.creator = acc.account_id
+			LEFT JOIN (
+				SELECT au.channel_code as channel_code, 
+				    count(1) as registerCnt, 
+				    count(case when TIMESTAMPDIFF(MINUTE,u.creation_date,au.creation_date)<![CDATA[>=]]> 15 then 1 else null end) as registerOldCnt,
+				    count(case when TIMESTAMPDIFF(MINUTE,u.creation_date,au.creation_date)<![CDATA[<]]> 15 then 1 else null end) as registerNewCnt,
+				    count(case when au.user_type=1 then 1 else null end) as registerCnt1,
+				    count(case when au.user_type=2 then 1 else null end) as registerCnt2,
+				    sum(case when au.user_type=2 and date(u.creation_date)=date(au.creation_date) then 1 else 0 end) as registerNewCnt2,
+				    count(case when au.user_type=2 and u.idcard is not null then 1 else null end) as idCnt2,
+				    count(case when au.user_type=2 and u.idcard is null then 1 else null end) as noidCnt2,	
+					count(case when au.is_hidden = 1 then 1 else null end) as hiddenCnt, 
+					count(case when au.user_id is not null and ou.entry_status =1 then 1 else null end) as entryCnt,
+					count(case when au.user_id is not null and ou.entry_status =1 AND au.user_type=1 then 1 else null end) as entryCnt1,
+					count(case when au.user_id is not null and ou.entry_status =1 AND au.user_type=2 then 1 else null end) as entryCnt2,
+					count(case when au.user_id is not null and ou.entry_status =1 AND au.user_type=1 <if test="zhima != null" > AND u.zhima_score <![CDATA[>=]]> #{zhima} </if> then 1 else null end) as sellEntryCnt,
+					sum(case when au.is_hidden=1 and p2.value ='B1' then 1 else 0 end) as woolCheckB1Cnt,
+					sum(case when au.is_hidden=1 and p2.value='B2' then 1 else 0 end) as woolCheckB2Cnt,
+					sum(case when au.is_hidden=1 and p3.value !=1 then 1 else 0 end) as mobileCheckCnt,
+					sum(case when au.is_hidden=1 then 1 else 0 end) as decrementCnt,
+					sum(case when au.is_hidden=1 and TIMESTAMPDIFF(MINUTE,u.creation_date,au.creation_date)<![CDATA[<]]> 15 then 1 else 0 end) as decrementNewCnt,
+					sum(case when au.is_hidden=1 and TIMESTAMPDIFF(MINUTE,u.creation_date,au.creation_date)<![CDATA[>=]]> 15 then 1 else 0 end) as decrementOldCnt,
+					<if test="getAdStatistic" >
+					count(case when au.user_id is not null and  au.user_type= 3 then 1 else null end) as adCnt,
+					</if>
+					count(case when ur.loan_amount > 0 then 1 else null end) as loanCnt
+				FROM mgt_org_app_channel_users au
+				LEFT JOIN mgt_users u on au.user_id = u.user_id 
+				LEFT JOIN mgt_org_users ou on au.user_id = ou.user_id  <if test="orgId!=null" >AND ou.org_id = #{orgId}</if>
+				LEFT JOIN mgt_user_properties p2 on p2.user_id = u.user_id AND p2.`name` = 'woolcheckResult'
+				LEFT JOIN mgt_user_properties p3 on p3.user_id = u.user_id AND p3.`name` = 'mobileCheckResult'
+				left join mgt_user_properties p1 on p1.user_id = u.user_id AND p1.name = 'decrementResult'
+				LEFT JOIN mgt_user_loan_records ur on ur.user_id = u.user_id
+				WHERE 1=1
+					 <if test="orgId!=null" >
+					 	AND au.org_id = #{orgId}
+					 </if>
+					<if test="!woolcheckResult" >
+						AND p2.value is null
+					</if>
+					<if test="!mobileCheckResult" >
+						AND p3.value is null
+					</if>
+					<if test="startDate != null">
+						AND au.creation_date <![CDATA[>=]]> #{startDate}
+					</if>
+					<if test="endDate != null">
+						AND au.creation_date <![CDATA[<]]> #{endDate}
+					</if>	
+					<if test="userType != null">
+						AND au.user_type = #{userType}
+					</if>		
+				GROUP BY au.channel_code
+			) tcnt ON tcnt.channel_code = c.channel_code
+			LEFT JOIN (
+				SELECT uel.source_id as channel_code, 
+					count(case when uel.event_name = 'index' AND uel.event_action = 'init' then 1 else null end) as clickCnt, 
+					count(case when uel.event_name = 'index' AND uel.event_action = 'init' AND uel.event_value=1 then 1 else null end) as clickCnt1, 
+					count(case when uel.event_name = 'index' AND uel.event_action = 'init' AND uel.event_value=2 then 1 else null end) as clickCnt2, 
+					count(distinct uel.cookie_id) as uvCnt,
+					count(distinct CASE WHEN uel.event_value=1 then uel.cookie_id ELSE null END ) as uvCnt1,
+					count(distinct CASE WHEN uel.event_value=2 then uel.cookie_id ELSE null END ) as uvCnt2
+				FROM mgt_user_event_logs uel
+				WHERE 1=1
+				<if test="startDate != null">
+					AND uel.creation_date <![CDATA[>=]]> #{startDate}
+				</if>
+				<if test="endDate != null">
+					AND uel.creation_date <![CDATA[<]]> #{endDate}
+				</if>	
+				GROUP BY uel.source_id
+			) tlogs ON tlogs.channel_code = c.channel_code
+			WHERE c.status != 1
+				<if test="includeHiddenChannel == false">
+					AND c.is_hidden = 0
+				</if>
+				<if test="channelCode != null">
+					AND c.channel_code = #{channelCode}
+				</if>
+				<if test="mode!=null" >
+					AND c.mode = #{mode}
+				</if>
+				<if test="orgId!=null" >
+					AND acc.org_id = #{orgId}
+				</if>
+				<if test="searchText!=null">
+					AND (c.channel_name like CONCAT('%',#{searchText},'%') OR acc.username like CONCAT('%',#{searchText},'%') OR acc.nickname like CONCAT('%',#{searchText},'%') )
+				</if>
+				<if test="null != groupName">
+					<if test="groupName == 'undefined' ">
+						AND c.group_name IS NULL
+					</if>
+					<if test="groupName != 'undefined' ">
+						AND c.group_name = #{groupName}
+					</if>
+				</if>
+				<if test="null != accountId">
+					AND acc.account_id = #{accountId}
+				</if>
+				ORDER BY <if test="isReduce">tcnt.registerCnt DESC,</if>c.creation_date DESC
+
+	</select>
+
+	<select id="selectXjlChannels" resultMap="channels">
+		SELECT
+			<include refid="channelInfo"/>,
+			acc.nickname AS nickname,
+			tlogs.clickCnt AS clickCnt,
+			tlogs.uvCnt AS uvCnt,
+			tcnt.h5RegisterCnt as h5RegisterCnt,
+			cl.appLoginCnt AS appLoginCnt,
+			lg.loanCnt AS loanCnt,
+			lg.profitTotal AS profitTotal,
+			lg.borrowingCnt AS borrowingCnt
+		FROM mgt_channels c
+		JOIN mgt_accounts acc ON c.creator = acc.account_id
+		LEFT JOIN (
+			SELECT u.channel_code as channel_code,
+			count(1) as h5RegisterCnt
+			FROM mgt_org_app_channel_users u
+			WHERE 1=1
+			<if test="startDate != null">
+				AND u.creation_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null">
+				AND u.creation_date <![CDATA[<]]> #{endDate}
+			</if>
+			GROUP BY u.channel_code
+		) tcnt ON tcnt.channel_code = c.channel_code
+		LEFT JOIN (
+			SELECT cu.channel_code as channel_code,COUNT(ll.user_id) AS appLoginCnt
+			FROM mgt_org_app_channel_users cu
+			JOIN (
+			SELECT DISTINCT(g.user_id) AS user_id  FROM mgt_user_login_logs g
+			WHERE g.application_id = 2 AND g.channel_code = 'xjl'
+			<if test="startDate != null">
+				AND g.creation_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null">
+				AND g.creation_date <![CDATA[<]]> #{endDate}
+			</if>
+			) AS ll ON ll.user_id = cu.user_id
+			WHERE org_id = #{orgId}
+			GROUP BY cu.channel_code
+		) cl ON cl.channel_code = c.channel_code
+		LEFT JOIN (
+		SELECT uel.source_id as channel_code,
+			count(case when uel.event_name = 'index' AND uel.event_action = 'init' then 1 else null end) as clickCnt,
+			count(distinct uel.cookie_id) as uvCnt
+			FROM mgt_user_event_logs uel
+			WHERE 1=1
+			<if test="startDate != null">
+				AND uel.creation_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null">
+				AND uel.creation_date <![CDATA[<]]> #{endDate}
+			</if>
+			GROUP BY uel.source_id
+		) tlogs ON tlogs.channel_code = c.channel_code
+		LEFT JOIN (
+			SELECT cu.channel_code as channel_code,COUNT(ll.amount) AS borrowingCnt ,
+			COUNT(case when ll.status IN (3,4,5,99) then 1 else null end) AS loanCnt,
+			SUM(IF((ll.status=99),ll.amount+ll.service_fee,0)) - SUM(IF((ll.status in(3,4,5,99)),ll.amount,0)) AS profitTotal
+			FROM mgt_org_app_channel_users cu
+			LEFT JOIN (
+				SELECT  g.*  FROM mgt_xjl_apply_records g
+				WHERE g.org_id = #{orgId}
+				<if test="startDate != null">
+					AND g.creation_date <![CDATA[>=]]> #{startDate}
+				</if>
+				<if test="endDate != null">
+					AND g.creation_date <![CDATA[<]]> #{endDate}
+				</if>
+			) AS ll ON ll.user_id = cu.user_id
+			WHERE cu.org_id = #{orgId}
+
+			GROUP BY cu.channel_code
+		) lg ON lg.channel_code = c.channel_code
+		WHERE c.status != 1
+			AND acc.org_id = #{orgId}
+		<if test="searchText!=null">
+			AND (c.channel_name like CONCAT('%',#{searchText},'%') OR acc.username like CONCAT('%',#{searchText},'%') OR acc.nickname like CONCAT('%',#{searchText},'%') )
+		</if>
+		ORDER BY c.creation_date DESC
+	</select>
+
+	<update id="frozeChannel">
+		UPDATE mgt_channels
+		SET status = 2
+		WHERE channel_code = #{channelCode}
+	</update>
+
+
+	<update id="thawChannel">
+		UPDATE mgt_channels
+		SET status = 0
+		WHERE channel_code = #{channelCode}
+	</update>
+	
+	<select id="selectUserRegisterChannal" resultMap="channels">
+		SELECT <include refid="channelInfo"></include>
+		FROM mgt_users u
+		LEFT JOIN mgt_org_users ou ON u.user_id = ou.user_id and ou.org_id = #{orgId}
+		LEFT JOIN mgt_channels c ON c.channel_code = ou.s_channel_code
+		WHERE u.user_id = #{userId}
+		LIMIT 1
+	</select>
+
+	<select id="selectExistsDelegate" resultType="java.lang.Integer">
+		SELECT EXISTS(SELECT 1 FROM mgt_channels c LEFT JOIN mgt_accounts acc ON c.creator=acc.account_id
+ 		WHERE acc.org_id=#{orgId} AND c.is_delegate=1)
+ 	</select>
+ 	
+	<select id="selectOrgDelegateChannelWithStatistic" resultMap="channels">
+		SELECT <include refid="channelInfo"/>,a.nickName as nickName, t.registerCnt
+		FROM mgt_channels c
+		LEFT JOIN (
+			SELECT ou.s_channel_code as channel_code, COUNT(1) registerCnt
+			FROM mgt_org_users ou
+			WHERE ou.org_id = #{orgId} AND ou.org_id = ou.s_org_id 
+			<if test="startDate != null">
+					AND ou.creation_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null">
+					AND ou.creation_date <![CDATA[<]]> #{endDate}
+			</if>	
+			GROUP BY ou.s_channel_code 
+		)t ON t.channel_code = c.channel_code
+		LEFT JOIN mgt_accounts a ON c.creator = a.account_id
+			WHERE is_delegate = 1 AND is_hidden = 1 AND  a.org_id = #{orgId}
+		LIMIT 1
+	</select>
+	
+	
+	<select id="selectOrgDelegateChannel" resultMap="channels">
+		SELECT <include refid="channelInfo"/>
+		FROM mgt_channels c
+		LEFT JOIN mgt_accounts a ON c.creator = a.account_id
+			WHERE c.is_delegate = 1 AND c.is_hidden = 1 AND  a.org_id = #{orgId}
+		LIMIT 1
+	</select>
+	
+	<select id="getChannelNamesAndCodes" resultType="com.jbb.mgt.core.domain.ChannelSimpleInfo">
+		SELECT  c.channel_code AS channelCode,c.channel_name AS channelName
+		FROM mgt_channels c 
+        LEFT JOIN mgt_accounts a on c.creator =a.account_id 
+        WHERE a.org_id =#{orgId} AND c.`status` !=1
+        <if test="includeHiddenChannel == false">
+		AND c.is_hidden = 0
+		</if>
+		<if test="null != groupName">
+			<if test="groupName == 'undefined' ">
+				AND c.group_name IS NULL
+			</if>
+			<if test="groupName != 'undefined' ">
+				AND c.group_name = #{groupName}
+			</if>
+		</if>
+	</select>
+	
+	<update id="updateMsgTimes">
+		UPDATE mgt_channels
+		SET msg_times = #{times}
+		WHERE channel_code = #{channelCode}
+	</update>
+	
+	<update id="updateChannelTest">
+		UPDATE mgt_channels
+		SET test_flag = 0,
+		<if test="merchantId != null">
+		merchant_id=#{merchantId},
+		</if>
+		<if test="merchantId2 != null">
+		merchant_id2=#{merchantId2},
+		</if>
+		redirect_url=#{redirectUrl}
+		WHERE channel_code = #{channelCode}
+	</update>
+
+	<select id="selectChannelGroupName" resultType="java.lang.String">
+		SELECT DISTINCT(group_name) FROM mgt_channels
+		WHERE group_name is NOT NULL
+	</select>
+
+	<select id="selectChannelPromotion" resultType="com.jbb.mgt.core.domain.ChannelPromotion">
+		SELECT
+			au.channel_code AS channelCode,
+			COUNT(au.user_Id) AS registerCnt,sum(case when ou.entry_status = 1 then 1 else 0 end ) as intoCnt
+		FROM
+		mgt_org_app_channel_users au
+		LEFT JOIN mgt_org_users ou ON ou.user_id = au.user_id AND ou.org_id = #{orgId}
+		WHERE
+		au.channel_code = #{channelCode} AND au.org_id = #{orgId}
+		AND au.is_hidden = 0
+		<if test="null != startDate">
+			AND au.creation_date <![CDATA[>=]]> #{startDate}
+		</if>
+		<if test="null != endDate">
+			AND au.creation_date <![CDATA[<]]> #{endDate}
+		</if>
+	</select>
+
+</mapper>

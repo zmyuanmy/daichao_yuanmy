@@ -1,0 +1,1051 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.XjlApplyRecordMapper">
+
+	<insert id="insertXjlApplyRecord" useGeneratedKeys="true" keyProperty="applyId">
+		INSERT INTO mgt_xjl_apply_records(
+		    user_id, org_id, status, amount, service_fee, purpose, loan_date,
+			days, repayment_date, actual_repayment_date,creation_date)
+		VALUES (#{userId}, #{orgId}, #{status}, #{amount}, #{serviceFee}, #{purpose}, #{loanDate},
+			#{days}, #{repaymentDate}, #{actualRepaymentDate},#{creationDate})
+	</insert>
+
+	<update id="updateXjlApplyRecord">
+		UPDATE mgt_xjl_apply_records
+		SET user_id = #{userId}, org_id = #{orgId}, status =#{status}, amount =#{amount},
+			service_fee = #{serviceFee}, purpose = #{purpose}, loan_date = #{loanDate}, days = #{days},
+			repayment_date = #{repaymentDate}, actual_repayment_date = #{actualRepaymentDate},
+			open_id = #{openId},
+			notify_status = #{notifyStatus},
+			apply_status = #{applyStatus},
+			apply_msg = #{applyMsg}
+		WHERE apply_id = #{applyId}
+	</update>
+
+	<sql id="xjlApplyRecordInfo">
+		xar.apply_id AS applyId, xar.user_id AS userId, xar.org_id AS orgId, xar.status AS status, xar.amount AS amount,
+		xar.service_fee AS serviceFee,xar.creation_date AS creationDate, xar.purpose AS purpose, xar.loan_date AS loanDate, xar.days AS days,
+		xar.repayment_date AS repaymentDate, xar.actual_repayment_date AS actualRepaymentDate,
+		xar.open_id AS openId,xar.notify_status AS notifyStatus,xar.apply_status AS applyStatus,xar.apply_msg AS applyMsg,
+		xar.final_acc_id AS finalAccountId,xar.final_entry_date AS finalEntryDate, xar.final_approval_date AS finalApprovalDate,
+		xar.collector_acc_id AS collectorAccId,xar.collector_entry_date AS collectorEntryDate,
+		xar.interest AS interest, xar.renewal_cnt AS renewalCnt,xar.loan_again AS loanAgain,xar.late_fee  AS lateFee
+	</sql>
+
+	<sql id="recordCols">
+		mxur.order_id AS orderId2, mxur.user_id AS userId, mxur.type AS type, mxur.status AS status2, mxur.creation_date AS creationDate22,
+        mxur.update_date AS updateDate2, mxur.expiry_date AS expiryDate, mxur.ip_address AS ipAddress, mxur.terminal_type AS terminalType,
+        mxur.terminal_id AS terminalId, mxur.card_no AS cardNo, mxur.pay_product_id AS payProductId
+	</sql>
+
+	<sql id="PayRecords">
+		mxpr.order_id AS orderId3,mxpr.custom_number AS customNumber,mxpr.amount AS orderId,mxpr.bank_code AS bankCode,
+		mxpr.bank_account_number AS bankAccountNumber,mxpr.bank_account_name AS bankAccountName,mxpr.biz AS biz,
+		mxpr.bank_union_code AS bankUnionCode,mxpr.fee_type AS feeType,mxpr.urgency AS urgency,mxpr.summary AS summary,
+		mxpr.serial_number AS serialNumber,mxpr.order_status AS orderStatus,mxpr.creation_date AS creationDate3,
+		mxpr.update_date AS updateDate3,mxpr.account_id AS accountId,mxpr.ret_reason AS retReason
+	</sql>
+	<sql id="channels">
+		c.channel_name AS channelName,
+		c.status AS stauts2,
+		c.mode AS mode2,
+		c.creator AS creator,
+		c.qq_required AS qqRequired,
+		c.wechat_required AS wechatRequired,
+		c.zhima_required AS zhimaRequired,
+		c.idcard_info_required AS idcardInfoRequired2,
+		c.idcard_back_required AS idcardBackRequired2,
+		c.idcard_rear_required AS idcardRearRequired2,
+		c.header_required AS headerRequired,
+		c.mobile_contract1_required AS mobileContract1Required,
+		c.mobile_contract2_required AS mobileContract2Required,
+		c.mobile_service_info_required AS mobileServiceInfoRequired,
+		c.cpa_price AS cpaPrice,
+		c.cps_price AS cpsPrice,
+		c.receive_mode AS receiveMode,
+		c.is_hidden AS hidden,
+		c.taobao_required AS taobaoRequired,
+		c.jingdong_required AS jingdongRequired,
+		c.gjj_required AS gjjRequired,
+		c.sj_required AS sjRequired,
+		c.chsi_required AS chsiRequired,
+		c.check_wool AS checkWool,
+		c.check_mobile AS checkMobile,
+		c.is_delegate AS delegate,
+		c.delegate_enabled AS delegateEnabled,
+		c.msg_times AS msgTimes,
+		c.test_flag AS testFlag,
+		c.reduce_enable AS reduceEnable,
+		c.reduce_percent AS reducePercent,
+		c.company_required AS companyRequired
+	</sql>
+
+	<select id="selectXjlApplyRecordByApplyId" resultType="com.jbb.mgt.core.domain.XjlApplyRecord">
+		SELECT <include refid="xjlApplyRecordInfo"/>
+		FROM mgt_xjl_apply_records xar
+		WHERE xar.apply_id = #{applyId}
+		<if test="null != orgId" >
+			AND xar.org_id =#{orgId}
+		</if>
+		<if test="preLoan">
+			AND (xar.status=1 OR xar.status=6)
+		</if>
+	</select>
+
+	<select id="selectXjlApplyRecordByOpenId" resultType="com.jbb.mgt.core.domain.XjlApplyRecord">
+		SELECT <include refid="xjlApplyRecordInfo"/>
+		FROM mgt_xjl_apply_records xar
+		WHERE xar.open_id = #{openId}
+	</select>
+
+	<resultMap id="XjlApplyRecords" type="com.jbb.mgt.core.domain.XjlApplyRecord">
+		<id property="applyId" column="applyId" />
+		<result property="userId" column="userId" />
+		<result property="orgId" column="orgId" />
+		<result property="status" column="status" />
+		<result property="amount" column="amount" />
+		<result property="serviceFee" column="serviceFee" />
+		<result property="creationDate" column="creationDate" />
+		<result property="purpose" column="purpose" />
+		<result property="loanDate" column="loanDate" />
+		<result property="loanAmount" column="loanAmount" />
+		<result property="days" column="days" />
+		<result property="repaymentDate" column="repaymentDate" />
+		<result property="actualRepaymentDate" column="actualRepaymentDate" />
+		<result property="address" column="address" />
+		<result property="amountTotal" column="amountTotal" />
+		<result property="serviceFeeTotal" column="serviceFeeTotal" />
+		<result property="repaymentTotal" column="repaymentTotal" />
+		<result property="toRepaymentTotal" column="toRepaymentTotal" />
+		<result property="openId" column="openId" />
+		<result property="notifyStatus" column="notifyStatus" />
+		<result property="applyStatus" column="applyStatus" />
+		<result property="applyMsg" column="applyMsg" />
+		<result property="finalAccountId" column="finalAccountId" />
+		<result property="finalEntryDate" column="finalEntryDate" />
+		<result property="finalApprovalDate" column="finalApprovalDate" />
+		<result property="collectorAccId" column="collectorAccId" />
+		<result property="collectorEntryDate" column="collectorEntryDate" />
+		<result property="repaymentCnt" column="repaymentCnt" />
+		<result property="userStatus" column="userStatus" />
+		<result property="renewalCnt" column="renewalCnt" />
+		<result property="interest" column="interest" />
+		<result property="loanAgain" column="loanAgain" />
+		<result property="lateFee" column="lateFee" />
+		<association property="user" javaType="com.jbb.mgt.core.domain.User">
+			<id property="userId" column="userId" />
+			<result property="jbbUserId" column="jbbUserId" />
+			<result property="phoneNumber" column="phoneNumber" />
+			<result property="userName" column="userName" />
+			<result property="sex" column="sex" />
+			<result property="age" column="age" />
+			<result property="census" column="census" />
+			<result property="email" column="email" />
+			<result property="idCard" column="idCard" />
+			<result property="ipAddress" column="ipAddress" />
+			<result property="ipArea" column="ipArea" />
+			<result property="zhimaScore" column="zhimaScore" />
+			<result property="qq" column="qq" />
+			<result property="wechat" column="wechat" />
+			<result property="realnameVerified" column="realnameVerified" />
+			<result property="mobileVerified" column="mobileVerified" />
+			<result property="zhimaVerified" column="zhimaVerified" />
+			<result property="jingdongVerified" column="jingdongVerified" />
+			<result property="siVerified" column="siVerified" />
+			<result property="gjjVerified" column="gjjVerified" />
+			<result property="chsiVerified" column="chsiVerified" />
+			<result property="creationDate" column="creationDate2" />
+			<result property="idcardRear" column="idcardRear" />
+			<result property="idcardBack" column="idcardBack" />
+			<result property="idcardInfo" column="idcardInfo" />
+			<result property="vidoeScreenShot" column="vidoeScreenShot" />
+			<result property="platform" column="platform" />
+			<result property="mobileManufacture" column="mobileManufacture" />
+			<result property="idcardAddress" column="idcardAddress" />
+			<result property="race" column="race" />
+			<result property="password" column="password" />
+			<result property="applyId" column="applyId" />
+			<result property="applyOrgIds" column="applyOrgNames" />
+			<result property="applyOrgNames" column="applyOrgNames" />
+			<result property="contract1Relation" column="contract1Relation" />
+			<result property="contract1Username" column="contract1Username" />
+			<result property="contract1Phonenumber" column="contract1Phonenumber" />
+			<result property="contract2Relation" column="contract2Relation" />
+			<result property="contract2Username" column="contract2Username" />
+			<result property="contract2Phonenumber" column="contract2Phonenumber" />
+			<result column="applyCreationDate" property="creationDate"/>
+			<result column="initMarks" property="initMarks"/>
+			<result property="userType" column="userType" />
+			<result property="zhimaMin" column="zhimaMin" />
+			<result property="zhimaMax" column="zhimaMax" />
+			<result property="maritalStatus" column="maritalStatus" />
+			<result property="education" column="education" />
+			<result property="contract1XjlRelation" column="contract1XjlRelation" />
+			<result property="contract1XjlUsername" column="contract1XjlUsername" />
+			<result property="contract1XjlPhonenumber" column="contract1XjlPhonenumber" />
+			<result property="contract2XjlRelation" column="contract2XjlRelation" />
+			<result property="contract2XjlUsername" column="contract2XjlUsername" />
+			<result property="contract2XjlPhonenumber" column="contract2XjlPhonenumber" />
+		</association>
+		<association property="xjlUserOrder" javaType="com.jbb.mgt.core.domain.XjlUserOrder">
+			<id property="orderId" column="orderId2" />
+			<result property="userId" column="userId" />
+			<result property="applyId" column="applyId" />
+			<result property="type" column="type" />
+			<result property="status" column="status2" />
+			<result property="creationDate" column="creationDate22" />
+			<result property="updateDate" column="updateDate2" />
+			<result property="expiryDate" column="expiryDate" />
+			<result property="ipAddress" column="ipAddress" />
+			<result property="terminalType" column="terminalType" />
+			<result property="terminalId" column="terminalId" />
+			<result property="cardNo" column="cardNo" />
+			<result property="payProductId" column="payProductId" />
+		</association>
+		<association property="payRecord" javaType="com.jbb.mgt.core.domain.PayRecord">
+			<id property="orderId" column="orderId3" />
+			<result property="customNumber" column="customNumber" />
+			<result property="amount" column="amount" />
+			<result property="bankCode" column="bankCode" />
+			<result property="bankAccountNumber" column="bankAccountNumber" />
+			<result property="bankAccountName" column="bankAccountName" />
+			<result property="biz" column="biz" />
+			<result property="bankUnionCode" column="bankUnionCode" />
+			<result property="feeType" column="feeType" />
+			<result property="urgency" column="urgency" />
+			<result property="summary" column="summary" />
+			<result property="serialNumber" column="serialNumber" />
+			<result property="orderStatus" column="orderStatus" />
+			<result property="creationDate" column="creationDate3" />
+			<result property="updateDate" column="updateDate3" />
+			<result property="accountId" column="accountId" />
+			<result property="applyId" column="applyId" />
+			<result property="retReason" column="retReason" />
+		</association>                         
+		<association property="channel" javaType="com.jbb.mgt.core.domain.Channel">
+			<id property="channelCode" column="channelCode" />
+			<result property="channelName" column="channelName" />
+			<result property="status" column="status" />
+			<result property="mode" column="mode2" />
+			<result property="creator" column="creator" />
+			<result property="qqRequired" column="qqRequired" />
+			<result property="wechatRequired" column="wechatRequired" />
+			<result property="zhimaRequired" column="zhimaRequired" />
+			<result property="idcardInfoRequired" column="idcardInfoRequired2" />
+			<result property="idcardBackRequired" column="idcardBackRequired2" />
+			<result property="idcardRearRequired" column="idcardRearRequired2" />
+			<result property="headerRequired" column="headerRequired" />
+			<result property="mobileContract1Required" column="mobileContract1Required" />
+			<result property="mobileContract2Required" column="mobileContract2Required" />
+	        <result property="mobileServiceInfoRequired" column="mobileServiceInfoRequired" />
+			<result property="cpaPrice" column="cpaPrice" />
+			<result property="cpsPrice" column="cpsPrice" /> 
+            <result property="receiveMode" column="receiveMode" />
+			<result property="hidden" column="hidden" />
+			<result property="taobaoRequired" column="taobaoRequired" />
+			<result property="jingdongRequired" column="jingdongRequired" />
+            <result property="gjjRequired" column="gjjRequired" />
+			<result property="sjRequired" column="sjRequired" />
+			<result property="chsiRequired" column="chsiRequired" />
+			<result property="checkWool" column="checkWool" />
+			<result property="checkMobile" column="checkMobile" />			
+			<result property="delegate" column="delegate" />
+			<result property="delegateEnabled" column="delegateEnabled" />
+			<result property="msgTimes" column="msgTimes" />
+			<result property="testFlag" column="testFlag" />
+			<result property="reduceEnable" column="reduceEnable" />
+			<result property="reducePercent" column="reducePercent" />
+			<result property="companyRequired" column="companyRequired" />
+		</association>
+		<association property="finalAccount" javaType="com.jbb.mgt.core.domain.Account">
+			<id property="accountId" column="finalAccountId" jdbcType="INTEGER" />
+			<result property="username" column="finalUsername" jdbcType="VARCHAR" />
+			<result property="nickname" column="finalNickName" jdbcType="VARCHAR"/>
+		</association>
+		<!-- <association property="collectAccount" javaType="com.jbb.mgt.core.domain.Account">
+			<id property="accountId" column="collectorAccId" jdbcType="INTEGER" />
+			<result property="username" column="collectUsername" jdbcType="VARCHAR" />
+			<result property="nickname" column="collectNickName" jdbcType="VARCHAR"/>
+		</association> -->
+	</resultMap>
+
+	<sql id="userInfo">
+		u.jbb_user_id as jbbUserId, u.ip_area as ipArea, u.username AS userName , u.phone_number AS phoneNumber ,
+			u.idcard AS idCard,u.ip_address AS ipAddress,u.zhima_score AS zhimaScore,
+			u.qq AS qq,u.wechat AS wechat,u.idcard_rear AS idcardRear,u.idcard_back AS idcardBack,u.idcard_info AS idcardInfo,
+			u.vidoe_screen_shot AS vidoeScreenShot,u.platform AS platform,u.mobile_manufacture AS mobileManufacture,
+			u.idcard_address AS idcardAddress,u.race AS race, u.password as password,
+			u.contract1_relation AS contract1Relation,u.contract1_username AS contract1Username,u.contract1_phonenumber AS contract1Phonenumber,
+			u.contract2_relation AS contract2Relation,u.contract2_username AS contract2Username,u.contract2_phonenumber AS contract2Phonenumber,
+			u.realname_verified AS realnameVerified,u.mobile_verified AS mobileVerified,u.zhima_verified AS zhimaVerified,u.jingdong_verified AS jingdongVerified,
+			u.si_verified AS siVerified,u.gjj_verified AS gjjVerified,u.chsi_verified AS chsiVerified,
+			u.creation_date AS creationDate2, u.zhima_min AS zhimaMin, u.zhima_max AS zhimaMax, az.areazone as 'census',
+			(YEAR(NOW()) - substring(u.idCard,7,4)) as age,
+			CASE
+			WHEN substring(u.idCard,17,1)%2=1 THEN '男'
+			WHEN substring(u.idCard,17,1)%2=0 THEN '女'
+			END AS 'sex'
+	</sql>
+
+	<select id="selectXjlApplyRecords" resultMap="XjlApplyRecords">
+		SELECT
+		<include refid="xjlApplyRecordInfo"/>, <include refid="userInfo"/> , ul.address AS address,
+		<include refid="PayRecords"/>,<include refid="recordCols"/>,
+		orau.channel_code AS channelCode,c.channel_name AS channelName
+		, accF.username AS finalUsername, accF.nickname AS finalNickName
+		, accL.username AS collectUsername, accL.nickname AS collectNickName
+		, xua.loan_cnt AS repaymentCnt
+		FROM mgt_xjl_apply_records xar INNER JOIN mgt_users u ON xar.user_id = u.user_id
+		LEFT JOIN mgt_org_app_channel_users orau ON orau.user_id=xar.user_id AND orau.org_id=xar.org_id AND application_id=2
+		LEFT JOIN mgt_xjl_users_accounts xua ON xua.user_id=xar.user_id AND xua.org_id= xar.org_id
+		LEFT JOIN mgt_channels c ON c.channel_code=orau.channel_code
+		LEFT JOIN mgt_accounts accF ON xar.final_acc_id = accF.account_id
+		LEFT JOIN mgt_accounts accL ON xar.collector_acc_id = accL.account_id
+		LEFT JOIN areazones az ON left(u.idCard,6) = az.zone
+		LEFT JOIN ( SELECT user_id,address FROM mgt_user_locations GROUP BY user_id
+		) ul ON ul.user_id = u.user_id
+		LEFT JOIN mgt_xjl_user_orders mxur ON mxur.apply_id = xar.apply_id AND mxur.creation_date = (
+		SELECT  max(t.creation_date) FROM
+		mgt_xjl_user_orders t WHERE t.apply_id=xar.apply_id)
+
+		LEFT JOIN mgt_xjl_pay_records mxpr on mxpr.applyId = xar.apply_id AND mxpr.creation_date = (
+		SELECT   max(t1.creation_date)  FROM
+		mgt_xjl_pay_records t1 WHERE t1.applyId=xar.apply_id)
+		WHERE xar.org_id = #{orgId}
+		<if test="null != userId">
+			AND xar.user_id = #{userId}
+		</if>
+		<if test="null != status">
+			AND xar.status IN
+			<foreach item="statu" index="index" collection="status" open="(" separator="," close=")">
+				#{statu}
+			</foreach>
+		</if>
+		<if test="dateType!=null">
+			<choose>
+				<when test="dateType==1">
+					<if test="null != startDate">
+						AND xar.creation_date <![CDATA[>=]]> #{startDate}
+					</if>
+					<if test="null != endDate" >
+						AND xar.creation_date <![CDATA[<]]> #{endDate}
+					</if>
+				</when>
+				<when test="dateType==2">
+					<if test="null != startDate">
+						AND xar.loan_date <![CDATA[>=]]> #{startDate}
+					</if>
+					<if test="null != endDate" >
+						AND xar.loan_date <![CDATA[<]]> #{endDate}
+					</if>
+
+				</when>
+				<when test="dateType==3">
+					<if test="null != startDate">
+						AND xar.repayment_date <![CDATA[>=]]> #{startDate}
+					</if>
+					<if test="null != endDate" >
+						AND xar.repayment_date <![CDATA[<]]> #{endDate}
+					</if>
+				</when>
+				<otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+			</choose>
+		</if>
+
+		<if test="null != searchText">
+			AND ( u.username LIKE CONCAT('%',#{searchText},'%') or u.phone_number LIKE CONCAT('%',#{searchText},'%')
+			or u.idcard LIKE CONCAT('%',#{searchText},'%') or u.jbb_user_id=#{searchText})
+		</if>
+		<if test="channelCode != null and channelCode != ''">
+			AND orau.channel_code = #{channelCode}
+		</if>
+		<if test="finalAccId != null and finalAccId != ''">
+			AND xar.final_acc_id = #{finalAccId}
+		</if>
+		<if test="collectorAccId != null and collectorAccId != ''">
+			AND xar.collector_acc_id = #{collectorAccId}
+		</if>
+		<if test="loanType != null and loanType != ''">
+			<choose>
+				<when test="loanType==1"> AND(xua.loan_cnt is null OR xua.loan_cnt=0)</when>
+				<when test="loanType==2"> AND xua.loan_cnt > 0</when>
+				<otherwise>AND 1 = 0</otherwise>
+			</choose>
+		</if>
+		<if test="accountId!=null">
+			<choose>
+				<when test="listType=='toFinalPull'"> AND xar.final_acc_id is null AND xar.status=6</when>
+				<when test="listType=='toCollectPull'"> AND xar.collector_acc_id is null AND xar.status in (3,4,5)</when>
+				<when test="listType=='finalPull'"> AND (xar.final_acc_id=#{accountId} or xar.collector_acc_id=#{accountId}) </when>
+				<!--  <when test="listType=='collectPull'"> AND  xar.collector_acc_id=#{accountId}</when>-->
+				<otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+			</choose>
+		</if>
+		<if test="accountId==null">
+			<choose>
+				<when test="listType=='toFinalPull'"> AND xar.final_acc_id is null AND xar.status=6</when>
+				<when test="listType=='toCollectPull'"> AND xar.collector_acc_id is null AND xar.status in (3,4,5)</when>
+				<when test="listType=='finalPull'"> AND  (xar.final_acc_id is not null or xar.collector_acc_id is not null)</when>
+				<when test="listType=='machineCheck'"> AND  1=1</when>
+				<otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+			</choose>
+		</if>
+		ORDER BY xar.creation_date DESC
+	</select>
+
+	<select id="selectXjlApplyRecordsTotal" resultType="com.jbb.mgt.core.domain.LoanTotal">
+		SELECT xar.apply_id AS applyId,
+		SUM(xar.amount) AS amountTotal,SUM(IF((xar.status=99),xar.service_fee,0)) AS serviceFeeTotal ,
+		SUM( IF((xar.status=99),xar.amount+xar.service_fee,0)) AS repaymentTotal, SUM(IF((xar.status !=99),xar.amount+xar.service_fee,0) ) AS toRepaymentTotal
+		FROM mgt_xjl_apply_records xar INNER JOIN mgt_users u ON xar.user_id = u.user_id
+		LEFT JOIN areazones az ON left(u.idCard,6) = az.zone
+		LEFT JOIN ( SELECT user_id,address FROM mgt_user_locations GROUP BY user_id
+		) ul ON ul.user_id = u.user_id
+		WHERE xar.org_id = #{orgId}
+		<if test="null != userId">
+			AND xar.user_id = #{userId}
+		</if>
+		AND xar.status IN (3,4,5,99)
+		<if test="null != startDate">
+			AND xar.creation_date <![CDATA[>=]]> #{startDate}
+		</if>
+		<if test="null != endDate" >
+			AND xar.creation_date <![CDATA[<]]> #{endDate}
+		</if>
+		<if test="null != searchText">
+			AND ( u.username LIKE CONCAT('%',#{searchText},'%') or u.phone_number LIKE CONCAT('%',#{searchText},'%')
+			or u.idcard LIKE CONCAT('%',#{searchText},'%'))
+		</if>
+		GROUP BY xar.user_id
+	</select>
+
+	<select id="selectXjlApplyRecords_COUNT" resultType="Long">
+		SELECT
+		count(1)
+		FROM mgt_xjl_apply_records xar INNER JOIN mgt_users u ON xar.user_id = u.user_id
+		LEFT JOIN mgt_org_app_channel_users orau ON orau.user_id=xar.user_id AND orau.org_id=xar.org_id  AND application_id=2
+		LEFT JOIN mgt_xjl_users_accounts xua ON xua.user_id=xar.user_id AND xua.org_id= xar.org_id
+		LEFT JOIN mgt_channels c ON c.channel_code=orau.channel_code
+		WHERE xar.org_id = #{orgId}
+		<if test="null != userId">
+			AND xar.user_id = #{userId}
+		</if>
+		<if test="null != status">
+			AND xar.status IN
+			<foreach item="statu" index="index" collection="status" open="(" separator="," close=")">
+				#{statu}
+			</foreach>
+		</if>
+		<if test="dateType!=null">
+			<choose>
+				<when test="dateType==1">
+					<if test="null != startDate">
+						AND xar.creation_date <![CDATA[>=]]> #{startDate}
+					</if>
+					<if test="null != endDate" >
+						AND xar.creation_date <![CDATA[<]]> #{endDate}
+					</if>
+				</when>
+				<when test="dateType==2">
+					<if test="null != startDate">
+						AND xar.loan_date <![CDATA[>=]]> #{startDate}
+					</if>
+					<if test="null != endDate" >
+						AND xar.loan_date <![CDATA[<]]> #{endDate}
+					</if>
+
+				</when>
+				<when test="dateType==3">
+					<if test="null != startDate">
+						AND xar.repayment_date <![CDATA[>=]]> #{startDate}
+					</if>
+					<if test="null != endDate" >
+						AND xar.repayment_date <![CDATA[<]]> #{endDate}
+					</if>
+				</when>
+				<otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+			</choose>
+		</if>
+		<if test="null != searchText">
+			AND ( u.username LIKE CONCAT('%',#{searchText},'%') or u.phone_number LIKE CONCAT('%',#{searchText},'%')
+			or u.idcard LIKE CONCAT('%',#{searchText},'%') or u.jbb_user_id=#{searchText})
+		</if>
+		<if test="channelCode != null and channelCode != ''">
+			AND orau.channel_code = #{channelCode}
+		</if>
+		<if test="finalAccId != null and finalAccId != ''">
+			AND xar.final_acc_id = #{finalAccId}
+		</if>
+		<if test="collectorAccId != null and collectorAccId != ''">
+			AND xar.collector_acc_id = #{collectorAccId}
+		</if>
+		<if test="loanType != null and loanType != ''">
+			<choose>
+				<when test="loanType==1"> AND(xua.loan_cnt is null OR xua.loan_cnt=0)</when>
+				<when test="loanType==2"> AND xua.loan_cnt > 1</when>
+				<otherwise>AND 1 = 0</otherwise>
+			</choose>
+		</if>
+		<if test="accountId!=null">
+			<choose>
+				<when test="listType=='toFinalPull'"> AND xar.final_acc_id is null AND xar.status=6</when>
+				<when test="listType=='toCollectPull'"> AND xar.collector_acc_id is null AND xar.status in (3,4,5)</when>
+				<when test="listType=='finalPull'"> AND ( xar.final_acc_id=#{accountId} or xar.collector_acc_id=#{accountId})</when>
+				<!-- <when test="listType=='collectPull'"> AND  xar.collector_acc_id=#{accountId}</when> -->
+				<otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+			</choose>
+		</if>
+		<if test="accountId==null">
+			<choose>
+				<when test="listType=='toFinalPull'"> AND xar.final_acc_id is null AND xar.status=6</when>
+				<when test="listType=='toCollectPull'"> AND xar.collector_acc_id is null AND xar.status in (3,4,5)</when>
+				<when test="listType=='finalPull'"> AND  (xar.final_acc_id is not null or xar.collector_acc_id is not null)</when>
+				<when test="listType=='machineCheck'"> AND  1=1</when>
+				<otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+			</choose>
+		</if>
+	</select>
+
+	<select id="selectStatusCnts" resultType="com.jbb.mgt.core.domain.StatusCnt">
+		SELECT xa.status AS status ,COUNT(1) AS cnt
+		FROM mgt_xjl_apply_records xa LEFT JOIN mgt_users u ON xa.user_id = u.user_id
+		WHERE xa.org_id = #{orgId}
+		<if test="null != userId">
+			AND xa.user_id = #{userId}
+		</if>
+		<if test="null != status">
+			AND xa.status IN
+			<foreach item="statu" index="index" collection="status" open="(" separator="," close=")">
+				#{statu}
+			</foreach>
+		</if>
+		<if test="dateType!=null">
+			<choose>
+				<when test="dateType==1">
+					<if test="null != startDate">
+						AND xa.creation_date <![CDATA[>=]]> #{startDate}
+					</if>
+					<if test="null != endDate" >
+						AND xa.creation_date <![CDATA[<]]> #{endDate}
+					</if>
+				</when>
+				<when test="dateType==2">
+					<if test="null != startDate">
+						AND xa.loan_date <![CDATA[>=]]> #{startDate}
+					</if>
+					<if test="null != endDate" >
+						AND xa.loan_date <![CDATA[<]]> #{endDate}
+					</if>
+
+				</when>
+				<when test="dateType==3">
+					<if test="null != startDate">
+						AND xa.repayment_date <![CDATA[>=]]> #{startDate}
+					</if>
+					<if test="null != endDate" >
+						AND xa.repayment_date <![CDATA[<]]> #{endDate}
+					</if>
+				</when>
+				<otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+			</choose>
+		</if>
+		<if test="null != searchText">
+			AND ( u.username LIKE CONCAT('%',#{searchText},'%') or u.phone_number LIKE CONCAT('%',#{searchText},'%')
+			or u.idcard LIKE CONCAT('%',#{searchText},'%') or u.jbb_user_id=#{searchText})
+		</if>
+		<if test="accountId!=null">
+			<choose>
+				<when test="listType=='toFinalPull'"> AND xa.final_acc_id is null AND xa.status=6</when>
+				<when test="listType=='toCollectPull'"> AND xa.collector_acc_id is null AND xa.status in (3,4,5)</when>
+				<when test="listType=='finalPull'"> AND  (xa.final_acc_id=#{accountId} or xa.collector_acc_id=#{accountId})</when>
+				<otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+			</choose>
+		</if>
+		<if test="accountId==null">
+			<choose>
+				<when test="listType=='toFinalPull'"> AND xa.final_acc_id is null AND xa.status=6</when>
+				<when test="listType=='toCollectPull'"> AND xa.collector_acc_id is null AND xa.status in (3,4,5)</when>
+				<when test="listType=='finalPull'"> AND  (xa.final_acc_id is not null or xa.collector_acc_id is not null)</when>
+				<when test="listType=='machineCheck'"> AND  1=1</when>
+				<otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+			</choose>
+		</if>
+		
+		GROUP BY xa.status
+	</select>
+
+	<delete id="deleteXjlApplyRecordByapplyId">
+		DELETE FROM mgt_xjl_apply_records
+		WHERE apply_id = #{applyId}
+	</delete>
+
+	<select id="getXjlApplyRecordByUserId" resultMap="XjlApplyRecords">
+		SELECT <include refid="xjlApplyRecordInfo"/>,<include refid="PayRecords"/>,<include refid="recordCols"/>,mxua.user_status AS userStatus
+		FROM mgt_xjl_apply_records xar
+		LEFT JOIN mgt_xjl_user_orders mxur on mxur.apply_id=xar.apply_id
+		LEFT JOIN mgt_xjl_pay_records mxpr ON mxur.apply_id=mxpr.applyId
+		LEFT JOIN mgt_xjl_users_accounts mxua ON mxua.org_id=xar.org_id AND mxua.user_id=xar.user_id
+		WHERE  xar.user_id=#{userId}
+		<if test="null != orgId">
+			AND xar.org_id=#{orgId}
+		</if>
+		<if test="isToReturn">
+			AND xar.status in(3,4,5)
+		</if>
+		ORDER BY xar.creation_date DESC,mxur.creation_date DESC ,mxpr.creation_date DESC
+		<if test="detail==false">
+			LIMIT 1
+		</if>
+	</select>
+
+	<select id="checkXjlApplyExist" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM mgt_xjl_apply_records WHERE apply_id = #{applyId} AND org_id=#{orgId} AND status=1)
+	</select>
+
+	<select id="checkExistByUserId" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM mgt_xjl_apply_records WHERE user_id = #{userId} AND org_id=#{orgId})
+	</select>
+
+	<select id="selectXjlApplyRecordForCheck" resultType="com.jbb.mgt.core.domain.XjlApplyRecord">
+		SELECT <include refid="xjlApplyRecordInfo"/>
+		FROM mgt_xjl_apply_records xar
+		WHERE xar.status=0
+		ORDER BY creation_date limit #{num}
+	</select>
+
+	<select id="selectXjlApplyRecordList" resultType="com.jbb.mgt.core.domain.XjlApplyRecordListVO">
+		SELECT
+		u.jbb_user_id AS jbbUserId,
+		u.username AS userName,
+		u.phone_number AS phoneNumber,
+		u.idcard AS idCard,
+		u.platform AS platform,
+		rec.amount AS amount,
+		rec.creation_date AS creationDate,
+		rec.service_fee AS serviceFee,
+		rec.loan_date AS loanDate,
+		rec.repayment_date AS repaymentDate,
+		rec.actual_repayment_date AS actualRepaymentDate,
+		rec.status AS status,
+		rec.auditor AS auditor,
+		rec.exwheat AS exwheat,
+		rec.apply_id AS applyId,
+		uex.loans AS loans,
+		(SELECT COUNT(*) FROM mgt_xjl_apply_records WHERE status = 0) AS standByTrial,
+		(SELECT COUNT(*) FROM mgt_xjl_apply_records WHERE status = 2) AS refusalByMachine,
+		(SELECT COUNT(*) FROM mgt_xjl_apply_records WHERE status = 6) AS machineTrial,
+		(SELECT COUNT(*) FROM mgt_xjl_apply_records WHERE status = 7) AS humanRefusal,
+		(SELECT COUNT(*) FROM mgt_xjl_apply_records WHERE status = 1) AS pendingMoney,
+		(SELECT COUNT(*) FROM mgt_xjl_apply_records WHERE status = 3) AS alreadyReleased,
+		(SELECT COUNT(*) FROM mgt_xjl_apply_records WHERE status = 5) AS expired,
+		(SELECT COUNT(*) FROM mgt_xjl_apply_records WHERE status = 6) AS overdue,
+		(SELECT COUNT(*) FROM mgt_xjl_apply_records WHERE status = 99) AS reimbursement
+		FROM
+		mgt_xjl_apply_records rec
+		LEFT JOIN mgt_users u ON rec.user_id = u.user_id
+		LEFT JOIN mgt_xjl_user_extend uex ON rec.apply_id = uex.apply_id
+		<where>
+			<if test="platform != null and platform!=''">
+				AND u.platform = #{platform}
+			</if>
+			<if test="auditor != null and auditor!=''">
+				AND rec.auditor = #{auditor}
+			</if>
+			<if test="collector != null and collector!=''">
+				AND rec.collector = #{collector}
+			</if>
+			<if test="status != null and status!=''">
+				AND rec.status = #{status}
+			</if>
+			<if test="startDate != null and startDate!=''">
+				AND rec.creation_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null and endDate!=''">
+				AND rec.creation_date <![CDATA[<]]> #{endDate}
+			</if>
+			<if test="searchText !=null and searchText!=''">
+				AND (u.jbb_user_id LIKE CONCAT('%',#{searchText},'%') or u.username LIKE CONCAT('%',#{searchText},'%')
+				u.phone_number LIKE CONCAT('%',#{searchText},'%') u.idcard LIKE CONCAT('%',#{searchText},'%') )
+			</if>
+		</where>
+	</select>
+
+	<update id="updateStatus">
+		UPDATE
+		mgt_xjl_apply_records
+		SET
+		status=#{status}
+		WHERE apply_id =#{applyId}
+	</update>
+
+	<update id="updateAscriptionUserId">
+		update mgt_xjl_user_extend
+		set
+		ascription_user_id = #{ascriptionUserId}
+		where apply_id = #{applyId}
+	</update>
+
+	<select id="selectMachineTrialOrderList" resultType="com.jbb.mgt.core.domain.MachineTrialOrderVO">
+		SELECT
+		us.jbb_user_id AS jbbUserId,
+		us.username AS userName,
+		us.phone_number AS phoneNumber,
+		us.platform AS platform,
+		us.creation_date AS registerDate,
+		rec.creation_date AS creationDate,
+		rec.amount AS amount,
+		rec.`status` AS STATUS,
+		ux.ascription_user_id AS userId
+		FROM
+		mgt_xjl_apply_records rec
+		LEFT JOIN mgt_xjl_user_extend ux ON ux.apply_id = rec.apply_id
+		LEFT JOIN mgt_users us ON us.user_id = rec.user_id
+		LEFT JOIN mgt_org_app_channel_users chus ON rec.user_id = chus.user_id
+		LEFT JOIN mgt_channels ls ON chus.channel_code = ls.channel_code
+		WHERE
+		rec.`status` IN ( 0, 2, 6 )
+		<if test="channelName != null and channelName!=''">
+			AND ls.channel_name = #{channelName}
+		</if>
+		<if test="claim != null and claim!=''">
+			AND ux.ascription_user_id = #{claim}
+		</if>
+		<if test="startDate != null and startDate!=''">
+			AND rec.creation_date <![CDATA[>=]]> #{startDate}
+		</if>
+		<if test="endDate != null and endDate!=''">
+			AND rec.creation_date <![CDATA[<]]> #{endDate}
+		</if>
+	</select>
+
+	<select id="selectXjlPerformance" resultType="com.jbb.mgt.core.domain.XjlApplyRecordStatistic">
+		SELECT DATE_FORMAT(creation_date,'%Y-%m-%d') days, user_id,COUNT(user_id),SUM(amount),
+		COUNT(IF(status IN (3,4,5,99),status ,NULL)) AS loanNumber, SUM(IF(status IN (3,4,5,99), amount, 0)) AS loanAmount,
+		COUNT(IF(status IN (3,4,5),status ,NULL)) AS receiveNumber, SUM(IF(status IN (3,4,5), amount + service_fee, 0)) AS receiveAmount,
+		SUM(IF(status IN (3,4,5), amount , 0)) AS receiveAmount2,
+		COUNT(IF(status = 99,status ,NULL)) AS backNumber , SUM(IF(status = 99, amount + service_fee, 0)) AS backAmount ,
+		COUNT(IF(status = 4,status ,NULL)) AS lateNumber , SUM(IF(status = 4, amount + service_fee, 0)) AS lateAmount ,
+		SUM(IF(status = 4, amount , 0)) AS lateAmount2,
+		COUNT(IF(status in (3,5),status ,NULL)) AS collectionNumber , SUM(IF(status in (3,5), amount + service_fee, 0)) AS collectionAmount ,
+		SUM(IF(status in (3,5), amount , 0)) AS collectionAmount2,
+		SUM(IF(status = 99, service_fee, 0)) AS interestAmount,
+		SUM(IF(status = 99, amount + service_fee, 0)) - COUNT(IF(status IN (3,4,5,99),status ,NULL)) AS marginAmount
+		FROM mgt_xjl_apply_records
+		WHERE org_id = #{orgId}
+		<if test="null != startDate">
+			AND creation_date <![CDATA[ >= ]]> #{startDate}
+		</if>
+		<if test="null != endDate">
+			AND creation_date <![CDATA[ < ]]> #{endDate}
+		</if>
+		GROUP BY days ORDER BY days DESC
+	</select>
+	
+	<update id="updateXjlApplyRecordStatus">
+		UPDATE mgt_xjl_apply_records
+		SET status = #{status},apply_msg = #{comment} WHERE apply_id = #{applyId}
+	</update>
+	
+	<select id="selectXjlApplyRecordsByStatus" resultType="com.jbb.mgt.core.domain.XjlApplyRecord">
+		SELECT <include refid="xjlApplyRecordInfo"/>
+		<if test="status==3">,DATEDIFF(repayment_date,#{startDate}) AS overDay</if>
+		<if test="status==4">,DATEDIFF(#{startDate},repayment_date) AS overDay</if>
+		FROM mgt_xjl_apply_records xar WHERE 1=1
+		<if test="status==3">
+		 	AND `status`=3 AND DATEDIFF(repayment_date,#{startDate})=#{startDay}
+		</if>
+		<if test="status==4">
+		 	AND `status`=4 AND DATEDIFF(#{startDate},repayment_date) <![CDATA[>=]]>#{startDay}
+		 	AND DATEDIFF(#{startDate},repayment_date) <![CDATA[<=]]>#{endDay}
+		</if>
+		<if test="status==5">
+		 	AND `status`=5 AND DATE(repayment_date)= DATE(#{startDate})
+		</if>
+			AND xar.apply_id  NOT IN
+		(SELECT apply_id FROM mgt_xjl_message_detail xmd WHERE DATE(xmd.creation_date) = DATE(#{startDate}))
+	</select>
+	
+
+	<select id="checkApplyPull" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT EXISTS
+		(SELECT 1 FROM mgt_xjl_apply_records WHERE
+		apply_id = #{applyId}
+		AND org_id=#{orgId}
+		<choose>
+			<when test="listType=='toFinalPull'"> AND final_acc_id is null AND status=6</when>
+			<when test="listType=='toCollectPull'"> AND collector_acc_id is null AND status in (3,4,5)</when>
+			<otherwise>AND 1 = 0</otherwise> <!-- 不传就返回空 -->
+		</choose>
+		)
+	</select>
+
+	<update id="saveApplyPull">
+		UPDATE mgt_xjl_apply_records
+		<choose>
+			<when test="listType=='toFinalPull'">
+				SET final_acc_id=#{accountId},
+				final_entry_date=now()
+			</when>
+			<when test="listType=='toCollectPull'">
+				SET collector_acc_id=#{accountId},
+				collector_entry_date=now()
+			</when>
+		</choose>
+		where apply_id=#{applyId}
+	</update>
+	
+	<select id="queryXjlApplyRecordList" resultMap="XjlApplyRecords">
+		SELECT
+		<include refid="xjlApplyRecordInfo"/>, <include refid="userInfo"/> , ul.address AS address,
+		xua.user_status AS userStatus,
+		mxpr.order_id AS orderId3,mxpr.custom_number AS customNumber,mxpr.amount AS orderId,mxpr.bank_code AS bankCode,
+		mxpr.bank_account_number AS bankAccountNumber,mxpr.bank_account_name AS bankAccountName,mxpr.biz AS biz,
+		mxpr.bank_union_code AS bankUnionCode,mxpr.fee_type AS feeType,mxpr.urgency AS urgency,mxpr.summary AS summary,
+		mxpr.serial_number AS serialNumber,mxpr.order_status AS orderStatus,mxpr.creation_date AS creationDate3,
+		mxpr.update_date AS updateDate3,mxpr.account_id AS accountId,mxpr.ret_reason AS retReason,
+		mxur.order_id AS orderId2, mxur.user_id AS userId2, mxur.type AS type, mxur.status AS status2, mxur.creation_date AS creationDate22,
+        mxur.update_date AS updateDate2, mxur.expiry_date AS expiryDate, mxur.ip_address AS ipAddress2, mxur.terminal_type AS terminalType,
+        mxur.terminal_id AS terminalId, mxur.card_no AS cardNo, mxur.pay_product_id AS payProductId,
+		
+		orau.channel_code AS channelCode,<include refid="channels"/>
+		, accF.username AS finalUsername, accF.nickname AS finalNickName
+		, xua.loan_cnt AS repaymentCnt
+		FROM mgt_xjl_apply_records xar INNER JOIN mgt_users u ON xar.user_id = u.user_id
+		LEFT JOIN mgt_org_app_channel_users orau ON orau.user_id=xar.user_id AND orau.org_id=xar.org_id AND application_id=2
+		LEFT JOIN mgt_xjl_users_accounts xua ON xua.user_id=xar.user_id AND xua.org_id= xar.org_id
+		LEFT JOIN mgt_channels c ON c.channel_code=orau.channel_code
+		LEFT JOIN mgt_accounts accF ON xar.final_acc_id = accF.account_id		
+		LEFT JOIN areazones az ON left(u.idCard,6) = az.zone
+		LEFT JOIN ( SELECT user_id,address FROM mgt_user_locations GROUP BY user_id
+		) ul ON ul.user_id = u.user_id
+		LEFT JOIN mgt_xjl_user_orders mxur ON mxur.apply_id = xar.apply_id AND mxur.creation_date = (
+		SELECT  max(t.creation_date) FROM
+		mgt_xjl_user_orders t WHERE t.apply_id=xar.apply_id)
+
+		LEFT JOIN mgt_xjl_pay_records mxpr on mxpr.applyId = xar.apply_id AND mxpr.creation_date = (
+		SELECT   max(t1.creation_date)  FROM
+		mgt_xjl_pay_records t1 WHERE t1.applyId=xar.apply_id)
+		WHERE xar.org_id = #{orgId}			
+	 <if test="applyStartDate !=null">
+				AND xar.creation_date <![CDATA[>=]]> #{applyStartDate}
+	   </if>
+	  <if test="applyEndDate !=null">
+				AND xar.creation_date <![CDATA[<]]> #{applyEndDate}
+			</if>
+			<if test="loanStartDate  != null ">
+				AND xar.loan_date <![CDATA[>=]]> #{loanStartDate }
+			</if>
+			<if test="loanEndDate != null">
+				AND xar.loan_date <![CDATA[<]]> #{loanEndDate}
+			</if>
+			<if test="repaymentStartDate != null">
+				AND xar.repayment_date <![CDATA[>=]]> #{repaymentStartDate}
+			</if>
+			<if test="repaymentEndDate != null">
+				AND xar.repayment_date <![CDATA[<]]> #{repaymentEndDate}
+			</if> 
+	
+		<if test="null != status">
+			AND xar.status IN
+			<foreach item="statu" index="index" collection="status" open="(" separator="," close=")">
+				#{statu}
+			</foreach>
+		</if>	
+
+		<if test="null != searchText">
+			AND ( u.username LIKE CONCAT('%',#{searchText},'%') or u.phone_number LIKE CONCAT('%',#{searchText},'%')
+			or u.idcard LIKE CONCAT('%',#{searchText},'%') or u.jbb_user_id=#{searchText})
+		</if>
+		<if test="channelCode != null and channelCode != ''">
+			AND orau.channel_code = #{channelCode}
+		</if>	
+		<if test="collectorAccId != null and collectorAccId != ''">
+			AND xar.collector_acc_id = #{collectorAccId}
+		</if>
+		 <if test="loanType != null and loanType != ''">
+			<choose>
+				<when test="loanType==1"> AND xar.loan_again = 0</when>
+				<when test="loanType==2"> AND xar.loan_again = 1</when>
+				<otherwise>AND 1 = 0</otherwise>
+			</choose>
+		</if>
+		<if test="repaymentStatus != null and repaymentStatus != ''">
+			<choose>
+				<when test="repaymentStatus==1"> AND xar.actual_repayment_date <![CDATA[<=]]>  xar.repayment_date </when>
+				<when test="repaymentStatus==2"> AND xar.actual_repayment_date <![CDATA[>]]>  xar.repayment_date</when>
+				<otherwise>AND 1 = 1</otherwise>
+			</choose>
+		</if>
+		
+		<if test="listType !=null and listType != ''">
+			<choose>
+				<when test="listType=='toReview'"> AND xar.final_acc_id is null AND xar.status=6</when>
+				<when test="listType=='toCollect'"> AND xar.collector_acc_id is null AND xar.status in (3,4,5)</when>
+				<when test="listType=='all'"> AND 1=1 </when>			
+			</choose>
+		</if>
+		<if test="isReceived != null and isReceived != ''">
+			<choose>			
+				<when test="isReceived==true"> AND xar.final_acc_id > 0</when>
+				<when test="isReceived==false"> AND (xar.final_acc_id is null OR xar.loan_cnt=0)</when>			
+				<otherwise>AND 1 = 1</otherwise>
+			</choose>
+		</if>
+		<if test="isRenewal != null and isRenewal != ''">
+			<choose>
+				<when test="isRenewal==true"> AND xar.renewal_cnt > 1</when>
+				<when test="isRenewal==false"> AND xar.renewal_cnt = 1</when>			
+				<otherwise>AND 1 = 1</otherwise>
+			</choose>
+		</if>
+			ORDER BY xar.creation_date DESC
+	</select>
+	
+	<select id="queryXjlApplyRecordList_COUNT" resultType="Long">
+		SELECT
+		    count(1)
+		FROM mgt_xjl_apply_records xar INNER JOIN mgt_users u ON xar.user_id = u.user_id
+		LEFT JOIN mgt_org_app_channel_users orau ON orau.user_id=xar.user_id AND orau.org_id=xar.org_id AND application_id=2
+		LEFT JOIN mgt_xjl_users_accounts xua ON xua.user_id=xar.user_id AND xua.org_id= xar.org_id
+		LEFT JOIN mgt_channels c ON c.channel_code=orau.channel_code
+		LEFT JOIN mgt_accounts accF ON xar.final_acc_id = accF.account_id
+		LEFT JOIN mgt_accounts accL ON xar.collector_acc_id = accL.account_id
+		LEFT JOIN areazones az ON left(u.idCard,6) = az.zone
+		LEFT JOIN ( SELECT user_id,address FROM mgt_user_locations GROUP BY user_id
+		) ul ON ul.user_id = u.user_id
+		LEFT JOIN mgt_xjl_user_orders mxur ON mxur.apply_id = xar.apply_id AND mxur.creation_date = (
+		SELECT  max(t.creation_date) FROM
+		mgt_xjl_user_orders t WHERE t.apply_id=xar.apply_id)
+
+		LEFT JOIN mgt_xjl_pay_records mxpr on mxpr.applyId = xar.apply_id AND mxpr.creation_date = (
+		SELECT   max(t1.creation_date)  FROM
+		mgt_xjl_pay_records t1 WHERE t1.applyId=xar.apply_id)
+		WHERE xar.org_id = #{orgId}			
+	 <if test="applyStartDate !=null">
+				AND xar.creation_date <![CDATA[>=]]> #{applyStartDate}
+	   </if>
+	  <if test="applyEndDate !=null">
+				AND xar.creation_date <![CDATA[<]]> #{applyEndDate}
+			</if>
+			<if test="loanStartDate  != null ">
+				AND xar.loan_date <![CDATA[>=]]> #{loanStartDate }
+			</if>
+			<if test="loanEndDate != null">
+				AND xar.loan_date <![CDATA[<]]> #{loanEndDate}
+			</if>
+			<if test="repaymentStartDate != null">
+				AND xar.repayment_date <![CDATA[>=]]> #{repaymentStartDate}
+			</if>
+			<if test="repaymentEndDate != null">
+				AND xar.repayment_date <![CDATA[<]]> #{repaymentEndDate}
+			</if> 
+	
+		<if test="null != status">
+			AND xar.status IN
+			<foreach item="statu" index="index" collection="status" open="(" separator="," close=")">
+				#{statu}
+			</foreach>
+		</if>	
+
+		<if test="null != searchText">
+			AND ( u.username LIKE CONCAT('%',#{searchText},'%') or u.phone_number LIKE CONCAT('%',#{searchText},'%')
+			or u.idcard LIKE CONCAT('%',#{searchText},'%') or u.jbb_user_id=#{searchText})
+		</if>
+		<if test="channelCode != null and channelCode != ''">
+			AND orau.channel_code = #{channelCode}
+		</if>	
+		<if test="collectorAccId != null and collectorAccId != ''">
+			AND xar.collector_acc_id = #{collectorAccId}
+		</if>
+		 <if test="loanType != null and loanType != ''">
+			<choose>
+				<when test="loanType==1"> AND xar.loan_again = 0</when>
+				<when test="loanType==2"> AND xar.loan_again = 1</when>
+				<otherwise>AND 1 = 0</otherwise>
+			</choose>
+		</if>
+		<if test="repaymentStatus != null and repaymentStatus != ''">
+			<choose>
+				<when test="repaymentStatus==1"> AND xar.actual_repayment_date <![CDATA[<=]]>  xar.repayment_date </when>
+				<when test="repaymentStatus==2"> AND xar.actual_repayment_date <![CDATA[>]]>  xar.repayment_date</when>
+				<otherwise>AND 1 = 1</otherwise>
+			</choose>
+		</if>
+		
+		<if test="listType !=null and listType != ''">
+			<choose>
+				<when test="listType=='toReview'"> AND xar.final_acc_id is null AND xar.status=6</when>
+				<when test="listType=='toCollect'"> AND xar.collector_acc_id is null AND xar.status in (3,4,5)</when>
+				<when test="listType=='all'"> AND 1=1 </when>			
+			</choose>
+		</if>
+		<if test="isReceived != null and isReceived != ''">
+			<choose>			
+				<when test="isReceived==true"> AND xar.final_acc_id > 0</when>
+				<when test="isReceived==false"> AND (xar.final_acc_id is null OR xar.loan_cnt=0)</when>			
+				<otherwise>AND 1 = 1</otherwise>
+			</choose>
+		</if>
+		<if test="isRenewal != null and isRenewal != ''">
+			<choose>
+				<when test="isRenewal==true"> AND xar.renewal_cnt > 1</when>
+				<when test="isRenewal==false"> AND xar.renewal_cnt = 1</when>			
+				<otherwise>AND 1 = 1</otherwise>
+			</choose>
+		</if>			
+	</select>
+	
+	<select id="queryStatusCnts" resultType="com.jbb.mgt.core.domain.StatusCnt">
+	SELECT xa.status AS status ,COUNT(1) AS cnt
+	FROM mgt_xjl_apply_records xa LEFT JOIN mgt_users u ON xa.user_id =
+	u.user_id
+	WHERE xa.org_id = #{orgId}
+	<if test="applyStartDate != null">
+		AND xa.creation_date <![CDATA[>=]]>
+		#{applyStartDate}
+	</if>
+	<if test="applyEndDate != null">
+		AND xa.creation_date <![CDATA[<]]>
+		#{applyEndDate}
+	</if>
+	<if test="loanStartDate  != null">
+		AND xa.loan_date <![CDATA[>=]]>
+		#{loanStartDate }
+	</if>
+	<if test="loanEndDate != null">
+		AND xa.loan_date <![CDATA[<]]>
+		#{loanEndDate}
+	</if>
+	<if test="repaymentStartDate != null">
+		AND xa.repayment_date <![CDATA[>=]]>
+		#{repaymentStartDate}
+	</if>
+	<if test="repaymentEndDate != null">
+		AND xa.repayment_date <![CDATA[<]]>
+		#{repaymentEndDate}
+	</if>
+	<if test="null != status">
+		AND xa.status IN
+		<foreach item="statu" index="index" collection="status"
+			open="(" separator="," close=")">
+			#{statu}
+		</foreach>
+	</if>
+
+	<if test="null != searchText">
+		AND ( u.username LIKE CONCAT('%',#{searchText},'%') or u.phone_number
+		LIKE CONCAT('%',#{searchText},'%')
+		or u.idcard LIKE CONCAT('%',#{searchText},'%') or
+		u.jbb_user_id=#{searchText})
+	</if>
+	<if test="listType !=null and listType != ''">
+		<choose>
+			<when test="listType=='toReview'"> AND xa.final_acc_id is null AND xa.status=6</when>
+			<when test="listType=='toCollect'"> AND xa.collector_acc_id is null AND xa.status in (3,4,5)</when>
+			<when test="listType=='all'"> AND 1=1 </when>
+		</choose>
+	</if>
+	GROUP BY xa.status
+</select>
+ 
+</mapper>

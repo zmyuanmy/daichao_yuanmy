@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jbb.server.core.dao.mapper.IouPhotoMapper">
+
+
+	<sql id="iouPhotoCols">
+		i.id AS "id",
+		i.iou_code AS "iouCode",
+		i.user_id AS "userId",
+		i.file_name AS "fileName",
+		i.upload_date AS "uploadDate",
+		i.deleted AS "deleted"
+	</sql>
+
+	<insert id="insertIouPhoto" useGeneratedKeys="true"
+			keyProperty="id">
+		INSERT INTO iou_photos (iou_code,user_id,file_name,upload_date,deleted)
+		VALUES (#{iouCode},#{userId},#{fileName},#{uploadDate}, #{deleted})
+	</insert>
+
+
+	<select id="selectIouPhotoListByIouCode" resultType="com.jbb.server.core.domain.IouPhoto">
+		SELECT <include refid="iouPhotoCols" />
+		FROM iou_photos i
+		WHERE i.iou_code = #{iouCode}
+		AND i.deleted = false
+		ORDER BY i.upload_date DESC
+	</select>
+
+	<update id="deleteIouPhoto">
+		UPDATE iou_photos
+		SET deleted = true
+		WHERE id = #{id}
+		AND user_id = #{userId}
+	</update>
+
+	<select id="countUserIouPhoto" resultType="java.lang.Integer">
+		SELECT count(*)
+		FROM iou_photos i
+		WHERE i.iou_code = #{iouCode}
+		AND i.user_id = #{userId}
+		AND i.deleted = false
+	</select>
+
+</mapper>

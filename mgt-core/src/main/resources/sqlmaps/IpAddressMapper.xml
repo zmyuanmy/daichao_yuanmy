@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jbb.mgt.core.dao.mapper.IpAddressMapper">
+
+	
+	
+	<select id="checkIpAddress" resultType="java.lang.Integer">
+		SELECT EXISTS (
+			SELECT 1 FROM ip_address_lookup WHERE ip_begin &lt;= #{ipAddressNum} and ip_end &gt; #{ipAddressNum} and country='CN'
+        )
+	</select>
+	
+	<select id="checkIpAddressInCities" resultType="java.lang.Integer">
+		SELECT EXISTS (
+			SELECT 1 FROM ip_address_area 
+			WHERE ip_begin &lt;= #{ipAddressNum} 
+				and ip_end &gt; #{ipAddressNum} 
+				<foreach collection="cities" open=" AND ( " close=" )" 
+		        	item="city" separator=" OR ">
+		            ip_area LIKE #{city}
+		        </foreach>
+        )
+	</select>
+	
+</mapper>

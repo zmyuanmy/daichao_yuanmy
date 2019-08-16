@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jbb.mgt.core.dao.mapper.UserPropertiesMapper">
+
+	<insert id="insertUserProperty">
+		INSERT INTO mgt_user_properties(user_id,name, value,is_hidden,update_date)
+		VALUES(#{userId},#{name},#{value},#{isHidden},now())
+		ON DUPLICATE KEY UPDATE value = #{value} , update_date = now()
+	</insert>
+	
+	<select id="selectUserPropertyByUserIdAndName" resultType="com.jbb.mgt.core.domain.UserProperty">
+		select u.user_id AS userId,u.`name` AS `name`,u.value AS `value`,u.is_hidden AS isHidden,u.update_date AS updateDate
+		from mgt_user_properties u
+		where u.user_id=#{userId} AND u.`name`=#{name}
+	</select>
+	
+	<delete id="deleteUserPropertyByUserIdAndName">
+		DELETE FROM `mgt_user_properties` WHERE `name` = #{name}
+		AND `user_id` = #{userId}
+	</delete>
+	
+	<update id="updateUserPropertyByUserIdAndName">
+		UPDATE `user_properties` SET `value` = #{value}
+		WHERE
+		`user_id`=#{userId} AND `name`=#{name}
+	</update>
+	
+	<select id="selectUserPropertyList" resultType="com.jbb.mgt.core.domain.UserProperty">
+		select u.user_id AS userId,u.`name` AS `name`,u.value AS `value`,u.is_hidden AS isHidden,u.update_date AS updateDate
+		from mgt_user_properties u
+		where u.user_id=#{userId} 
+	</select>
+</mapper>

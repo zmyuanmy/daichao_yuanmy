@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jbb.server.core.dao.mapper.DeviceMapper">
+
+
+	<insert id="insertDevice">
+		INSERT INTO devices (equipment_number, creation_date)
+		VALUES (#{equipmentNumber}, #{creationDate})
+	</insert>
+
+	<select id="checkDevice" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM devices
+		WHERE equipment_number = #{equipmentNumber})
+	</select>
+
+</mapper>

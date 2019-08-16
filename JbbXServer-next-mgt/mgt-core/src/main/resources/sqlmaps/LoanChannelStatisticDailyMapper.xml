@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.jbb.mgt.core.dao.mapper.LoanChannelStatisticDailyMapper">
+
+	<insert id="insertLoanChannelStatisticDailys"
+			parameterType="ArrayList">
+		INSERT INTO mgt_loan_channel_statistic_daily
+		(statistic_date, channel_code,channel_name,app_login_num,platform_uv,platform_pv)
+		VALUES
+		<foreach collection="lists" item="list" index="index"
+				 separator=",">
+			( #{list.statisticDate},#{list.channelCode},#{list.channelName},#{list.appLoginNum},#{list.platformUv},#{list.platformPv})
+		</foreach>
+	</insert>
+
+	<select id="selectLoanChannelStatisticByDate" resultType="com.jbb.mgt.core.domain.LoanChannelStatisticDaily">
+		SELECT
+			c.channel_code AS channelCode ,
+			c.channel_name AS channelName ,
+			plat.platformPv ,
+			plat.platformUv ,
+			appnum.appLoginNum
+		FROM mgt_channels c
+		LEFT JOIN(
+			SELECT
+				au.channel_code ,
+				COUNT(1) AS platformPv ,
+				COUNT(DISTINCT log.user_id , log.cookie_id) AS platformUv
+			FROM mgt_user_event_logs log
+			JOIN mgt_users u ON log.user_id = u.jbb_user_id
+			JOIN mgt_org_app_channel_users au ON u.user_id = au.user_id
+			WHERE log.event_name in ('daichao','jbb2','bnh','xhyp')
+				AND log.cookie_id IS NOT NULL
+				AND au.channel_code IS NOT NULL
+				AND log.creation_date &gt;= #{startDate}
+				<if test="endDate != null">
+					AND log.creation_date &lt; #{endDate}
+				</if>
+			GROUP BY au.channel_code
+		) plat ON c.channel_code = plat.channel_code
+		LEFT JOIN(
+			SELECT au.channel_code, COUNT(distinct log.user_id) AS appLoginNum
+			FROM jbbserver.user_event_logs log
+			JOIN mgt_users  u on u.jbb_user_id = log.user_id and date(log.creation_date) = date(u.creation_date)
+			JOIN mgt_org_app_channel_users au on au.user_id = u.user_id and au.org_id = 1 
+			WHERE  log.creation_date &gt;= #{startDate}
+				<if test="endDate != null">
+					AND log.creation_date &lt; #{endDate}
+				</if>
+				AND log.event_name = 'user' and log.event_action = 'login'
+			GROUP BY au.channel_code
+		) appnum ON c.channel_code = appnum.channel_code 
+		WHERE c.STATUS != 1;
+	</select>
+
+	<select id="selectLoanChannelStatisticCompare" resultType="com.jbb.mgt.core.domain.LoanChannelStatistic">
+		SELECT
+			mscd.channel_code AS channelCode ,
+			c.channel_name AS channelName ,
+			avg(ifnull(fcsd.price , 0)) AS price ,
+			sum(fcsd.expense) AS expense ,
+			mscd.clickCnt AS clickCnt ,
+			mscd.uvCnt AS uvCnt ,
+			mscd.totalRegisterCnt AS totalRegisterCnt ,
+			mscd.entryCnt AS entryCnt ,
+			sum(lcs.app_login_num)  AS appLoginNum ,
+			sum(lcs.platform_uv)  AS platformUv ,
+			sum(lcs.platform_pv)  AS platformPv
+		FROM ( 
+			select t.channel_code, t.statistic_date 
+				, sum(t.click_cnt) AS clickCnt 
+				, sum(t.uv_cnt) AS uvCnt 
+				, sum(t.total_register_cnt) AS totalRegisterCnt 
+				, sum(t.entry_cnt) AS entryCnt 
+			from mgt_statistic_channel_daily t
+			where t.statistic_date &gt;= #{startDate} 
+			<if test="endDate != null">
+				AND t.statistic_date &lt; #{endDate}
+			</if>
+		    group by t.channel_code, t.statistic_date
+		) mscd 
+		LEFT JOIN mgt_fin_channel_statistic_daily fcsd ON mscd.channel_code = fcsd.channel_code AND mscd.statistic_date = fcsd.statistic_date
+		LEFT JOIN mgt_channels c ON mscd.channel_code = c.channel_code
+		LEFT JOIN mgt_loan_channel_statistic_daily lcs ON mscd.channel_code = lcs.channel_code AND mscd.statistic_date = lcs.statistic_date
+		WHERE mscd.statistic_date &gt;= #{startDate}
+		<if test="endDate != null">
+			AND mscd.statistic_date &lt; #{endDate}
+		</if>
+		AND c.is_hidden = 0
+		GROUP BY mscd.channel_code
+		ORDER BY totalRegisterCnt DESC
+	</select>
+
+	<select id="selectLoanChannelStatisticByChannelCode" resultType="com.jbb.mgt.core.domain.LoanChannelStatistic">
+		SELECT
+		mscd.statistic_date AS statisticDate,
+		avg(ifnull(fcsd.price, 0)) AS price,
+		sum(fcsd.expense) as expense,
+		mscd.clickCnt AS clickCnt ,
+		mscd.uvCnt AS uvCnt ,
+		mscd.totalRegisterCnt AS totalRegisterCnt ,
+		mscd.entryCnt AS entryCnt ,
+		sum(lcs.app_login_num) AS appLoginNum,
+		sum(lcs.platform_uv) AS platformUv,
+		sum(lcs.platform_pv) AS platformPv
+		FROM ( 
+			select t.channel_code, t.statistic_date 
+				, sum(t.click_cnt) AS clickCnt 
+				, sum(t.uv_cnt) AS uvCnt 
+				, sum(t.total_register_cnt) AS totalRegisterCnt 
+				, sum(t.entry_cnt) AS entryCnt 
+			from mgt_statistic_channel_daily t
+			where t.statistic_date &gt;= #{startDate} 
+			<if test="endDate != null">
+				AND t.statistic_date &lt; #{endDate}
+			</if>
+		    group by t.channel_code, t.statistic_date
+		) mscd 
+		LEFT JOIN mgt_fin_channel_statistic_daily fcsd ON mscd.channel_code = fcsd.channel_code AND mscd.statistic_date = fcsd.statistic_date
+		LEFT JOIN mgt_channels c ON mscd.channel_code = c.channel_code
+		LEFT JOIN mgt_loan_channel_statistic_daily lcs ON mscd.channel_code = lcs.channel_code AND mscd.statistic_date = lcs.statistic_date
+		WHERE
+		<if test="channelCodes!=null">
+			mscd.channel_code in
+			<foreach item="channelCode" index="index" collection="channelCodes" open="(" separator="," close=")">
+				#{channelCode}
+			</foreach>
+			AND
+		</if>
+		mscd.statistic_date &gt;= #{startDate}
+		<if test="endDate != null">
+			AND mscd.statistic_date &lt; #{endDate}
+		</if>
+		GROUP BY
+		mscd.statistic_date
+	</select>
+
+
+
+</mapper>

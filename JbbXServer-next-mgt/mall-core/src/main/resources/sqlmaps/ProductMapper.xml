@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mall.core.dao.mapper.ProductMapper" >
+	
+	<sql id="producCols">
+		mp.product_id AS productId, mp.product_type AS productType, mp.title AS title, mp.creation_date AS creationDate,
+		mp.price AS price, mp.discount_price AS discountPrice, mp.`desc` AS `desc`, mp.content  AS content
+	</sql>
+	
+	<resultMap  id="productMap" type="com.jbb.mall.core.dao.domain.Product">
+		<id property="productId" column="productId" />
+		<result property="productType" column="productType" />
+		<result property="title" column="title" />
+		<result property="creationDate" column="creationDate" />
+		<result property="price" column="price" />
+		<result property="discountPrice" column="discountPrice" />
+		<result property="desc" column="desc" />
+		<result property="content" column="content" />
+		<result property="favorStatus" column="favorStatus" />
+		<association property="productImg" javaType="com.jbb.mall.core.dao.domain.ProductImg">
+			<id property="productId" column="productId" />
+			<result property="imgUrl" column="imgUrl" />
+			<result property="indexNo" column="indexNo" />
+		</association>
+	</resultMap>
+
+	<select id="selectProductList" resultMap="productMap">
+		SELECT <include refid="producCols"/>,mpi.img_url AS imgUrl,mpi.index_no AS indexNo,
+		CASE WHEN mp.discount_price IS NOT NULL THEN mp.discount_price ELSE mp.price end AS filterPrice
+		<if test="userId !=null and userId>0">
+			  ,(
+		    CASE
+		      WHEN EXISTS
+		      (SELECT
+		        STATUS
+		      FROM
+		        mall_user_favorites muf
+		      WHERE muf.user_id = #{userId} AND muf.`status`=1
+		        AND muf.product_id = mp.product_id)
+		      THEN 1
+		      ELSE 0
+		    END
+		  ) AS favorStatus
+		</if>
+		FROM mall_products mp
+		LEFT JOIN mall_category_products mcp ON mp.product_id = mcp.product_id
+		LEFT JOIN mall_categories mc ON mc.category_id = mcp.category_id
+		LEFT JOIN mall_product_sale_count mpsc ON mpsc.product_id = mp.product_id
+		LEFT JOIN (SELECT img_url,product_id,index_no FROM (SELECT img_url,product_id,index_no FROM mall_product_imgs
+		ORDER BY product_id,index_no IS NOT NULL DESC,index_no ASC) t1 GROUP BY t1.product_id) mpi ON mp.product_id =mpi.product_id
+		WHERE mp.product_type =#{type}
+		<if test="categoryIds != null and categoryIds.length > 0">
+			AND mc.category_id IN
+		<foreach item="categoryId" index="index" collection="categoryIds" open="(" separator="," close=")">
+			 #{categoryId} 
+		</foreach >
+		</if>
+		GROUP BY mp.product_id
+	</select>
+	
+	<select id="selectProductList_COUNT" resultType="Long">
+		SELECT COUNT(DISTINCT mp.product_id) FROM mall_products mp
+		LEFT JOIN mall_category_products mcp ON mp.product_id = mcp.product_id
+		LEFT JOIN mall_categories mc ON mc.category_id = mcp.category_id
+		LEFT JOIN mall_product_sale_count mpsc ON mpsc.product_id = mp.product_id
+		WHERE mp.product_type =#{type}
+		<if test="categoryIds != null and categoryIds.length > 0">
+			AND mc.category_id IN
+		<foreach item="categoryId" index="index" collection="categoryIds" open="(" separator="," close=")">
+			 #{categoryId} 
+		</foreach >
+		</if>
+	</select>
+	
+
+</mapper> 

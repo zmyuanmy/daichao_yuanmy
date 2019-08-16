@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jbb.mgt.core.dao.mapper.StatisticMapper">
+	<!-- 到期额 -->
+	<select id="selectDueAmount" resultType="java.lang.Integer">
+		select IFNULL(sum(a.borrowing_amount),0) AS dueAmount from mgt_user_loan_records a
+	    WHERE  a.account_id in(
+	    SELECT account_id  from mgt_accounts c WHERE c.org_id = #{orgId})
+	    AND a.`status` > 0 AND a.`status` != 2
+		<if test="endDate != null">
+			AND a.repayment_date <![CDATA[ > ]]> #{startDate}
+		</if>
+		<if test="endDate != null">
+			AND a.repayment_date <![CDATA[ <= ]]> #{endDate}
+		</if>
+	</select>
+	<!-- 回款额 -->
+	<select id="selectReturnAmount" resultType="java.lang.Integer">
+		select IFNULL(sum(a.repay_amount),0) repaymentCnt from mgt_user_loan_records a
+			WHERE a.account_id in(SELECT account_id  from mgt_accounts c WHERE c.org_id = #{orgId})
+			AND a.`status` > 0 AND a.`status` != 2
+		<if test="startDate != null">
+			AND a.actual_repayment_date <![CDATA[ >= ]]> #{startDate}
+		</if>
+		<if test="endDate != null">
+			AND a.actual_repayment_date <![CDATA[ < ]]> #{endDate}
+		</if>
+	</select>
+	<!-- 复审数 -->
+	<select id="selectAuditAmount" resultType="java.lang.Integer">
+		SELECT COUNT(1) AS auditingNum
+		FROM mgt_user_apply_records c
+		WHERE org_id = #{orgId} AND c.final_date is NOT NULL
+		<if test="startDate!=null">
+			AND final_date <![CDATA[>=]]> #{startDate}
+		</if>
+		<if test="endDate!=null">
+			AND final_date <![CDATA[<=]]> #{endDate}
+		</if>
+	</select>
+	<!-- 进件数 -->
+	<select id="selectIntoAmount" resultType="java.lang.Integer">
+		SELECT COUNT(ou.user_id) AS entryNum
+		FROM mgt_org_users ou
+		WHERE ou.org_id = #{orgId} AND ou.entry_status=1
+        <if test="startDate!=null">
+			AND ou.entry_date<![CDATA[>=]]> #{startDate}
+		</if>
+		<if test="endDate!=null">
+			AND ou.entry_date <![CDATA[<=]]> #{endDate}
+		</if>
+	</select>
+	<!-- 放款数 -->
+	<select id="selectLoanNumber" resultType="java.lang.Integer">
+		SELECT count(1) as loanCnt
+	    FROM mgt_user_loan_records c1
+		 WHERE c1.account_id in(
+	     SELECT account_id  from mgt_accounts c WHERE c.org_id = #{orgId}) AND  
+	     c1.`status` > 0 AND c1.`status` != 2
+		AND c1.loan_date is NOT NULL
+		<if test="startDate!=null">
+		AND c1.loan_date <![CDATA[>]]> #{startDate}
+		</if>
+		<if test="endDate!=null">
+			AND c1.loan_date <![CDATA[<=]]> #{endDate}
+		</if>
+	</select>
+	<!-- 放款金额 -->
+	<select id="selectLoanAmount" resultType="java.lang.Integer">
+	     SELECT IFNULL(sum(IF(c1.loan_date IS NOT NULL,c1.loan_amount,0)),0) as loanCnt
+	     FROM mgt_user_loan_records c1
+	     WHERE c1.account_id in(
+	     SELECT account_id  from mgt_accounts c WHERE c.org_id = #{orgId}) AND  
+	     c1.`status` > 0 AND c1.`status` != 2
+		<if test="startDate!=null">
+			AND c1.loan_date <![CDATA[>]]> #{startDate}
+		</if>
+		<if test="endDate!=null">
+			AND c1.loan_date <![CDATA[<=]]> #{endDate}
+		</if>
+	</select>
+	
+</mapper>

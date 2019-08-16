@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.jbb.mgt.core.dao.mapper.LoanPlatformStatisticMapper">
+
+	<sql id="loanPlatformStatisticCols">
+		m.statistic_date AS statisticDate,m.platform_id AS platformId,m.cnt AS cnt,puv_cnt AS puvCnt,m.price AS price,
+		m.expense AS expense,m.amount AS amount,m.balance AS balance,m.status AS status,
+		m.creation_date AS creationDate,m.update_date AS updateDate,m.confirm_date AS confirmDate,
+		m.confrim_account_id AS confrimAccountId,m.uv_cnt AS uvCnt,m.click_cnt AS clickCnt,m.total_register_cnt AS totalRegisterCnt
+	</sql>
+
+	<sql id="platformCols">
+		p.platform_id AS platformId, p.name AS name, p.short_name AS shortName,
+		p.url AS url, p.logo AS logo, p.desc1 AS desc1, p.desc2 AS desc2, p.desc3 AS desc3,
+		p.creator AS creator,p.cpa_price as cpaPrice, p.creation_time AS creationTime,p.apply_cnt AS applyCnt
+	</sql>
+
+
+	<sql id="finFileCols">
+        f.file_id AS fileId, f.org_id AS orgId, f.merchant_id AS merchantId,f.platform_id AS platformId, f.file_name AS fileName,
+        f.file_type  AS fileType, f.creator AS creator, f.creation_date AS creationDate,
+        f.file_date AS fileDate, f.is_deleted AS isDeleted
+    </sql>
+
+	<resultMap id="PlatformMap" type="com.jbb.mgt.core.domain.LoanPlatformStatistic">
+		<id property="statisticDate" column="statisticDate" />
+		<id property="platformId" column="platformId" />
+		<result property="cnt" column="cnt" />
+		<result property="puvCnt" column="puvCnt" />
+		<result property="price" column="price" />
+		<result property="expense" column="expense" />
+		<result property="amount" column="amount" />
+		<result property="balance" column="balance" />
+		<result property="status" column="status" />
+		<result property="creationDate" column="creationDate" />
+		<result property="updateDate" column="updateDate" />
+		<result property="confirmDate" column="confirmDate" />
+		<result property="confrimAccountId" column="confrimAccountId" />
+		<result property="uvCnt" column="uvCnt" />
+		<result property="clickCnt" column="clickCnt" />
+		<result property="totalRegisterCnt" column="totalRegisterCnt" />
+		<association property="platform" javaType="com.jbb.mgt.core.domain.Platform">
+			<id property="platformId" column="platformId" />
+			<result property="name" column="name" />
+			<result property="shortName" column="shortName" />
+			<result property="url" column="url" />
+			<result property="logo" column="logo" />
+			<result property="desc1" column="desc1" />
+			<result property="desc2" column="desc2" />
+			<result property="desc3" column="desc3" />
+			<result property="creator" column="creator" />
+			<result property="applyCnt" column="applyCnt"/>
+			<result property="creationTime" column="creationTime" />
+		</association>
+		<collection property="files" javaType="ArrayList" ofType="com.jbb.mgt.core.domain.FinFile">
+			<id property="fileId" column="fileId" />
+			<result property="orgId" column="orgId" />
+			<result property="merchantId" column="merchantId" />
+			<result property="platformId" column="platformId" />
+			<result property="fileName" column="fileName" />
+			<result property="fileType" column="fileType" />
+			<result property="creator" column="creator" />
+			<result property="creationDate" column="creationDate" />
+			<result property="fileDate" column="fileDate" />
+			<result property="isDeleted" column="isDeleted" />
+		</collection>
+	</resultMap>
+
+	<select id="selectPlatformByDate" resultMap="PlatformMap">
+		SELECT <include refid="loanPlatformStatisticCols"/>,<include refid="platformCols1"/>,<include refid="finFileCols1"/>
+		FROM mgt_loan_platform_statistic m
+		LEFT JOIN mgt_loan_platforms p ON m.platform_id=p.platform_id
+		LEFT JOIN mgt_fin_files f ON m.platform_id= f.platform_id
+		AND m.statistic_date=DATE(f.file_date) AND f.is_deleted=0
+		WHERE m.statistic_date = DATE(#{statisticDate})
+		ORDER BY statistic_date
+	</select>
+
+	<select id="selectPlatformById" resultMap="PlatformMap">
+		SELECT <include refid="loanPlatformStatisticCols"/>,<include refid="finFileCols"/>
+		FROM mgt_loan_platform_statistic m
+		LEFT JOIN mgt_fin_files f ON m.platform_id= f.platform_id
+		AND m.statistic_date=DATE(f.file_date) AND f.is_deleted=0
+		WHERE m.statistic_date <![CDATA[>=]]> #{startDate} AND m.platform_id = #{platformId}
+		<if test="endDate != null">
+			AND m.statistic_date <![CDATA[<=]]> #{endDate}
+		</if>
+		ORDER BY statistic_date
+	</select>
+
+	<select id="selectPlatformByStaDate" resultType="com.jbb.mgt.core.domain.LoanPlatformStatistic">
+		SELECT <include refid="loanPlatformStatisticCols"/> FROM mgt_loan_platform_statistic m
+		WHERE m.platform_id = #{platformId}
+		<if test="day!=null">
+			AND m.statistic_date = DATE(#{statisticDate})
+		</if>
+		<if test="day==null">
+			AND m.statistic_date <![CDATA[<]]> DATE(#{statisticDate})
+			ORDER BY m.statistic_date DESC LIMIT 1
+		</if>
+
+	</select>
+
+	<insert id="insertLoanPlatformStatistics"
+		parameterType="ArrayList">
+		INSERT INTO mgt_loan_platform_statistic
+		(statistic_date, platform_id,cnt,price,expense,amount,balance,status,creation_date,update_date,confirm_date,confrim_account_id,uv_cnt,click_cnt,total_register_cnt)
+		VALUES
+		<foreach collection="lists" item="list" index="index"
+			separator=",">
+			( #{list.statisticDate},#{list.platformId},#{list.cnt},#{list.price},#{list.expense},#{list.amount},#{list.balance},#{list.status},#{list.creationDate},#{list.updateDate},#{list.confirmDate},#{list.confrimAccountId},#{list.uvCnt},#{list.clickCnt},#{list.totalRegisterCnt})
+		</foreach>
+	</insert>
+
+
+	<insert id="insertPlatform" >
+		INSERT INTO mgt_loan_platform_statistic(statistic_date,platform_id, cnt, puv_cnt,price,expense,
+		amount, balance, status,creation_date, confirm_date,confrim_account_id,uv_cnt,click_cnt,total_register_cnt)
+		VALUES(#{statisticDate}, #{platformId}, #{cnt},#{puvCnt}, #{price}, #{expense}, #{amount},
+		#{balance}, #{status}, CURRENT_TIMESTAMP, #{confirmDate}, #{confrimAccountId},#{uvCnt},#{clickCnt},#{totalRegisterCnt})
+		ON DUPLICATE KEY UPDATE total_register_cnt=#{totalRegisterCnt},balance=#{balance},uv_cnt=#{uvCnt},click_cnt=#{clickCnt},update_date = now()
+	</insert>
+
+	<update id="updatePlatform">
+		UPDATE mgt_loan_platform_statistic
+		<set>
+			<if test="cnt!=null">
+				cnt=#{cnt},
+			</if>
+			<if test="puvCnt!=null">
+				puv_cnt=#{puvCnt},
+			</if>
+			<if test="price!=null">
+				price=#{price},
+			</if>
+			<if test="expense!=null">
+				expense=#{expense},
+			</if>
+			<if test="amount!=null">
+				amount=#{amount},
+			</if>
+			<if test="balance!=null">
+				balance=#{balance},
+			</if>
+			<if test="status!=null">
+				status = #{status},
+			</if>
+			<if test="confirmDate!=null">
+				confirm_date=#{confirmDate},
+			</if>
+			<if test="confrimAccountId!=null">
+				confrim_account_id=#{confrimAccountId},
+			</if>
+			<if test="uvCnt!=null">
+				uv_cnt=#{uvCnt},
+			</if>
+			<if test="clickCnt!=null">
+				click_cnt=#{clickCnt},
+			</if>
+			<if test="totalRegisterCnt!=null">
+				total_register_cnt=#{totalRegisterCnt},
+			</if>
+			<if test="totalRegisterCnt!=null">
+				total_register_cnt=#{totalRegisterCnt},
+			</if>
+			<if test="updateDate!=null">
+				update_date = #{updateDate}
+			</if>
+		</set>
+
+		WHERE platform_id = #{platformId} AND statistic_date = #{statisticDate}
+	</update>
+
+	<update id="updatePlatformByBalance">
+		UPDATE mgt_loan_platform_statistic SET balance=balance+#{balance},update_date = now()
+		WHERE platform_id = #{platformId} AND statistic_date <![CDATA[>]]> #{statisticDate}
+	</update>
+
+
+	<select id="selectPlatformDaily" resultType="com.jbb.mgt.core.domain.LoanPlatformStatistic">
+		SELECT t1.statistic_date AS statisticDate,t1.platform_id AS platformId,<include refid="statisticCols"/>
+		WHERE 1=1
+		<if test="platformIds!= null">
+			AND t1.platform_id in
+			<foreach item="platformId" index="index" collection="platformIds" open="(" separator="," close=")">
+				#{platformId}
+			</foreach>
+		</if>
+		AND t1.statistic_date <![CDATA[>=]]> #{startDate}
+		<if test="endDate != null">
+			AND t1.statistic_date <![CDATA[<=]]> #{endDate}
+		</if>
+		GROUP BY t1.statistic_date
+	</select>
+
+	<sql id="statisticCols">
+		SUM(cnt*price)/SUM(m.cnt)  AS price,
+		SUM(cnt*price)/SUM(CASE WHEN m.uv_cnt !=0 THEN m.uv_cnt ELSE t1.uvCnt END) AS uvPrice,
+		SUM(CASE WHEN m.uv_cnt !=0 THEN m.uv_cnt ELSE t1.uvCnt END) As uvCnt,
+		SUM(CASE WHEN m.click_cnt !=0 THEN m.click_cnt ELSE t1.click_cnt END) As clickCnt,
+		SUM(m.cnt) AS cnt,
+		SUM(m.cnt*1.0)/SUM(CASE WHEN m.uv_cnt !=0 THEN m.uv_cnt ELSE t1.uvCnt END)  AS uvRates,
+		SUM(cnt*price)  AS money
+		from (
+		SELECT
+		l.cookie_id as platform_id, DATE(l.creation_date) as statistic_date, COUNT(DISTINCT l.user_id) AS uvCnt,COUNT(l.user_id) AS clickCnt
+		From mgt_user_event_logs l
+		where DATE(l.creation_date)<![CDATA[>=]]> #{startDate}
+		<if test="endDate != null">
+			AND DATE(l.creation_date) <![CDATA[<=]]> #{endDate}
+		</if>
+		AND l.event_name in ('daichao','jbb2','bnh','xhyp')
+		group by l.platform_id , DATE(l.creation_date)
+		) t1
+		left join  mgt_loan_platform_statistic m on m.statistic_date = t1.statistic_date and m.platform_id = t1.platform_id
+	</sql>
+
+	<select id="selectPlatformCompare" resultType="com.jbb.mgt.core.domain.LoanPlatformStatistic">
+		SELECT t1.statistic_date AS statisticDate,t1.platform_id AS platformId,p.`name` AS name,<include refid="statisticCols"/>
+		LEFT JOIN mgt_loan_platforms p ON t1.platform_id=p.platform_id
+		WHERE 1=1
+		<if test="platformIds != null">
+			AND t1.platform_id in
+			<foreach item="platformId" index="index" collection="platformIds" open="(" separator="," close=")">
+				#{platformId}
+			</foreach>
+		</if>
+		AND t1.statistic_date <![CDATA[>=]]> #{startDate}
+		<if test="endDate != null">
+			AND t1.statistic_date <![CDATA[<=]]> #{endDate}
+		</if>
+		GROUP BY t1.platform_id
+	</select>
+
+
+	<select id="selectLoanPlatformStatisticsHistory"
+		resultType="com.jbb.mgt.core.domain.LoanPlatformStatistic">
+		SELECT
+		<include refid="loanPlatformStatisticCols" />
+		FROM
+		mgt_loan_platform_statistic l
+		WHERE
+		l.statistic_date &gt;= #{startDate}
+		AND
+		l.statistic_date &lt; #{endDate}
+		<if test="platformId!=null">
+			AND l.platform_id = #{platformId}
+		</if>
+	</select>
+	
+	<select id="selectEventLogByEventValue" resultType="com.jbb.mgt.core.domain.LoanPlatformStatistic">	
+		SELECT
+			DATE(#{startDate}) AS statisticDate ,
+			p.platform_id AS platformId ,
+			IFNULL(fm.amount,0) AS amount ,
+			IFNULL(fm.expense,0) AS expense ,
+			IFNULL(l.uvCnt,0) AS uvCnt ,
+			IFNULL(l.clickCnt,0) AS clickCnt ,
+			CASE WHEN p.price_mode = 1 THEN p.cpa_price ELSE p.uv_price END AS price
+		FROM
+			mgt_loan_platforms p
+		LEFT JOIN(
+			SELECT
+				log.cookie_id AS platform_id ,
+				COUNT(DISTINCT log.user_id) AS uvCnt ,
+				COUNT(log.user_id) AS clickCnt
+			FROM
+				mgt_user_event_logs log
+			WHERE
+				log.creation_date &gt;= #{startDate}
+			AND log.creation_date &lt; #{endDate}
+			AND log.event_name IN('daichao' , 'jbb2' , 'bnh' , 'xhyp')
+			AND log.cookie_id != ''
+			AND log.cookie_id != 'undefined'
+			GROUP BY
+				log.cookie_id
+		) l ON p.platform_id = l.platform_id
+		LEFT JOIN mgt_loan_platform_statistic fm ON fm.statistic_date = DATE(#{startDate}) AND fm.platform_id = l.platform_id
+		order by p.platform_id desc
+	
+	</select>
+	<select id="selectLoanPlatformStatisticsByDate"
+			resultType="com.jbb.mgt.core.domain.LoanPlatformStatistic">
+		select p1.platform_id AS platformId,arr.click_cnt as clickCnt,arr.uv_cnt as uvCnt from mgt_loan_platforms p1
+		LEFT JOIN
+		(select p.platform_id , count(e.cookie_id) as click_cnt ,COUNT(DISTINCT(e.user_id)) as uv_cnt from mgt_loan_platforms p
+		LEFT JOIN mgt_user_event_logs e
+		ON ltrim(p.platform_id) = e.cookie_id
+		WHERE  e.event_name in ('daichao','jbb2','bnh','xhyp')
+		AND
+		cookie_id!=''
+		AND
+		e.creation_date &gt;= #{startDate}
+		AND
+		e.creation_date &lt; #{endDate}
+		GROUP BY p.platform_id ORDER BY p.platform_id
+		) arr
+		ON p1.platform_id = arr.platform_id
+		<if test="platformId!=null">
+			AND p1.platform_id = #{platformId}
+		</if>
+	</select>
+
+	<update id="updateLoanPlatformStatistic">
+		UPDATE mgt_loan_platform_statistic
+		SET `status` = 1
+		WHERE
+		<foreach collection="list" index="index" item="item" separator="OR">
+			(statistic_date = DATE(#{item.statisticDate}) AND platform_id = #{item.platformId})
+		</foreach>
+	</update>
+
+	<resultMap id="PlatformGroupMap" type="com.jbb.mgt.core.domain.LoanPlatformStatistic">
+			<id property="statisticDate" column="statisticDate" />
+			<id property="platformId" column="platformId" />
+			<result property="cnt" column="cnt" />
+			<result property="puvCnt" column="puvCnt" />
+			<result property="price" column="price" />
+			<result property="expense" column="expense" />
+			<result property="amount" column="amount" />
+			<result property="balance" column="balance" />
+			<result property="status" column="status" />
+			<result property="creationDate" column="creationDate" />
+			<result property="updateDate" column="updateDate" />
+			<result property="confirmDate" column="confirmDate" />
+			<result property="confrimAccountId" column="confrimAccountId" />
+			<result property="uvCnt" column="uvCnt" />
+			<result property="clickCnt" column="clickCnt" />
+			<result property="totalRegisterCnt" column="totalRegisterCnt" />
+			<association property="platform" javaType="com.jbb.mgt.core.domain.Platform">
+				<id property="platformId" column="platformId" />
+				<result property="name" column="name" />
+				<result property="shortName" column="shortName" />
+				<result property="url" column="url" />
+				<result property="creationTime" column="creationTime" />
+				<result property="groupName" column="groupName" />
+				<association property="salesAccount" javaType="com.jbb.mgt.core.domain.Account">
+					<id property="accountId" column="salesId" />
+					<result property="nickname" column="nickname" />
+				</association>
+			</association>
+			<collection property="files" javaType="ArrayList" ofType="com.jbb.mgt.core.domain.FinFile">
+				<id property="fileId" column="fileId" />
+				<result property="orgId" column="orgId" />
+				<result property="merchantId" column="merchantId" />
+				<result property="platformId" column="platformId" />
+				<result property="fileName" column="fileName" />
+				<result property="fileType" column="fileType" />
+				<result property="creator" column="creator" />
+				<result property="creationDate" column="creationDate" />
+				<result property="fileDate" column="fileDate" />
+				<result property="isDeleted" column="isDeleted" />
+			</collection>
+	</resultMap>
+	
+		<resultMap id="LoanPlatformMap" type="com.jbb.mgt.core.domain.Platform">
+		<id property="platformId" column="platformId2" />
+		<result property="name" column="name" />
+		<result property="shortName" column="shortName" />
+		<result property="url" column="url" />
+		<result property="logo" column="logo" />
+		<result property="adImgUrl" column="adImgUrl" />
+		<result property="desc1" column="desc1" />
+		<result property="desc2" column="desc2" />
+		<result property="desc3" column="desc3" />
+		<result property="minAmount" column="minAmount" />
+		<result property="maxAmount" column="maxAmount" />
+		<result property="loanPeriod" column="loanPeriod" />
+		<result property="interestRate" column="interestRate" />
+		<result property="approvalTime" column="approvalTime" />
+		<result property="isNew" column="isNew" />
+		<result property="isHot" column="isHot" />
+		<result property="creator" column="creator" />
+		<result property="isDeleted" column="isDeleted" />
+		<result property="creationTime" column="creationTime" />
+		<result property="updateTime" column="updateTime" />
+		<result property="cpaPrice" column="cpaPrice" />
+		<result property="groupName" column="groupName1" />
+		<result property="type" column="type" />
+		<result property="salesId" column="salesId" />
+		<association property="salesAccount" javaType="com.jbb.mgt.core.domain.Account">
+			<id property="accountId" column="salesId" />
+			<result property="nickname" column="nickname" />
+		</association>
+	</resultMap>
+	<sql id="finFileCols1">
+        f.file_id AS fileId, f.org_id AS orgId, f.merchant_id AS merchantId,f.platform_id AS platformId1, f.file_name AS fileName,
+        f.file_type  AS fileType, f.creator AS creator, f.creation_date AS creationDate1,
+        f.file_date AS fileDate, f.is_deleted AS isDeleted
+    </sql>
+	<select id="selectFiles"   resultType="com.jbb.mgt.core.domain.FinFile" resultMap="FileResultMap">
+    select <include refid="finFileCols1"/>  from mgt_fin_files f where f.platform_id= #{platformId} AND DATE(f.file_date)= #{statisticDate} AND f.is_deleted=0
+    </select>
+    <select id="selectPlatform"   resultMap="LoanPlatformMap">
+    select <include refid="platformCols1"/>,ma.nickname AS nickname  
+    from mgt_loan_platforms p
+    LEFT JOIN mgt_accounts ma ON ma.account_id = p.sales_id
+    where p.platform_id= #{platformId}
+    </select>
+    <sql id="platformCols1">
+		p.platform_id AS platformId2, p.name AS name, p.short_name AS shortName,p.sales_id AS salesId,
+		p.url AS url, p.logo AS logo, p.desc1 AS desc1, p.desc2 AS desc2, p.desc3 AS desc3,p.apply_cnt AS applyCnt,
+		p.creator AS creator,p.cpa_price as cpaPrice, p.creation_time AS creationTime,p.group_name AS groupName1,p.type AS type
+	</sql>
+    <resultMap id="FileResultMap" type="com.jbb.mgt.core.domain.FinFile">
+			<id property="fileId" column="fileId" />
+			<result property="orgId" column="orgId" />
+			<result property="merchantId" column="merchantId" />
+			<result property="platformId" column="platformId1" />
+			<result property="fileName" column="fileName" />
+			<result property="fileType" column="fileType" />
+			<result property="creator" column="creator" />
+			<result property="creationDate" column="creationDate1" />
+			<result property="fileDate" column="fileDate" />
+			<result property="isDeleted" column="isDeleted" />
+	</resultMap>
+	
+	<resultMap id="PlatformResultMap" type="com.jbb.mgt.core.domain.Platform">
+		<id property="platformId" column="platformId2" />
+		<result property="name" column="name" />
+		<result property="shortName" column="shortName" />
+		<result property="url" column="url" />
+		<result property="logo" column="logo" />
+		<result property="adImgUrl" column="adImgUrl" />
+		<result property="desc1" column="desc1" />
+		<result property="desc2" column="desc2" />
+		<result property="desc3" column="desc3" />
+		<result property="minAmount" column="minAmount" />
+		<result property="maxAmount" column="maxAmount" />
+		<result property="loanPeriod" column="loanPeriod" />
+		<result property="interestRate" column="interestRate" />
+		<result property="approvalTime" column="approvalTime" />
+		<result property="isNew" column="isNew" />
+		<result property="isHot" column="isHot" />
+		<result property="creator" column="creator" />
+		<result property="isDeleted" column="isDeleted" />
+		<result property="creationTime" column="creationTime" />
+		<result property="updateTime" column="updateTime" />
+		<result property="cpaPrice" column="cpaPrice" />
+		<result property="groupName" column="groupName" />
+		<result property="type" column="type" />
+		<result property="applyCnt" column="applyCnt"/>
+	</resultMap>
+	
+	<select id="selectPlatformByDateAndGroup" resultMap="PlatformGroupMap">
+		SELECT 
+			p.group_name AS groupName
+			,<include refid="loanPlatformStatisticCols"/>
+			,<include refid="platformCols1"/>
+			,<include refid="finFileCols1"/>
+			, acc.nickname as nickname
+		FROM
+			mgt_loan_platform_statistic m 
+		LEFT JOIN mgt_loan_platforms p ON m.platform_id = p.platform_id
+		LEFT JOIN mgt_fin_files f ON m.platform_id = f.platform_id AND m.statistic_date = DATE(f.file_date) AND f.is_deleted = 0
+		LEFT JOIN mgt_accounts acc ON acc.account_id = p.sales_id
+		WHERE
+		1=1
+			<if test="statisticDate != null">
+				AND statistic_date = DATE(#{statisticDate})
+			</if>
+			<if test="startDate != null">
+				AND m.statistic_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null">
+				AND m.statistic_date <![CDATA[<=]]> #{endDate}
+			</if>
+			<if test="platformId != null">
+				AND m.platform_id = #{platformId}
+			</if>
+			<if test="groupName != null">
+				AND p.group_name = #{groupName}
+			</if>
+			<if test="type != null">
+				AND p.type = #{type}
+			</if>
+			<if test="salesId != null">
+				AND p.sales_id=#{salesId}
+			</if>
+		ORDER BY
+			statistic_date, m.balance asc
+	</select>
+	
+	<resultMap id="PlatformDateMap" type="com.jbb.mgt.core.domain.LoanPlatformStatistic">
+		
+			<id property="statisticDate" column="statisticDate" />
+			<id property="platformId" column="platformId" />
+			<result property="cnt" column="cnt" />
+			<result property="puvCnt" column="puvCnt" />
+			<result property="price" column="price" />
+			<result property="expense" column="expense" />
+			<result property="amount" column="amount" />
+			<result property="balance" column="balance" />
+			<result property="status" column="status" />
+			<result property="creationDate" column="creationDate" />
+			<result property="updateDate" column="updateDate" />
+			<result property="confirmDate" column="confirmDate" />
+			<result property="confrimAccountId" column="confrimAccountId" />
+			<result property="uvCnt" column="uvCnt" />
+			<result property="clickCnt" column="clickCnt" />
+			<result property="totalRegisterCnt" column="totalRegisterCnt" />
+			
+			<association property="platform" javaType="com.jbb.mgt.core.domain.Platform">
+				<id property="platformId" column="platformId" />
+				<result property="name" column="name" />
+				<result property="shortName" column="shortName" />
+				<result property="url" column="url" />
+				<result property="creationTime" column="creationTime" />
+				<result property="groupName" column="groupName" />
+				<association property="salesAccount" javaType="com.jbb.mgt.core.domain.Account">
+					<id property="accountId" column="salesId" />
+					<result property="nickname" column="nickname" />
+				</association>
+			</association>
+			<collection property="files" javaType="ArrayList" ofType="com.jbb.mgt.core.domain.FinFile">
+				<id property="fileId" column="fileId" />
+				<result property="orgId" column="orgId" />
+				<result property="merchantId" column="merchantId" />
+				<result property="platformId" column="platformId" />
+				<result property="fileName" column="fileName" />
+				<result property="fileType" column="fileType" />
+				<result property="creator" column="creator" />
+				<result property="creationDate" column="creationDate" />
+				<result property="fileDate" column="fileDate" />
+				<result property="isDeleted" column="isDeleted" />
+			</collection>
+		
+	</resultMap>
+	
+	<select id="selectPlatformGroupById" resultMap="PlatformDateMap">
+		SELECT 
+			m.statistic_date AS statisticDate
+			, <include refid="loanPlatformStatisticCols"/>
+			, <include refid="platformCols1"/>
+			, <include refid="finFileCols1"/>
+			, acc.nickname AS nickname
+		FROM
+			mgt_loan_platform_statistic m 
+		LEFT JOIN mgt_loan_platforms p ON m.platform_id = p.platform_id
+		LEFT JOIN mgt_fin_files f ON m.platform_id = f.platform_id AND m.statistic_date = DATE(f.file_date) AND f.is_deleted = 0
+		LEFT JOIN mgt_accounts acc ON acc.account_id = p.sales_id
+		WHERE
+			1=1
+			<if test="startDate != null">
+				AND m.statistic_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null">
+				AND m.statistic_date <![CDATA[<=]]> #{endDate}
+			</if>
+			<if test="platformId != null">
+				AND m.platform_id = #{platformId}
+			</if>
+			<if test="groupName != null">
+				AND p.group_name = #{groupName}
+			</if>
+			<if test="type != null">
+				AND p.type = #{type}
+			</if>
+			<if test="salesId != null">
+				AND p.sales_id=#{salesId}
+			</if>
+		ORDER BY
+			statistic_date DESC,p.group_name
+	</select>
+	
+	<select id="getCalculatePlatFormExpense" resultType="com.jbb.mgt.core.domain.PlatformExpense">
+	SELECT
+		lps.statistic_date AS statisticDate,
+		lps.platform_id AS platformId,
+		lps.amount AS amount,
+		lps.balance AS balance,
+		lps.expense AS expense,
+		(case WHEN p.price_mode=2 THEN p.uv_price ELSE p.cpa_price END) AS price,
+		(case WHEN p.price_mode=2 THEN lps.uv_cnt ELSE 0 END) AS uvCnt
+		<if test="!calculateFlag">
+		,(case WHEN p.price_mode=1 THEN lps.uv_cnt/2 ELSE 0 END) AS cnt
+		</if>
+	FROM
+		mgt_loan_platform_statistic lps
+		LEFT JOIN mgt_loan_platforms p ON lps.platform_id=p.platform_id
+	WHERE
+			 lps.statistic_date <![CDATA[>=]]> #{startDate}
+			AND lps.statistic_date <![CDATA[<]]> #{endDate}
+			
+	</select>
+	
+	<update id="updatePlatFormExpense">
+	        update mgt_loan_platform_statistic p
+	        set
+	        	p.price=#{price},
+	        	p.puv_cnt=#{uvCnt},
+	        	p.cnt=#{cnt},
+	        	p.amount=#{amount},
+	        	p.expense=#{expense},
+	        	p.balance=#{balance}
+	        where p.platform_id = #{platformId} 
+	           AND p.statistic_date=#{statisticDate}
+	</update>
+	  
+	<select id="checkExecute"  resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM mgt_platform_statistic WHERE statistic_date = #{startDate})
+	</select>
+	
+	<insert id="saveExecuteLog" >
+		INSERT INTO mgt_platform_statistic(statistic_date,creation_date)
+		VALUES(date(#{startDate}),#{creationDate})
+	</insert>
+</mapper>

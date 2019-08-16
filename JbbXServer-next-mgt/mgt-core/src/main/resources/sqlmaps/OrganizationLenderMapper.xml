@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jbb.mgt.core.dao.mapper.OrganizationLenderMapper">
+  <resultMap id="BaseResultMap" type="com.jbb.mgt.core.domain.OrganizationLender">
+    <constructor>
+      <idArg column="org_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="account_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="price" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="title" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="description" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="creation_date" javaType="java.sql.Timestamp" jdbcType="TIMESTAMP" />
+      <arg column="update_date" javaType="java.sql.Timestamp" jdbcType="TIMESTAMP" />
+      <arg column="price_date" javaType="java.sql.Timestamp" jdbcType="TIMESTAMP" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    org_id, account_id, price, title, description, creation_date, update_date, price_date
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from mgt_organization_lenders
+    where org_id = #{orgId,jdbcType=INTEGER}
+  </select>
+  <select id="selectOrgLenderList"  resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from mgt_organization_lenders
+    ORDER BY price DESC,price_date ASC
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from mgt_organization_lenders
+    where org_id = #{orgId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.jbb.mgt.core.domain.OrganizationLender">
+    insert into mgt_organization_lenders (org_id, account_id, price, 
+      title, description, creation_date, 
+      update_date, price_date)
+    values (#{orgId,jdbcType=INTEGER}, #{accountId,jdbcType=INTEGER}, #{price,jdbcType=INTEGER}, 
+      #{title,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, #{creationDate,jdbcType=TIMESTAMP}, 
+      #{updateDate,jdbcType=TIMESTAMP}, #{priceDate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.jbb.mgt.core.domain.OrganizationLender">
+    insert into mgt_organization_lenders
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="orgId != null">
+        org_id,
+      </if>
+      <if test="accountId != null">
+        account_id,
+      </if>
+      <if test="price != null">
+        price,
+      </if>
+      <if test="title != null">
+        title,
+      </if>
+      <if test="description != null">
+        description,
+      </if>
+      <if test="creationDate != null">
+        creation_date,
+      </if>
+      <if test="updateDate != null">
+        update_date,
+      </if>
+      <if test="priceDate != null">
+        price_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="orgId != null">
+        #{orgId,jdbcType=INTEGER},
+      </if>
+      <if test="accountId != null">
+        #{accountId,jdbcType=INTEGER},
+      </if>
+      <if test="price != null">
+        #{price,jdbcType=INTEGER},
+      </if>
+      <if test="title != null">
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="creationDate != null">
+        #{creationDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateDate != null">
+        #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="priceDate != null">
+        #{priceDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.jbb.mgt.core.domain.OrganizationLender">
+    update mgt_organization_lenders
+    <set>
+      <if test="accountId != null">
+        account_id = #{accountId,jdbcType=INTEGER},
+      </if>
+      <if test="price != null">
+        price = #{price,jdbcType=INTEGER},
+      </if>
+      <if test="title != null">
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="creationDate != null">
+        creation_date = #{creationDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateDate != null">
+        update_date = #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="priceDate != null">
+        price_date = #{priceDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where org_id = #{orgId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.jbb.mgt.core.domain.OrganizationLender">
+    update mgt_organization_lenders
+    set
+      account_id = #{accountId,jdbcType=INTEGER},
+      price = #{price,jdbcType=INTEGER},
+      title = #{title,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      creation_date = #{creationDate,jdbcType=TIMESTAMP},
+      update_date = #{updateDate,jdbcType=TIMESTAMP},
+      price_date = #{priceDate,jdbcType=TIMESTAMP}
+    where org_id = #{orgId,jdbcType=INTEGER}
+  </update>
+</mapper>

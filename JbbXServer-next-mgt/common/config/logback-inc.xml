@@ -1,0 +1,101 @@
+<included>
+
+  <property name="LOG_DIR" scope="context" value="${APP_HOME:-..}/logs" />
+  <property name="MODULE_LOG_DIR" value="${LOG_DIR}/${MODULE:-common}" />
+  
+  <!-- A date based rolling appender -->
+  <property name="ROLLING_FILE_PATTERN" scope="context" value="%d.log.zip" />
+  <!-- keep 3 days' worth of history -->
+  <property name="MAX_HISTORY" value="300" />
+  <!-- Standard message encoder pattern -->
+  <property name="STD_ENCODER_PATTERN" value="%date %-5level %-60.60logger{60} %message%n" />
+
+  <!-- APPENDERS -->
+  
+  <appender name="CLOUD"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${MODULE_LOG_DIR}/cloud.log</file>
+   
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <FileNamePattern>${MODULE_LOG_DIR}/zcloud.${ROLLING_FILE_PATTERN}</FileNamePattern>
+      <MaxHistory>${MAX_HISTORY}</MaxHistory>
+    </rollingPolicy>
+    
+    <encoder>
+      <pattern>${STD_ENCODER_PATTERN}</pattern>
+    </encoder>
+  </appender>
+  
+  <appender name="ERROR"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${MODULE_LOG_DIR}/error.log</file>
+    
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>WARN</level>
+    </filter>
+   
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <FileNamePattern>${MODULE_LOG_DIR}/zerror.${ROLLING_FILE_PATTERN}</FileNamePattern>
+      <MaxHistory>${MAX_HISTORY}</MaxHistory>
+    </rollingPolicy>
+    
+    <encoder>
+      <pattern>${STD_ENCODER_PATTERN}</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="MyBATIS"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${MODULE_LOG_DIR}/mybatis.log</file>
+   
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <FileNamePattern>${MODULE_LOG_DIR}/zmybatis.${ROLLING_FILE_PATTERN}</FileNamePattern>
+      <MaxHistory>${MAX_HISTORY}</MaxHistory>
+    </rollingPolicy>
+    
+    <encoder>
+      <pattern>${STD_ENCODER_PATTERN}</pattern>
+    </encoder>
+  </appender>
+
+
+  <!-- LOGGERS -->
+  
+  <logger name="com.jbb" level="debug">
+    <appender-ref ref="CLOUD" />
+  </logger>
+  
+  <logger name="com.jbb.server.common" level="debug" />
+
+  <logger name="com.jbb.server.core.dao.mapper" level="warn" additivity="false">
+    <appender-ref ref="MyBATIS" />
+  </logger>
+  
+  <logger name="com.jbb.mgt.core.dao.mapper" level="warn" additivity="false">
+    <appender-ref ref="MyBATIS" />
+  </logger>
+  
+  
+  <logger name="com.jbb.server.registerproc" level="info" additivity="false">
+  </logger>
+
+  <logger name="org.quartz" level="error"/>
+  
+  <logger name="com.jbb.eos.core.dao.mapper" level="warn" additivity="false">
+    <appender-ref ref="MyBATIS" />
+  </logger>
+  
+  <logger name="com.jbb.eos.core.dao.mapper" level="warn" additivity="false">
+    <appender-ref ref="MyBATIS" />
+  </logger>
+  
+  <logger name="com.jbb.eos.core.dao.mapper" level="warn" additivity="false">
+    <appender-ref ref="MyBATIS" />
+  </logger>
+ 
+  
+  <root level="warn">
+    <appender-ref ref="ERROR" />
+  </root>
+ 
+</included>

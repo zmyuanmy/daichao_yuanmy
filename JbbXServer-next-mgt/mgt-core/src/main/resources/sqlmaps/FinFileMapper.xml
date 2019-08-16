@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.FinFileMapper" >
+
+    <sql id="finFileCols">
+        f.file_id AS fileId,
+        f.org_id AS orgId,
+        f.merchant_id AS merchantId,
+        f.platform_id AS platformId,
+        f.file_name AS fileName,
+        f.file_type  AS fileType,
+        f.creator AS creator,
+        f.creation_date AS creationDate,
+        f.file_date AS fileDate,
+        f.is_deleted AS isDeleted
+    </sql>
+
+    <insert id="insertFinFile" useGeneratedKeys="true" keyProperty="fileId">
+		INSERT INTO mgt_fin_files
+			(org_id, merchant_id, platform_id,file_name, file_type, creator,creation_date, file_date, is_deleted)
+		VALUES
+			(#{orgId}, #{merchantId}, #{platformId}, #{fileName}, #{fileType}, #{creator},#{creationDate},#{fileDate},#{isDeleted})
+	</insert>
+
+    <update id="deleteFinFileById">
+		UPDATE mgt_fin_files
+		SET is_deleted = true
+		WHERE file_id = #{fileId}
+	</update>
+
+    <select id="selectFinFile" resultType="com.jbb.mgt.core.domain.FinFile">
+        SELECT <include refid="finFileCols"/>
+        FROM mgt_fin_files f
+        WHERE f.org_id = #{orgId}
+        AND f.file_type = #{fileType}
+        AND f.file_date = #{fileDate}
+        AND  f.is_deleted=0
+    </select>
+</mapper> 
+

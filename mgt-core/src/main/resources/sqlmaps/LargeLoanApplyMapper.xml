@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.LargeLoanApplyMapper">
+<resultMap id="LargeLoanOrgMap" type="com.jbb.mgt.core.domain.LargeLoanOrg">
+			<id property="orgId" column="orgId" />
+			<result property="fieldName" column="fieldName" />
+			<result property="orgName" column="orgName"/>
+			<result property="desc" column="desc" />
+			<result property="logo" column="logo" />
+			<result property="price" column="price" />
+			<result property="isDelete" column="isDelete" />
+			<result property="filterScript" column="filterScript" />
+			<result property="creationDate" column="creationDate" />
+	</resultMap>
+	<select id="getAllLargeLoanOrg" resultMap="LargeLoanOrgMap">
+		SELECT
+			llo.org_id AS orgId,
+			llo.org_name AS orgName,
+			llo.`desc` AS `desc`,
+			llo.logo AS logo,
+			llo.price AS price,
+			llo.is_delete AS isDelete,
+			llo.filter_script AS filterScript,
+			llo.creation_date AS creationDate
+		FROM
+			mgt_large_loan_orgs llo
+		WHERE
+			 llo.is_delete =0
+	</select>	
+
+	<update id="updateUserInfo">
+		UPDATE mgt_users
+		SET username = #{username},
+			idcard=#{idcard},
+			occupation=#{occupation}
+		WHERE user_id = #{userId}
+	</update>
+	
+	<select id="selectLargeLoanApplyLog" resultType="com.jbb.mgt.core.domain.UserEventLog">
+		SELECT
+		user_id AS userId,
+		source_id AS sourceId,
+		cookie_id AS cookieId,
+		event_name AS eventName,
+		event_action AS eventAction,
+		event_label AS eventLable,
+		event_value AS eventValue,
+		creation_date AS creationDate,
+		remote_address AS remoteAddress,
+		event_value2 AS eventValue2
+		FROM
+			mgt_user_event_logs 
+		WHERE
+			user_id=#{userId} 
+			AND event_name='user'
+			AND event_action='largeLoan'
+			order by creation_date desc limit 1
+	</select>	
+</mapper> 
+

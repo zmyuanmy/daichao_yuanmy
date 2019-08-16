@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.jbb.mgt.core.dao.mapper.ChannelStatisticDailyMapper">
+	<sql id="csdCols">
+		fcsd.statistic_date AS statisticDate,
+		fcsd.channel_code AS channelCode,
+		fcsd.cnt AS cnt,
+		fcsd.ad_cnt AS adCnt,
+		fcsd.price AS price,
+		fcsd.expense AS expense,
+		fcsd.amount AS amount,
+		fcsd.balance AS balance,
+		fcsd.`status` AS `status`,
+		fcsd.creation_date AS creationDate,
+		fcsd.update_date AS updateDate,
+		fcsd.confirm_date AS confirmDate,
+		fcsd.confrim_account_id AS confrimAccountId,
+		fcsd.uv_cnt AS uvCnt,
+		fcsd.mode AS mode
+	</sql>
+	<resultMap id="ChannelsMap"
+		type="com.jbb.mgt.core.domain.Channels">
+
+		<association property="channel"
+			javaType="com.jbb.mgt.core.domain.Channel">
+			<id column="channelCode" jdbcType="VARCHAR" property="channelCode" />
+			<result column="channelName" jdbcType="VARCHAR"
+				property="channelName" />
+		</association>
+		<association property="channelAccountInfo"
+			javaType="com.jbb.mgt.core.domain.ChannelAccountInfo">
+			<id column="channelCode" jdbcType="VARCHAR" property="channelCode" />
+			<result column="name" jdbcType="VARCHAR" property="name" />
+			<result column="number" jdbcType="VARCHAR" property="number" />
+			<result column="bankInfo" jdbcType="VARCHAR"
+				property="bankInfo" />
+			<result column="updateDate" jdbcType="TIMESTAMP"
+				property="updateDate" />
+			<result column="updateAccountId" jdbcType="INTEGER"
+				property="updateAccountId" />
+		</association>
+		<association property="channelStatisticDaily"
+			javaType="com.jbb.mgt.core.domain.ChannelStatisticDaily">
+			<id column="channelCode" jdbcType="VARCHAR" property="channelCode" />
+			<result column="statisticDate" jdbcType="DATE" property="statisticDate" />
+			<result column="cnt" jdbcType="INTEGER" property="cnt" />
+			<result column="adCnt" jdbcType="INTEGER" property="adCnt" />
+			<result column="price" jdbcType="INTEGER" property="price" />
+			<result column="uvCnt" jdbcType="INTEGER" property="uvCnt" />
+			<result column="mode" jdbcType="INTEGER" property="mode" />
+			<result column="expense" jdbcType="INTEGER" property="expense" />
+			<result column="amount" jdbcType="INTEGER" property="amount" />
+			<result column="balance" jdbcType="INTEGER" property="balance" />
+			<result column="status" jdbcType="INTEGER" property="status" />
+			<result column="creationDate" jdbcType="TIMESTAMP" property="creationDate" />
+			<result column="updateDate" jdbcType="TIMESTAMP" property="updateDate" />
+			<result column="confirmDate" jdbcType="TIMESTAMP" property="confirmDate" />
+			<result column="confrimAccountId" jdbcType="INTEGER" property="confrimAccountId" />
+		</association>
+	</resultMap>
+	<insert id="insertChannelsStatisticDaily"
+		parameterType="ArrayList">
+		INSERT INTO mgt_fin_channel_statistic_daily
+		(statistic_date, channel_code,cnt,price,expense,amount,balance,
+		`status`,creation_date,confrim_account_id,ad_cnt,uv_cnt,mode)
+		VALUES
+		<foreach collection="lists" item="list" index="index"
+			separator=",">
+			( #{list.statisticDate},
+			#{list.channelCode},#{list.cnt},#{list.price},#{list.expense},
+			#{list.amount},#{list.balance},#{list.status},now(),
+			#{list.confrimAccountId},#{list.adCnt},#{list.uvCnt},#{list.mode})
+		</foreach>
+		ON DUPLICATE KEY UPDATE 
+		cnt = values(cnt),ad_cnt=values(ad_cnt),uv_cnt=values(uv_cnt),mode=values(mode),price = values(price),expense=values(expense),
+		balance=values(balance),creation_date=now()
+	</insert>
+
+	<select id="getstatisticByDate" resultMap="ChannelsMap">
+		SELECT
+		<include refid="csdCols" />
+		,c.channel_name AS channelName,
+		c.channel_code As channelCode,
+		cai.bank_info AS bankInfo,
+		cai.number AS number,
+		cai.`name` AS `name`,
+		cai.update_account_id AS updateAccountId
+		FROM mgt_fin_channel_statistic_daily fcsd
+		LEFT JOIN mgt_channels c ON fcsd.channel_code= c.channel_code
+		LEFT JOIN mgt_channel_account_info cai ON fcsd.channel_code =
+		cai.channel_code
+		WHERE statistic_date=date(#{date})
+		<if test="null != groupName">
+			<if test="groupName == 'undefined' ">
+				AND c.group_name IS NULL
+			</if>
+			<if test="groupName != 'undefined' ">
+				AND c.group_name = #{groupName}
+			</if>
+		</if>
+		<if test="salesId != null">
+			AND c.creator=#{salesId}
+		</if>
+		ORDER BY fcsd.cnt desc
+
+	</select>
+
+	<resultMap id="StatisticChannelCodeMap" type="com.jbb.mgt.core.domain.ChannelStatisticGroupName">
+		<id property="statisticDate" column="statisticDate" />
+		<collection property="channelStatisticDailies" javaType="ArrayList" ofType="com.jbb.mgt.core.domain.ChannelStatisticDaily">
+			<id property="statisticDate" column="statisticDate" />
+			<id property="channelCode" column="channelCode" />
+			<id property="channelName" column="channelName" />
+			<result property="cnt" column="cnt" />
+			<result property="adCnt" column="adCnt" />
+			<result property="uvCnt" column="uvCnt" />
+			<result property="mode" column="mode" />
+			<result property="price" column="price" />
+			<result property="expense" column="expense" />
+			<result property="amount" column="amount" />
+			<result property="balance" column="balance" />
+			<result property="status" column="status" />
+			<result property="creationDate" column="creationDate" />
+			<result property="updateDate" column="updateDate" />
+			<result property="confirmDate" column="confirmDate" />
+			<result property="confrimAccountId" column="confrimAccountId" />
+		</collection>
+	</resultMap>
+
+	<select id="getStatisticByChannelCode" resultMap="StatisticChannelCodeMap">
+		SELECT
+		<include refid="csdCols" />,c.channel_code AS channelCode,c.channel_name AS channelName
+		FROM
+		mgt_fin_channel_statistic_daily fcsd
+		LEFT JOIN mgt_channels c ON fcsd.channel_code = c.channel_code
+		WHERE
+		fcsd.statistic_date &gt;= date(#{startDate})
+		<choose>
+        	<when test="flag"> AND fcsd.statistic_date &lt;= date(#{endDate})</when>
+	        <otherwise>AND fcsd.statistic_date &lt; date(#{endDate})</otherwise> 
+	   	</choose>
+		<if test="null != groupName">
+			<if test="groupName == 'undefined' ">
+				AND c.group_name IS NULL
+			</if>
+			<if test="groupName != 'undefined' ">
+				AND c.group_name = #{groupName}
+			</if>
+		</if>
+		<if test="channelCode != null">
+			AND fcsd.channel_code = #{channelCode}
+		</if>
+		<if test="salesId != null">
+			AND c.creator=#{salesId}
+		</if>
+        ORDER BY fcsd.statistic_date ASC
+	</select>
+
+	<select id="getChannelStatisticDaily"
+		resultType="com.jbb.mgt.core.domain.ChannelStatisticDaily">
+		SELECT
+		<include refid="csdCols" />
+		FROM
+		mgt_fin_channel_statistic_daily fcsd
+		WHERE 1 = 1
+		<if test="channelCode">
+			AND fcsd.channel_code = #{channelCode}
+		</if>
+		<if test="detail">
+			AND fcsd.statistic_date = date(#{statisticDate})
+		</if>
+		<if test="status">
+			AND fcsd.statistic_date = DATE_ADD(DATE(#{statisticDate}), INTERVAL -1 DAY)
+		</if>
+		ORDER BY fcsd.statistic_date desc  
+	</select>
+
+	<resultMap id="getTodayCnt" type="com.jbb.mgt.core.domain.Channel">
+		<id column="channelCode" jdbcType="VARCHAR" property="channelCode" />
+		<result column="channelName" jdbcType="VARCHAR" property="channelName" />
+		<result column="cpaPrice" jdbcType="INTEGER" property="cpaPrice"/>
+		<result column="uvPrice" jdbcType="INTEGER" property="uvPrice"/>
+		<result column="mode"  property="mode"/>
+		<association property="statistic" javaType="com.jbb.mgt.core.domain.ChannelStatistic">
+			<result column="registerCnt" jdbcType="INTEGER" property="registerCnt" />
+			<result column="adCnt" jdbcType="INTEGER" property="adCnt" />
+		</association>
+		<association property="channelAccountInfo" javaType="com.jbb.mgt.core.domain.ChannelAccountInfo">
+			<id column="channelCode" jdbcType="VARCHAR" property="channelCode" />
+			<result column="name" jdbcType="VARCHAR" property="name" />
+			<result column="number" jdbcType="VARCHAR" property="number" />
+			<result column="bankInfo" jdbcType="VARCHAR" property="bankInfo" />
+			<result column="updateDate" jdbcType="TIMESTAMP" property="updateDate" />
+			<result column="updateAccountId" jdbcType="INTEGER" property="updateAccountId" />
+		</association>
+	</resultMap>
+
+	<select id="selectChannelStatisticToday" resultMap="getTodayCnt">
+		SELECT
+			c.channel_code AS channelCode,
+			c.channel_name AS channelName,
+			c.cpa_price As cpaPrice,
+			c.uv_price AS uvPrice,
+			c.mode AS mode,
+			tcnt.registerCnt as registerCnt,
+			tcnt.adCnt as adCnt,
+			cai.bank_info AS bankInfo,
+			cai.number AS number,
+			cai.`name` AS `name`,
+			cai.update_account_id AS updateAccountId
+		FROM mgt_channels c
+		JOIN mgt_accounts acc ON c.creator = acc.account_id
+		LEFT JOIN (
+			SELECT au.channel_code as channel_code,
+				count(case when au.is_hidden = 0 then 1 else null end) as registerCnt,
+				count(case when au.is_hidden = 0 AND au.user_type=3 then 1 else null end) as adCnt
+			FROM mgt_org_app_channel_users au 
+			WHERE 1=1 AND au.org_id = 1
+			<if test="startDate != null">
+				AND au.creation_date <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null">
+				AND au.creation_date <![CDATA[<]]> #{endDate}
+			</if>
+				GROUP BY au.channel_code
+		) tcnt ON tcnt.channel_code = c.channel_code
+		LEFT JOIN mgt_channel_account_info cai ON c.channel_code = cai.channel_code
+		WHERE c.status != 1 AND c.is_hidden = 0
+		<if test="channelCode != null">
+			AND c.channel_code = #{channelCode}
+		</if>
+		<if test="orgId!=null">
+			AND acc.org_id = #{orgId}
+		</if>
+		<if test="null != groupName">
+			<if test="groupName == 'undefined' ">
+				AND c.group_name IS NULL
+			</if>
+			<if test="groupName != 'undefined' ">
+				AND c.group_name = #{groupName}
+			</if>
+		</if>
+		<if test="salesId != null">
+			AND c.creator=#{salesId}
+		</if>
+		ORDER BY registerCnt DESC,c.creation_date DESC
+	</select>
+
+	<update id="updateChannelStatisticDaily">
+		UPDATE mgt_fin_channel_statistic_daily fcsd
+		SET price =#{price},
+		expense=#{expense},
+		amount =#{amount},
+		balance =#{balance},
+		`status`=#{status},
+		creation_date =#{creationDate},
+		update_date =#{updateDate},
+		confirm_date =#{confirmDate},
+		confrim_account_id =#{confrimAccountId},
+		cnt = #{cnt},
+		<if test="mode != 0">
+		mode = #{mode},
+		</if>
+		uv_cnt= #{uvCnt}
+		WHERE
+		fcsd.statistic_date = #{statisticDate}
+		AND fcsd.channel_code =#{channelCode}
+	</update>
+
+	<update id="updateAllChannelStatisticDaily">
+		UPDATE mgt_fin_channel_statistic_daily fcsd
+		SET
+		balance =balance + #{change},
+		update_date=now()
+		WHERE
+		fcsd.statistic_date > date(#{statisticDate})
+		AND fcsd.channel_code =#{channelCode}
+	</update>
+	
+	<insert id="saveChannelStatisticDaily">
+		INSERT INTO mgt_fin_channel_statistic_daily
+		(statistic_date, channel_code,amount,`status`,creation_date)
+		VALUES
+			( #{statisticDate},#{channelCode},#{amount},#{status},now())
+		ON DUPLICATE KEY UPDATE amount=#{amount},`status`=#{status}
+	</insert>
+	
+	<select id="selectChannelStatistic" resultType="com.jbb.mgt.core.domain.ChannelStatisticDaily">
+		SELECT	fcsd.statistic_date AS statisticDate,fcsd.channel_code AS channelCode,fcsd.cnt AS cnt 
+		FROM mgt_fin_channel_statistic_daily fcsd
+		WHERE fcsd.statistic_date !=DATE(NOW()) 
+			AND fcsd.statistic_date <![CDATA[>=]]> #{startDate}
+			AND fcsd.statistic_date <![CDATA[<=]]> #{endDate}
+			AND fcsd.channel_code=#{channelCode}
+		<if test="now>=startDate and endDate>=now">
+		UNION ALL
+		SELECT 
+			DATE(NOW()) AS statisticDate,
+			au.channel_code as channelCode,
+			count(1) as cnt
+		FROM mgt_org_app_channel_users au
+		WHERE DATE(au.creation_date) =#{now} 
+			AND au.channel_code=#{channelCode}
+			AND au.org_id = 1 AND au.is_hidden = 0
+	
+		</if>
+	</select>
+
+	<update id="updateChannelStatisticDailyList">
+		UPDATE mgt_fin_channel_statistic_daily
+		SET `status` = 1
+		WHERE
+		<foreach collection="list" index="index" item="item" separator="OR">
+			(statistic_date = DATE(#{item.statisticDate}) AND channel_code = #{item.channelCode})
+		</foreach>
+
+	</update>
+
+</mapper>

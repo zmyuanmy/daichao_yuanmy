@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.HumanLpPhoneMapper">
+
+	<sql id="humanCols">
+		phone_number as phoneNumber,
+		username AS userName,
+		sex AS sex,
+		cdate AS cDate,
+		batch_id AS batchId,
+		last_phone AS lastPhone,
+		push_status AS pushStatus,
+		creation_date AS creationDate
+	</sql>
+
+	<select id="selectHumanLpPhoneList" resultType="com.jbb.mgt.core.domain.HumanLpPhone">
+		SELECT
+		INSERT(phone_number,  4, 4, '****') as phoneNumber,
+		username AS userName,
+		sex AS sex,
+		cdate AS cDate,
+		batch_id AS batchId,
+		last_phone AS lastPhone,
+		last_send_status AS lastSendStatus,
+		last_send_date AS lastSendDate
+		FROM mgt_human_lp_phones
+		WHERE last_phone = #{number}
+		AND creation_date &gt;= #{startDate}
+		<if test="endDate!=null">
+			AND creation_date &lt; #{endDate}
+		</if>
+		ORDER BY cdate DESC;
+	</select>
+
+	<select id="selectHumanLpPhone" resultType="com.jbb.mgt.core.domain.HumanLpPhone">
+		SELECT
+		phone_number as phoneNumber,
+		username AS userName,
+		sex AS sex,
+		cdate AS cDate,
+		last_phone AS lastPhone,
+		batch_id AS batchId
+		FROM mgt_human_lp_phones
+		WHERE last_phone = #{phoneNumber}
+		AND cdate = #{cDate};
+	</select>
+
+	<select id="selectHumanLpPhoneByNumber" resultType="com.jbb.mgt.core.domain.HumanLpPhone">
+		SELECT
+		phone_number as phoneNumber,
+		username AS userName,
+		sex AS sex,
+		cdate AS cDate,
+		last_phone AS lastPhone,
+		batch_id AS batchId
+		FROM mgt_human_lp_phones
+		WHERE phone_number = #{phoneNumber};
+	</select>
+	
+	<select id="selectHumanLpPhoneByStatus" resultType="com.jbb.mgt.core.domain.HumanLpPhone">
+		SELECT <include refid="humanCols"/>
+		FROM mgt_human_lp_phones
+		WHERE creation_date <![CDATA[>=]]> #{startDate} AND creation_date <![CDATA[<]]> #{endDate} AND push_status=0
+		ORDER BY creation_date DESC
+		<if test="pageSize != null">
+			LIMIT #{pageSize}
+		</if>
+	</select>
+	
+	<update id="updateHumanLpPhone">
+		UPDATE mgt_human_lp_phones SET push_status=1
+		WHERE creation_date <![CDATA[>=]]> #{startDate} AND creation_date <![CDATA[<=]]> #{endDate} 
+	</update>
+	
+	<update id="updateHumanbyPhone">
+		<if test="phones != null">
+		UPDATE mgt_human_lp_phones SET push_status=1
+		WHERE phone_number IN
+			<foreach item="phone" index="index" collection="phones" open="(" separator="," close=")">
+			 #{phone} 
+			</foreach >
+		</if>
+	</update>
+
+	<update id="updateHumanLpPhoneSendStatus">
+		UPDATE mgt_human_lp_phones
+		SET last_send_status = #{lastSendStatus},
+		last_send_date = #{lastSendDate}
+		WHERE phone_number = #{phoneNumber};
+	</update>
+
+
+
+</mapper> 

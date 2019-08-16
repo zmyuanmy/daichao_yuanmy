@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.UserContantMapper">
+
+    <insert id="insertOrUpdateUserContant">
+        INSERT INTO mgt_user_contants (jbb_user_id, phone_number, username,vcard, json_str,update_date) VALUES
+        <foreach collection="userContants" item="item" index="index" separator=",">
+            (#{item.jbbUserId},#{item.phoneNumber}, #{item.userName}, #{item.vcard}, #{item.jsonStr},now())
+        </foreach>
+        ON DUPLICATE KEY UPDATE vcard = VALUES(vcard),update_date = now()
+    </insert>
+
+  
+
+    <select id="selectUserContantByJbbUserId" resultType="com.jbb.mgt.core.domain.UserContant">
+        SELECT phone_number AS phoneNumber,username AS userName FROM mgt_user_contants
+          WHERE jbb_user_id  = #{jbbUserId}
+		ORDER BY username IS NOT NULL AND username != '' DESC ,phone_number IS NOT NULL AND phone_number != '' DESC
+		,CONVERT(username USING gb2312)  ASC ,phone_number ASC
+    </select>
+</mapper>
+

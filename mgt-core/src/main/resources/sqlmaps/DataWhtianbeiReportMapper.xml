@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.DataWhtianbeiReportMapper" >
+
+	<insert id="insetDataWhtianbeiReport">
+		INSERT INTO mgt_data_whtianbei_report 
+			(user_id, apply_id, json_data,blacklist_json,mf_json,creation_date,org_id)
+		VALUES 
+			(#{userId}, #{applyId},#{jsonData},#{blacklistJson},#{mfJson},now(),#{orgId})
+		ON DUPLICATE KEY UPDATE 
+			json_data=#{jsonData},blacklist_json=#{blacklistJson},mf_json=#{mfJson},creation_date=now()
+	</insert>
+	
+	<select id="getDataWhtianbeiReportById" resultType="com.jbb.mgt.core.domain.DataWhtianbeiReport">
+		SELECT r.report_id as reportId, r.user_id as userId, r.apply_id as applyId, r.json_data as jsonData, 
+			r.creation_date as creationDate,r.blacklist_json as blacklistJson,r.mf_json AS mfJson
+		FROM mgt_data_whtianbei_report r 
+		WHERE r.user_id = #{userId}
+		ORDER BY r.creation_date DESC
+		LIMIT 1
+	</select>
+	
+	<select id="getTbReportByIdAndorgId" resultType="com.jbb.mgt.core.domain.DataWhtianbeiReport">
+		SELECT 
+			r.creation_date as creationDate
+		FROM mgt_data_whtianbei_report r 
+		WHERE r.user_id = #{userId} AND r.org_id =#{orgId}
+		ORDER BY r.creation_date DESC
+		LIMIT 1
+	</select>
+	
+	
+</mapper>

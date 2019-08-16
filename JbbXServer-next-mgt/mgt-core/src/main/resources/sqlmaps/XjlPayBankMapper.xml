@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jbb.mgt.core.dao.mapper.XjlPayBankMapper">
+
+	<sql id="PayBankCols">
+		bank_card_number AS bankCardNumber,pay_product_id AS payProductId,bank_code AS bankCode,bank_name AS bankName,card_type AS cardType,
+		max_per AS maxPer,max_day AS maxDay,max_month AS maxMonth,bank_color AS bankColor,bank_logo AS bankLogo,
+		creation_date AS creationDate
+	</sql>
+
+	<select id="selectXjlPayBank" resultType="com.jbb.mgt.core.domain.XjlPayBank">
+		SELECT <include refid="PayBankCols"/> FROM mgt_xjl_pay_banks 
+		<if test="payProductId != null and payProductId != ''">
+			WHERE pay_product_id=#{payProductId}
+		</if>
+		ORDER BY bank_card_number ASC
+	</select>
+
+</mapper>

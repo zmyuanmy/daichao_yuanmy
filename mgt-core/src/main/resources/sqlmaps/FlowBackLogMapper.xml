@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.FlowBackLogMapper" >
+
+    <sql id="flowBackLogCols">
+        f.user_id AS userId,
+        f.device_id AS deviceId,
+        f.status AS status,
+        f.type AS type,
+        f.creation_date AS creationDate
+    </sql>
+
+    <insert id="insertFlowBackLog">
+		INSERT INTO mgt_xjl_flowback_log
+			(user_id, device_id, status,type, creation_date)
+		VALUES
+			(#{userId}, #{deviceId}, #{status}, #{type}, #{creationDate})
+	</insert>
+
+    <update id="updateBossOrder">
+		UPDATE mgt_xjl_boss_order
+		SET
+		status = #{status},
+		notify_status = #{notifyStatus},
+		decision = #{decision},
+		result = #{result},
+		update_date = #{updateDate}
+		WHERE order_id = #{orderId}
+	</update>
+
+    <select id="checkFlowBackExist" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM users
+		WHERE user_id =
+		#{userId})
+	</select>
+</mapper> 
+

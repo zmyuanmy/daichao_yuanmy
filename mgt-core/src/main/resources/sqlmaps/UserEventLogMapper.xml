@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.UserEventLogMapper" >
+
+    <insert id="insertEventLog">
+        INSERT INTO mgt_user_event_logs (user_id, source_id, cookie_id, event_name, event_action, event_label, event_value, remote_address, creation_date,remote_address_first)
+        VALUES (#{userId}, #{sourceId}, #{cookieId}, #{eventName}, #{eventAction}, #{eventLabel}, #{eventValue}, #{remoteAddress}, #{creationDate},substring_index(#{remoteAddress},',',1))
+    </insert>
+   
+   <select id="countEventLogByParams" resultType="java.lang.Integer">
+		SELECT count(1)
+		FROM mgt_user_event_logs l
+		where 1=1
+		<if test="userId != null">
+			AND l.user_id = #{userId}
+		</if>
+		<if test="sourceId != null">
+			AND l.source_id = #{sourceId}
+		</if>
+		<if test="cookieId != null">
+			AND l.cookie_id = #{cookieId}
+		</if>
+		<if test="eventName != null">
+			AND l.event_name = #{eventName}
+		</if>
+		<if test="eventAction != null">
+			AND l.event_action = #{eventAction}
+		</if>
+		<if test="eventLabel != null">
+			AND l.event_label = #{eventLabel}
+		</if>
+		<if test="eventValue != null">
+			AND l.event_value = #{eventValue}
+		</if>
+		<if test="start != null">
+			AND l.creation_date &gt;= #{start}
+		</if>
+		<if test="end != null">
+			AND l.creation_date &lt; #{end}
+		</if>
+	</select>
+
+	<insert id="insertEventLog2">
+		INSERT INTO mgt_user_event_logs (user_id, source_id, cookie_id, event_name, event_action,
+			event_label, event_value, remote_address, creation_date, event_value2,remote_address_first)
+		VALUES (#{userId}, #{sourceId}, #{cookieId}, #{eventName}, #{eventAction}, #{eventLabel},
+			#{eventValue}, #{remoteAddress}, #{creationDate}, #{eventValue2},substring_index(#{remoteAddress},',',1))
+	</insert>
+
+	<select id="countEventLog2ByParams" resultType="java.lang.Integer">
+		SELECT count(1)
+		FROM mgt_user_event_logs l
+		where 1=1
+		<if test="userId != null">
+			AND l.user_id = #{userId}
+		</if>
+		<if test="sourceId != null">
+			AND l.source_id = #{sourceId}
+		</if>
+		<if test="cookieId != null">
+			AND l.cookie_id = #{cookieId}
+		</if>
+		<if test="eventName != null">
+			AND l.event_name = #{eventName}
+		</if>
+		<if test="eventAction != null">
+			AND l.event_action = #{eventAction}
+		</if>
+		<if test="eventLabel != null">
+			AND l.event_label = #{eventLabel}
+		</if>
+		<if test="eventValue != null">
+			AND l.event_value = #{eventValue}
+		</if>
+		<if test="eventValue2 != null">
+			AND l.event_value2 = #{eventValue2}
+		</if>
+		<if test="start != null">
+			AND l.creation_date &gt;= #{start}
+		</if>
+		<if test="end != null">
+			AND l.creation_date &lt; #{end}
+		</if>
+	</select>
+	
+	<resultMap id="PlatformUvMap" type="com.jbb.mgt.core.domain.PlatformUv">
+			<id property="platformId" column="platformId" />
+			<result property="platformName" column="platformName" />
+			<result property="groupName" column="groupName" />
+			<result property="clickCnt" column="clickCnt" />
+			<result property="puCnt" column="puCnt" />
+			<result property="estimatedUvCnt" column="estimatedUvCnt" />
+		<association property="sales" javaType="com.jbb.mgt.core.domain.Account">
+			<result property="nickname" column="nickname" />
+		</association>
+	</resultMap>
+	
+	<select id="selectPlatformUv" resultMap="PlatformUvMap">
+		SELECT
+		log.cookie_id AS platformId,
+		lp.`name` AS platformName,
+		lp.group_name AS groupName,
+		acc.nickname AS nickname,
+		count( log.user_id ) AS clickCnt,
+		count( DISTINCT log.user_id ) AS puCnt,
+		lp.estimated_uv_cnt as estimatedUvCnt
+		FROM
+			mgt_loan_platforms lp
+			LEFT JOIN mgt_user_event_logs log ON log.cookie_id = cast(lp.platform_id as char)
+			LEFT JOIN mgt_accounts acc ON acc.account_id = lp.sales_id 
+		WHERE log.event_name in ('daichao','xhb') AND lp.frozen = 0
+			<if test="startDate != null">
+				AND log.creation_date <![CDATA[ >= ]]> #{startDate}
+			</if>
+			<if test="endDate != null">
+				AND log.creation_date <![CDATA[ < ]]> #{endDate}
+			</if>
+			<if test="salesId != null">
+				AND lp.sales_id = #{salesId}
+			</if>
+			<if test="groupName != null and groupName != '' ">
+				AND lp.group_name = #{groupName}
+			</if>
+			<if test="platformId != null">
+				AND lp.platform_id = #{platformId}
+			</if>
+		GROUP BY lp.platform_id ORDER BY lp.group_name,puCnt DESC
+	</select>
+	
+</mapper>

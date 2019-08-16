@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.UserJobMapper">
+
+	<sql id="jobCols">
+		a.address_id AS addressId,a.type AS type,a.province AS province,a.city AS city,a.area AS area,a.address AS address,
+		j.company AS company,j.occupation AS occupation,j.start_date AS startDate,j.end_date AS endDate
+	</sql>
+
+	<resultMap id="jobMap" type="com.jbb.mgt.core.domain.UserJob">
+		<id column="userId" property="userId" />
+		<result column="company" property="company" />
+		<result column="occupation" property="occupation" />
+		<result column="startDate" property="startDate" />
+		<result column="endDate" property="endDate" />
+		<association property="jobAddress"
+			javaType="com.jbb.mgt.core.domain.UserAddresses">
+			<id column="addressId" property="addressId" />
+			<result column="type" property="type" />
+			<result column="province" property="province" />
+			<result column="city" property="city" />
+			<result column="area" property="area" />
+			<result column="address" property="address" />
+		</association>
+
+	</resultMap>
+	
+	<insert id="saveUserJobInfo">
+		INSERT INTO mgt_user_jobs(user_id,company,address_id,occupation,start_date,end_date)
+		VALUES(#{userId},#{company},#{addressId},#{occupation},#{startDate},#{endDate})
+		ON DUPLICATE KEY UPDATE company = #{company},address_id = #{addressId},occupation = #{occupation},
+		start_date = #{startDate},end_date = #{endDate}
+	</insert>
+	
+	<select id="selectJobInfoByAddressId" resultMap="jobMap">
+		SELECT	<include refid="jobCols"/> FROM mgt_user_jobs j
+		LEFT JOIN mgt_users u ON u.user_id=j.user_id  
+		LEFT JOIN mgt_user_addresses a ON a.address_id=j.address_id
+		WHERE u.user_id=#{userId} AND  a.type=1 
+	</select>
+
+</mapper>

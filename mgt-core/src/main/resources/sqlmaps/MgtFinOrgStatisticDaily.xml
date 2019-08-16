@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.MgtFinOrgStatisticDailyMapper" >
+
+	<sql id="mgtFinOrgStatisticDaily">
+        m.statistic_date AS statisticDate,
+        m.org_id AS orgId,
+        m.type AS type,
+        m.cnt AS cnt,
+        m.price AS price,
+        m.expense AS expense,
+        m.amount AS amount,
+        m.balance AS balance,
+        m.status AS status,
+        m.statistic_date AS statisticDate,
+        m.creation_date AS creationDate,
+        m.update_date AS updateDate,
+        m.confirm_date AS confirmDate,
+        m.manul_amount AS manulAmount,
+        m.confrim_account_id AS confrimAccountId
+    </sql>
+
+    <sql id="organizationCols">
+       o.org_id AS orgId ,
+       o.name AS name ,
+       o.description AS description,
+       o.deleted AS deleted,
+       o.count,
+       o.sms_sign_name AS smsSignName,
+       o.sms_template_id AS smsTemplateId,
+       o.level AS level,
+       o.org_type AS orgType,
+       o.cnt AS cnt ,
+       o.weight AS weight,
+       o.data_enabled AS dataEnabled,
+       o.filter_script AS filterScript,
+       o.company_name AS companyName
+    </sql>
+
+    <sql id="finFileCols">
+        f.file_id AS fileId1, f.org_id AS orgId1, f.merchant_id AS merchantId1, f.file_name AS fileName1,
+        f.file_type  AS fileType1, f.creator AS creator1, f.creation_date AS creationDate1,
+        f.file_date AS fileDate1, f.is_deleted AS isDeleted1
+    </sql>
+
+	<insert id="insertMgtFinOrgStatisticDaily">
+		INSERT INTO mgt_fin_org_statistic_daily
+			(statistic_date, org_id, type, cnt, price,expense, amount, balance,status,creation_date,update_date,confirm_date,confrim_account_id,manul_amount)
+		VALUES
+			(#{statisticDate}, #{orgId}, #{type},#{cnt}, #{price},#{expense}, #{amount},#{balance},#{status},#{creationDate},#{updateDate},#{confirmDate},#{confrimAccountId},#{manulAmount})
+	    ON DUPLICATE KEY UPDATE
+			cnt = #{cnt},
+			price = #{price},
+			expense = #{expense},
+			amount = #{amount},
+			balance = #{balance},
+			status = #{status},
+			manul_amount = #{manulAmount}
+    </insert>
+
+	<update id="updateMgtFinOrgStatisticDaily">
+		UPDATE mgt_fin_org_statistic_daily
+		SET status = #{status}
+		WHERE statistic_date = #{statisticDate}
+		AND org_id = #{orgId}
+		AND type = #{type}
+	</update>
+
+    <select id="selectLastMgtFinOrgStatisticDaily" resultType="com.jbb.mgt.core.domain.MgtFinOrgStatisticDaily">
+        SELECT <include refid="mgtFinOrgStatisticDaily"/>
+        FROM mgt_fin_org_statistic_daily m
+        WHERE org_id = #{orgId}
+        AND type = #{type}
+        ORDER BY statistic_date desc limit 1
+    </select>
+
+    <select id="selectMgtFinOrgStatisticDaily" resultMap="MgtFinOrgStatisticDailyMap">
+        SELECT <include refid="mgtFinOrgStatisticDaily"/>,
+        o.name AS name,
+        o.description AS description,
+        a.account_id AS accountId,
+        a.nickname AS nickname,
+        a.username AS username
+        FROM mgt_fin_org_statistic_daily m
+        LEFT JOIN
+        mgt_organizations o on m.org_id = o.org_id
+        LEFT JOIN
+        mgt_fin_org_sales_relation fo on o.org_id = fo.org_id
+        LEFT JOIN
+        mgt_accounts a on a.account_id = fo.account_id
+        WHERE m.statistic_date &gt;= #{startDate}
+        AND m.statistic_date &lt; #{endDate}
+        <if test="orgId">
+            AND m.org_id = #{orgId}
+        </if>
+        <if test="accountId"> AND fo.account_id = #{accountId} </if>
+        AND m.type = #{type}
+        ORDER BY m.cnt DESC
+    </select>
+
+
+    <resultMap id="MgtFinOrgStatisticByOrgIdDailyMap" type="com.jbb.mgt.core.domain.MgtFinOrgStatisticDaily">
+            <id property="statisticDate" column="statisticDate" />
+            <result column="orgId" jdbcType="INTEGER" property="orgId" />
+            <result column="type" jdbcType="INTEGER" property="type" />
+            <result column="cnt" jdbcType="INTEGER" property="cnt"/>
+            <result column="price" jdbcType="INTEGER" property="price"/>
+            <result column="expense" jdbcType="INTEGER" property="expense"/>
+            <result column="amount" jdbcType="INTEGER" property="amount"/>
+            <result column="balance" jdbcType="INTEGER" property="balance"/>
+            <result column="status" jdbcType="INTEGER" property="status"/>
+            <result column="statisticDate" jdbcType="TIMESTAMP" property="statisticDate"/>
+            <result column="creationDate" jdbcType="TIMESTAMP" property="creationDate"/>
+            <result column="updateDate" jdbcType="TIMESTAMP" property="updateDate"/>
+            <result column="confirmDate" jdbcType="TIMESTAMP" property="confirmDate"/>
+            <result column="confrimAccountId" jdbcType="INTEGER" property="confrimAccountId"/>
+            <result column="manulAmount" jdbcType="INTEGER" property="manulAmount"/>
+            <collection property="files" ofType="com.jbb.mgt.core.domain.FinFile"
+                        select="selectFiles" column="{orgId=orgId,statisticDate=statisticDate,type=type}" >
+            </collection>
+    </resultMap>
+
+
+    <select id="selectMgtFinOrgStatisticDailyByOrgId" resultType="com.jbb.mgt.core.domain.MgtFinOrgStatisticDaily"  resultMap="MgtFinOrgStatisticByOrgIdDailyMap">
+        SELECT <include refid="mgtFinOrgStatisticDaily"/>
+        FROM mgt_fin_org_statistic_daily m
+        WHERE m.statistic_date &gt;= #{startDate}
+        <choose>
+            <when test="includeEndDate">
+                AND m.statistic_date &lt;= #{endDate}
+            </when>
+            <otherwise>
+                AND m.statistic_date &lt; #{endDate}
+            </otherwise>
+        </choose>
+
+
+        AND m.org_id = #{orgId}
+        AND m.type = #{type}
+        ORDER BY statistic_date desc
+    </select>
+
+
+
+    <select id="selectMgtFinOrgStatisticDailyByUnionKey" resultType="com.jbb.mgt.core.domain.MgtFinOrgStatisticDaily">
+        SELECT <include refid="mgtFinOrgStatisticDaily"/>
+        FROM mgt_fin_org_statistic_daily m
+        WHERE m.statistic_date = #{statisticDate}
+        AND m.org_id = #{orgId}
+        AND m.type = #{type}
+    </select>
+
+    <select id="selectMgtFinOrgStatisticDailyByDate" resultType="com.jbb.mgt.core.domain.MgtFinOrgStatisticDaily">
+        SELECT <include refid="mgtFinOrgStatisticDaily"/>
+        FROM mgt_fin_org_statistic_daily m
+        WHERE m.statistic_date = #{statisticDate}
+        <if test="type">
+            AND m.type = #{type}
+        </if>
+    </select>
+
+    <update id="updateMgtFinOrgStatisticDailyAmount">
+		UPDATE mgt_fin_org_statistic_daily
+		SET
+		amount = #{amount},
+		price = #{price},
+		expense = #{expense},
+		balance = #{balance},
+		status = #{status},
+		manul_amount = #{manulAmount}
+		WHERE statistic_date = #{statisticDate}
+		AND org_id = #{orgId}
+		AND type = #{type}
+	</update>
+
+    <update id="updateMgtFinOrgStatisticDailyAmountAll">
+		UPDATE mgt_fin_org_statistic_daily
+		SET
+		balance = balance + #{changeBalance}
+		WHERE statistic_date > #{statisticDate}
+		AND org_id = #{orgId}
+		AND type = #{type}
+	</update>
+
+    <update id="updateMgtFinOrgStatisticDailyList">
+        UPDATE mgt_fin_org_statistic_daily
+        SET `status` = 1
+        WHERE
+        <foreach collection="list" index="index" item="item" separator="OR">
+            (statistic_date = #{item.statisticDate} AND org_id = #{item.orgId} AND type = #{item.type})
+        </foreach>
+    </update>
+
+
+    <resultMap id="MgtFinOrgStatisticDailyMap" type="com.jbb.mgt.core.domain.OrgStatisticDailyInfo">
+        <association property="mgtFinOrgStatisticDaily" javaType="com.jbb.mgt.core.domain.MgtFinOrgStatisticDaily">
+            <id property="statisticDate" column="statisticDate" />
+            <result column="orgId" jdbcType="INTEGER" property="orgId" />
+            <result column="type" jdbcType="INTEGER" property="type" />
+            <result column="cnt" jdbcType="INTEGER" property="cnt"/>
+            <result column="price" jdbcType="INTEGER" property="price"/>
+            <result column="expense" jdbcType="INTEGER" property="expense"/>
+            <result column="amount" jdbcType="INTEGER" property="amount"/>
+            <result column="balance" jdbcType="INTEGER" property="balance"/>
+            <result column="status" jdbcType="INTEGER" property="status"/>
+            <result column="statisticDate" jdbcType="TIMESTAMP" property="statisticDate"/>
+            <result column="creationDate" jdbcType="TIMESTAMP" property="creationDate"/>
+            <result column="updateDate" jdbcType="TIMESTAMP" property="updateDate"/>
+            <result column="confirmDate" jdbcType="TIMESTAMP" property="confirmDate"/>
+            <result column="confrimAccountId" jdbcType="INTEGER" property="confrimAccountId"/>
+            <result column="manulAmount" jdbcType="INTEGER" property="manulAmount"/>
+            <collection property="files" ofType="com.jbb.mgt.core.domain.FinFile"
+                        select="selectFiles" column="{orgId=orgId,statisticDate=statisticDate,type=type}" >
+            </collection>
+        </association>
+        <association property="organization" javaType="com.jbb.mgt.core.domain.Organization">
+            <id column="orgId" jdbcType="INTEGER" property="orgId" />
+            <result column="name" jdbcType="VARCHAR" property="name" />
+            <result column="description" jdbcType="VARCHAR" property="description" />
+        </association>
+        <association property="account" javaType="com.jbb.mgt.core.domain.Account">
+            <id column="accountId" jdbcType="INTEGER" property="accountId" />
+            <result column="nickname" jdbcType="VARCHAR" property="nickname" />
+            <result column="username" jdbcType="INTEGER" property="username"/>
+        </association>
+    </resultMap>
+
+    <select id="selectFiles"   resultType="com.jbb.mgt.core.domain.FinFile" resultMap="FileResultMap">
+    select <include refid="finFileCols"/>  from mgt_fin_files f where f.org_id= #{orgId} AND DATE(f.file_date)= #{statisticDate} AND f.is_deleted=0 AND f.file_type= #{type}
+    </select>
+
+    <resultMap id="FileResultMap" type="com.jbb.mgt.core.domain.FinFile">
+        <id property="fileId" column="fileId1" />
+        <result property="orgId" column="orgId1" />
+        <result property="merchantId" column="merchantId1" />
+        <result property="fileName" column="fileName1" />
+        <result property="fileType" column="fileType1" />
+        <result property="creator" column="creator1" />
+        <result property="creationDate" column="creationDate1" />
+        <result property="fileDate" column="fileDate1" />
+        <result property="isDeleted" column="isDeleted1" />
+    </resultMap>
+
+
+    <select id="selectMgtFinOrgStatisticDailyNow" resultMap="MgtFinOrgStatisticDailyMapNow">
+        SELECT  <include refid="organizationCols"/>
+        ,a.account_id AS accountId, a.username AS username, a.nickname AS nickname
+        <if test="detail">
+            ,m.total_data_amount As totalDataAmount
+            , m.total_sms_amount AS totalSmsAmount,
+            m.total_data_expense AS totalDataExpense,m.total_sms_expense AS totalSmsExpense,
+            ifnull(r.is_closed,1) AS closed , r.dflow_id AS dataFlowId,r.min_value AS minValue ,r.max_value AS 'maxValue'
+            , dfbase.price AS defaultEntryPrice
+        </if>
+        <if test="getStatistic">
+            , s.statisDate , s.entryCnt, s.regCnt, s.idCnt, s.noidCnt
+            , fs.default_price AS defaultRegisterPrice
+        </if>
+        <if test="getAdStatistic">
+			,s1.statisDate1,s1.adCnt,fs.delegate_price AS delegatePrice
+		</if>
+        FROM  mgt_organizations o
+        <if test="detail">
+            LEFT JOIN  mgt_account_dflow_settings r ON o.org_id = r.org_id
+            LEFT JOIN  mgt_org_recharges m ON o.org_id = m.org_id
+            LEFT JOIN  mgt_dflow_base dfbase ON r.dflow_id = dfbase.dflow_id
+        </if>
+        <if test="getStatistic">
+            LEFT JOIN (
+            SELECT ur.org_id AS orgId,
+            DATE(ur.creation_date) AS statisDate,
+            SUM(case when ur.s_user_type = 1 then 1 else 0 end) AS entryCnt,
+            SUM(case when ur.s_user_type = 2 then 1 else 0 end) AS regCnt,
+            SUM(case when ur.s_user_type = 2 and u.idcard is not null then 1 else 0 end) AS idCnt,
+            SUM(case when ur.s_user_type = 2 and u.idcard is null then 1 else 0 end) AS noidCnt
+            FROM mgt_user_apply_records ur
+            LEFT JOIN mgt_users u on u.user_id = ur.user_id
+            WHERE ur.org_id !=1 AND ur.s_org_id = 1
+            <if test="startDate != null"> AND ur.creation_date &gt;= #{startDate}</if>
+            <if test="endDate != null"> AND ur.creation_date &lt; #{endDate} </if>
+            GROUP BY ur.org_id, DATE(ur.creation_date)
+            ) s ON  s.orgId  = o.org_id
+            
+        </if>
+        <if test="getAdStatistic"> 
+		LEFT JOIN  (
+       	   SELECT ou.org_id AS orgId, COUNT(1) AS adCnt, DATE(ou.creation_date) AS statisDate1
+           FROM mgt_org_users ou 
+           WHERE ou.jbb_flag=1 AND ou.org_id!=1 
+	       <if test="startDate != null"> AND ou.creation_date &gt;= #{startDate}</if>
+		   <if test="endDate != null"> AND ou.creation_date &lt; #{endDate} </if>
+	       GROUP BY ou.org_id, DATE(ou.creation_date)
+		) s1 ON  s1.orgId  = o.org_id
+		</if>
+		LEFT JOIN mgt_fin_org_sales_relation fs  ON o.org_id = fs.org_id
+        LEFT JOIN mgt_accounts a ON fs.account_id = a.account_id
+        WHERE 1=1
+        <if test="orgId"> AND o.org_id = #{orgId} </if>
+        <if test="accountId"> AND fs.account_id = #{accountId} </if>
+		ORDER BY <if test="getAdStatistic"> adCnt DESC ,</if> orgId ASC 
+    </select>
+
+    <resultMap id="MgtFinOrgStatisticDailyMapNow" type="com.jbb.mgt.core.domain.OrganizationIncludeSales">
+        <id property="orgId" column="orgId" />
+        <result property="name" column="name" />
+        <result property="deleted" column="deleted" />
+        <result property="description" column="description" />
+        <result property="count" column="count" />
+        <result property="smsSignName" column="smsSignName" />
+        <result property="smsTemplateId" column="smsTemplateId" />
+        <result property="level" column="level" />
+        <result property="orgType" column="orgType" />
+        <result property="cnt" column="cnt" />
+        <result property="weight" column="weight" />
+        <result property="dataEnabled" column="dataEnabled" />
+        <result property="filterScript" column="filterScript" />
+        <result property="companyName" column="companyName" />
+        <result property="defaultRegisterPrice" column="defaultRegisterPrice" />
+        <result property="defaultEntryPrice" column="defaultEntryPrice" />
+        <result column="delegatePrice" property="delegatePrice"/>
+        <association property="dataFlowSetting" javaType="com.jbb.mgt.core.domain.DataFlowSetting">
+            <id column="orgId" jdbcType="INTEGER" property="orgId" />
+            <result column="dataFlowId" jdbcType="INTEGER" property="dataFlowId" />
+            <result column="minValue" jdbcType="INTEGER" property="minValue"/>
+            <result column="maxValue" jdbcType="INTEGER" property="maxValue" />
+            <result column="closed" jdbcType="TINYINT" property="closed"/>
+        </association>
+        <association property="account" javaType="com.jbb.mgt.core.domain.Account">
+            <id column="accountId" jdbcType="INTEGER" property="accountId" />
+            <result column="nickname" jdbcType="VARCHAR" property="nickname" />
+            <result column="username" jdbcType="INTEGER" property="username"/>
+        </association>
+
+        <collection property="dateCounts" javaType="ArrayList" ofType="com.jbb.mgt.core.domain.UserCounts">
+            <result column="statisDate" jdbcType="VARCHAR" property="statisDate"/>
+            <result column="entryCnt" jdbcType="INTEGER" property="entryCnt"/>
+            <result column="regCnt" jdbcType="INTEGER" property="regCnt"/>
+            <result column="idCnt" jdbcType="INTEGER" property="idCnt"/>
+            <result column="noidCnt" jdbcType="INTEGER" property="noidCnt"/>
+        </collection>
+        <collection property="dateAdCounts" javaType="ArrayList" ofType="com.jbb.mgt.core.domain.UserAdCounts">
+			<result column="statisDate1" jdbcType="VARCHAR" property="statisDate"/>
+			<result column="adCnt" jdbcType="INTEGER" property="adCnt"/>
+		</collection>
+    </resultMap>
+
+</mapper> 
+

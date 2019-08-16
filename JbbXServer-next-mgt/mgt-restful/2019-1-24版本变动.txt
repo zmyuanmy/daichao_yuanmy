@@ -1,0 +1,142 @@
+﻿以下不包括马甲包内容，马甲包为另外的war包
+
+一.配置文件
+1.app-version.properties
+#默认线上版本是贷超还是马甲包
+jbb.app.onlineModel.bnh=dev
+#默认线上版本是贷超还是马甲包  jbb.app.onlineModel.bnh 为固定值 后面加应用市场和版本 dev为马甲包版本 prod为贷超版本
+jbb.app.onlineModel.bnh.anzhi.1.0=prod
+
+jbb.app.onlineModel.bnh.xiaomi.2.0=prod
+jbb.app.onlineModel.bnh.anzhi.2.0=prod
+jbb.app.onlineModel.bnh.qihu360.2.0=prod
+jbb.app.onlineModel.bnh.ios.2.0=prod
+#最新版本
+jbb.app.isLatestVersion.bnh=2.0
+
+#首页头部模式 banner和latestProducts
+jbb.app.headerModel.bnh=latestProducts
+#apk下载链接  需更换
+jbb.app.latestAppUrl.bnh=http://apitest.jiebangbang.cn:28080/espapi/apk/module_app-self-release.apk
+
+2 core.properties
+#\u7528\u6237\u4e0a\u4f20\u5934\u50cf\u5927\u5c0f(\u5355\u4f4dMB)
+max_count_length_m=10
+#\u7528\u6237\u4e0a\u4f20\u5934\u50cf\u5927\u5c0f(\u5355\u4f4dB)
+max_count_length=10485760
+
+二.表变动
+sql path
+
+-- 大额贷超资料字段
+CREATE TABLE mgt_large_loan_fields (
+  	field_id INT NOT NULL auto_increment COMMENT '字段id',
+	field_name VARCHAR ( 20 ) NOT NULL COMMENT '字段名称(英文)',
+	`desc` VARCHAR ( 20 ) NOT NULL COMMENT '字段描述',
+	type int	NOT NULL DEFAULT 1 COMMENT '1为填写，2为选择',
+	area INT NOT NULL COMMENT '区域',
+	display_index INT NOT NULL COMMENT '顺序',
+	required TINYINT NOT NULL DEFAULT 0 COMMENT '是否必须',
+	is_hidden TINYINT NOT NULL DEFAULT 0 COMMENT '是否隐藏',
+PRIMARY KEY ( field_id ) 
+);
+
+-- 大额贷超资料字段值表
+CREATE TABLE mgt_large_loan_field_values (
+	field_id INT NOT NULL COMMENT '字段id',
+	field_value VARCHAR ( 20 ) NOT NULL COMMENT '值',
+	`desc` VARCHAR ( 20 ) NOT NULL COMMENT '值描述',
+	display_index INT NOT NULL COMMENT '显示顺序',
+PRIMARY KEY ( field_id, field_value ) 
+);
+
+-- 大额贷款机构表
+CREATE TABLE mgt_large_loan_orgs  (
+  org_id int(11) NOT NULL AUTO_INCREMENT COMMENT '机构id',
+  org_name varchar(20) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '机构名称',
+  `desc` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT '机构宣传语',
+  logo varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'logo',
+  price int(11) NOT NULL DEFAULT 0 COMMENT '机构价格',
+  is_delete tinyint(4) NOT NULL DEFAULT 0 COMMENT '是否删除',
+	filter_script VARCHAR(2000) DEFAULT NULL COMMENT '过滤条件',
+  creation_date timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
+  PRIMARY KEY (org_id) USING BTREE
+);
+
+--1227
+CREATE TABLE mgt_credit_card_categories (
+	category_id INT auto_increment COMMENT '卡片分类ID',
+	`name` VARCHAR (10) COMMENT '类名 ',
+	`desc` VARCHAR (20) COMMENT '简要描述',
+	detail_message VARCHAR (50) COMMENT '详细描述方案',
+	icon_url VARCHAR (200) COMMENT '图标地址',
+	desc_color VARCHAR (10) COMMENT '简要描述颜色',
+	PRIMARY KEY (category_id)
+) ENGINE INNODB;
+
+CREATE TABLE mgt_credit_cards (
+	credit_id INT auto_increment COMMENT '信用卡信息ID',
+	bank_code VARCHAR (10) COMMENT '银行编码缩写',
+	bank_name VARCHAR (20) COMMENT '银行名称',
+	bank_url VARCHAR (200) COMMENT '银行信用卡资料填写地址',
+	card_img_url VARCHAR (200) COMMENT '标签',
+	tag_name VARCHAR (10) COMMENT '简要描述颜色',
+	tag_color VARCHAR (10) COMMENT '颜色',
+	credit_short_name VARCHAR (10) COMMENT '卡片短名字',
+	credit_name VARCHAR (20) COMMENT '卡片完整名字',
+	credit_desc VARCHAR (20) COMMENT '简要描述',
+	gift_logo VARCHAR (200) COMMENT '礼物logo地址',
+	gift_desc VARCHAR (20) COMMENT '礼物说明',
+	detailed_desc VARCHAR (300) COMMENT '详细说明',
+	weight INT COMMENT '权重   -- 用于卡片筛选时排序，运营子系统可调节',
+	is_deleted TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除',
+	creation_date TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建日期',
+	PRIMARY KEY (credit_id)
+) ENGINE INNODB;
+
+CREATE TABLE mgt_citys (
+	zone_id INT COMMENT '地区ID',
+	province_id INT DEFAULT NULL COMMENT '省ID',
+	province_name VARCHAR (20) DEFAULT NULL COMMENT '省名',
+	city_id INT DEFAULT NULL COMMENT '城市ID ',
+	city_name VARCHAR (50) DEFAULT NULL COMMENT '城市名',
+	PRIMARY KEY (zone_id)
+) ENGINE INNODB;
+
+CREATE TABLE mgt_credit_card_areas (
+	credit_id INT DEFAULT NULL COMMENT '信用卡ID',
+	zone_id INT DEFAULT NULL COMMENT '地区ID'
+) ENGINE INNODB;
+
+CREATE TABLE mgt_credit_categorie_cards (
+	category_id INT DEFAULT NULL COMMENT '分类ID',
+	credit_id INT DEFAULT NULL COMMENT '信用卡ID',
+) ENGINE INNODB;
+
+-- 1229
+ALTER TABLE mgt_credit_cards ADD COLUMN  apply_cnt int(11) not null  default 0 comment '申请人数';
+ALTER TABLE mgt_loan_platforms ADD COLUMN  apply_cnt int(11) not null  default 0 comment '申请人数';
+
+-- 0102
+ALTER TABLE mgt_users ADD COLUMN  image VARCHAR(200)  default null comment '头像';
+ALTER TABLE mgt_users ADD COLUMN  profession VARCHAR(50)  default null comment '职业';
+
+-- 0107 新增版本信息表
+CREATE TABLE `mgt_app_info` (
+  `app_name` varchar(50) COLLATE utf8_bin NOT NULL COMMENT 'app名称',
+  `app_desc` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT 'app描述',
+  `wechat` varchar(50) COLLATE utf8_bin DEFAULT NULL COMMENT '联系微信',
+  `phone_number` varchar(20) COLLATE utf8_bin DEFAULT NULL COMMENT '联系人电话',
+  `contact_name` varchar(50) COLLATE utf8_bin DEFAULT NULL COMMENT '联系人姓名',
+  `company_name` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '公司名称',
+  `company_desc` varchar(500) COLLATE utf8_bin DEFAULT NULL COMMENT '公司简介',
+  PRIMARY KEY (`app_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+ALTER TABLE mgt_app_info ADD COLUMN qq VARCHAR(20)  default NULL  comment '客服qq';
+
+ALTER TABLE mgt_loan_platforms ADD COLUMN  is_support_ios tinyint not null default 1 comment '是否支持ios';
+ALTER TABLE mgt_loan_platforms ADD COLUMN  is_support_android tinyint not null default 1 comment '是否支持android';
+
+
+

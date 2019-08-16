@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.CreditCardCategorieMapper" >
+	
+	<sql id="categoriresCols">
+		mccc.category_id AS categoryId, mccc.`name` AS `name`, mccc.`desc` AS `desc`, mccc.detail_message AS detailMessage,
+		mccc.icon_url AS iconUrl, mccc.desc_color AS descColor
+	</sql>
+	
+	<select id="selectCreditCardCategorie" resultType="com.jbb.mgt.core.domain.CreditCardCategorie">
+		SELECT <include refid="categoriresCols"/>  FROM mgt_credit_card_categories mccc
+	</select>	
+	
+	<select id="selectCreditCardCategorieById" resultType="com.jbb.mgt.core.domain.CreditCardCategorie">
+		SELECT <include refid="categoriresCols"/>  FROM mgt_credit_card_categories mccc
+		WHERE mccc.category_id = #{categoryId}
+	</select>
+	
+	<insert id="saveCreditCardCategorie">
+		INSERT INTO mgt_credit_card_categories (category_id, `name`, desc, detail_message, icon_url, desc_color) 
+		VALUES (#{categoryId}, #{name}, #{desc}, #{detailMessage}, #{iconUrl}, #{descColor})
+		ON DUPLICATE KEY UPDATE name = #{name},desc = #{desc},detail_message = #{detailMessage},icon_url = #{iconUrl},desc_color = #{descColor}
+	</insert>
+
+</mapper>

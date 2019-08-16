@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.UserApplyFeedbackMapper" >
+
+	<insert id="saveUserApplyFeedback">
+		INSERT INTO mgt_user_apply_feedback(apply_id,reason, reason_desc,point,zj_flag)
+		VALUES(#{applyId},#{reason},#{reasonDesc},#{point},#{zjFlag})
+		ON DUPLICATE KEY UPDATE reason=#{reason}, reason_desc=#{reasonDesc},point=#{point},zj_flag=#{zjFlag}
+	</insert>
+	
+</mapper>

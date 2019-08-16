@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.UserDeviceMapper">
+
+	<insert id="saveUserDevice">
+		INSERT INTO mgt_user_devices(
+		user_id, uuid, model, platform, version, manufacturer, is_virtual, serial
+		) VALUES (#{userId}, #{uuid}, #{model}, #{platform}, #{version}, #{manufacturer}, #{isVirtual}, #{serial})
+		on duplicate key update model = VALUES(model), platform = VALUES (platform), version = VALUES (version),
+		manufacturer = VALUES (manufacturer), is_virtual = VALUES (is_virtual), serial = VALUES (serial)
+	</insert>
+
+	<sql id="UserDeviceInfo">
+		ud.user_id AS userId, ud.uuid AS uuid, ud.model AS model, ud.platform AS platform,
+		ud.version AS version, ud.manufacturer AS manufacturer, ud.is_virtual AS isVirtual, ud.serial AS serial
+	</sql>
+
+	<select id="getUserDevices" resultType="com.jbb.mgt.core.domain.UserDevice">
+		SELECT <include refid="UserDeviceInfo"/>
+		FROM mgt_user_devices ud
+		WHERE ud.user_Id = #{userId}
+	</select>
+
+	<select id="getUserLastDevice" resultType="com.jbb.mgt.core.domain.UserDevice">
+		SELECT <include refid="UserDeviceInfo"/>
+		FROM mgt_user_devices ud
+		WHERE ud.user_Id = #{userId}
+		ORDER BY ud.upate_date DESC LIMIT 1
+	</select>
+
+</mapper>

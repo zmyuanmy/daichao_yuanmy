@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.PayRecordMapper">
+
+	<sql id="recordCols">
+		order_id AS orderId,custom_number AS customNumber,amount AS orderId,bank_code AS bankCode,
+		bank_account_number AS bankAccountNumber,bank_account_name AS bank_account_name,biz AS biz,
+		bank_union_code AS bankUnionCode,fee_type AS feeType,urgency AS urgency,summary AS summary,
+		serial_number AS serialNumber,order_status AS orderStatus,creation_date AS creationDate,
+		update_date AS updateDate,account_id AS accountId,applyId AS applyId,ret_reason AS retReason
+	</sql>
+
+	<insert id="insertPayRecord">
+		INSERT INTO mgt_xjl_pay_records(order_id,custom_number,amount,bank_code,bank_account_number,bank_account_name,
+		biz,bank_union_code,fee_type,urgency,summary,serial_number,order_status,account_id,applyId,ret_reason)
+		VALUES(#{orderId},#{customNumber},#{amount},#{bankCode},#{bankAccountNumber},#{bankAccountName},#{biz},
+		#{bankUnionCode},#{feeType},#{urgency},#{summary},#{serialNumber},#{orderStatus},#{accountId},#{applyId},#{retReason})
+	</insert>
+	
+	<update id="updatePayRecord">
+		UPDATE mgt_xjl_pay_records 
+		SET order_status = #{orderStatus},
+		    update_date = NOW(),
+		    <if test="retReason != null and retReason != ''">ret_reason = #{retReason}</if>
+		WHERE order_id = #{orderId}
+	</update>
+
+	<select id="selectByOrderId" resultType="com.jbb.mgt.core.domain.PayRecord">
+		SELECT <include refid="recordCols"/> FROM mgt_xjl_pay_records 
+		WHERE order_id = #{orderId}
+	</select>
+	
+	<select id="selectBySerialNumber" resultType="com.jbb.mgt.core.domain.PayRecord">
+		SELECT <include refid="recordCols"/> FROM mgt_xjl_pay_records 
+		WHERE serial_number = #{serialNumber}
+	</select>
+	
+	<select id="selectByApplyId" resultType="com.jbb.mgt.core.domain.PayRecord">
+		SELECT <include refid="recordCols"/> FROM mgt_xjl_pay_records 
+		WHERE applyId = #{applyId}
+		ORDER BY creation_date DESC
+		LIMIT 1
+	</select>
+	
+	<select id="selectUnfinalRecord" resultType="string">
+		SELECT mxpr.order_id
+	    FROM mgt_xjl_pay_records mxpr
+	    LEFT JOIN mgt_xjl_apply_records mxar ON mxar.apply_id = mxpr.applyId 
+		WHERE 
+		     mxpr.order_status ='INIT' OR mxpr.order_status='DOING' OR mxpr.order_status='RECEIVE'
+		     <if test="orgId !=null "> 
+				AND mxar.org_id = #{orgId} 
+			</if> 
+		ORDER BY mxpr.creation_date 
+		LIMIT #{size}
+	</select>
+
+</mapper>

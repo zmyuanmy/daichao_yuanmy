@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.UserAddressMapper">
+
+    <insert id="insertUserAddresses" useGeneratedKeys="true" keyProperty="addressId">
+        INSERT INTO mgt_user_addresses(
+          type, user_id, province, city, area, address, is_deleted
+        ) VALUES (
+          #{type}, #{userId}, #{province}, #{city}, #{area}, #{address}, #{isDeleted})
+    </insert>
+
+    <update id="updateUserAddresses">
+        UPDATE mgt_user_addresses
+        set type = #{type}, user_id=#{userId}, province=#{province}, city=#{city}, area=#{area},
+          address=#{address}, is_deleted=#{isDeleted}
+        WHERE address_id=#{addressId}
+    </update>
+
+    <sql id="addressInfo">
+        ua.address_id AS addressId, ua.type AS type, ua.user_id AS userId, ua.province AS province,ua.city AS city,
+        ua.area AS area, ua.address AS address, ua.is_deleted AS isDeleted, ua.creation_date AS creationDate
+    </sql>
+
+    <select id="selectUserAddressesByAddressId" resultType="com.jbb.mgt.core.domain.UserAddresses">
+        SELECT <include refid="addressInfo"/>
+        FROM mgt_user_addresses ua
+        WHERE ua.address_id = #{addressId} AND ua.is_deleted = 0
+    </select>
+
+    <update id="deleteUserAddressesByAddressId">
+        UPDATE mgt_user_addresses
+        SET is_deleted = 1
+        WHERE address_id = #{addressId}
+    </update>
+
+    <select id="selectUserAddressesUserIdAndType" resultType="com.jbb.mgt.core.domain.UserAddresses">
+        SELECT <include refid="addressInfo"/>
+        FROM mgt_user_addresses ua
+        WHERE ua.user_id = #{userId}
+        AND ua.type = #{type}
+        AND ua.is_deleted = 0
+        limit 1
+    </select>
+
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.OrganizationUserMapper">
+   
+	<sql id="orgUserCols">
+		 ou.user_id AS userId,
+		 ou.org_id AS orgId,
+		 ou.creation_date AS creationDate,
+		 ou.entry_status AS entryStatus,
+		 ou.entry_date AS entryDate,
+		 ou.s_channel_code AS sChannelCode,
+		 ou.s_org_id AS sOrgId,
+		 ou.s_user_type AS sUserType
+	</sql>
+
+	<insert id="insertOrganizationUser">
+		INSERT IGNORE INTO mgt_org_users (user_id, org_id, creation_date, s_channel_code, s_org_id, s_user_type , jbb_flag)
+			VALUES(#{userId}, #{orgId}, #{creationDate}, #{sChannelCode}, #{sOrgId}, #{sUserType}, #{jbbFlag})
+	</insert>
+	
+	<update id="updateOrganizationUser">
+		update mgt_org_users ou
+		   SET  ou.entry_status=#{entryStatus},
+		        ou.entry_date = #{entryDate}
+		WHERE ou.org_id=#{orgId} AND ou.user_id =#{userId} 
+	</update>
+	
+	<select id="checkExist" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM mgt_org_users WHERE org_id = #{orgId} AND user_id =#{userId})
+	</select>
+	
+	<select id="selectOrganizationUser" resultType="com.jbb.mgt.core.domain.OrganizationUser">
+		SELECT <include refid="orgUserCols"></include>
+               from mgt_org_users ou
+        WHERE  ou.user_id = #{userId} AND ou.org_id=#{orgId} 
+        	<if test="entryStatus != null">
+				AND ou.entry_status = #{entryStatus} 
+			</if>
+	</select>
+	
+	<select id="selectOrganizationUsers" resultType="com.jbb.mgt.core.domain.OrganizationUser">
+		SELECT <include refid="orgUserCols"></include>
+               from mgt_org_users ou
+        WHERE  ou.user_id = #{userId} 
+        	<if test="entryStatus != null">
+				AND ou.entry_status = #{entryStatus} 
+			</if>
+	</select>
+</mapper>

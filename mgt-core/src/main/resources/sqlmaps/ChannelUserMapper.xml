@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.ChannelUserMapper" >
+	<select id="getChannelUserDaily" resultType="com.jbb.mgt.core.domain.UserLoginPuv">
+		SELECT
+		    sulv.statistic_date AS statisticDate,
+		    sulv.channel_code AS channelCode,
+			sulv.app_login_cnt1 AS appLoginCnt1,
+			sulv.app_login_cnt7 AS appLoginCnt7,
+			sulv.app_login_cnt15 AS appLoginCnt15,
+			sulv.app_login_cnt30 AS appLoginCnt30,
+			sulv.p_uv1 AS pUv1,
+			sulv.p_uv7 AS pUv7,
+			sulv.p_uv15 AS pUv15,
+			sulv.p_uv30 AS pUv30,
+			c.cpa_price AS price,
+			c.channel_name AS channelName,
+			sulv.register_cnt1 AS registerCnt1,
+			sulv.register_cnt7 AS registerCnt7,
+			sulv.register_cnt15 AS registerCnt15,
+			sulv.register_cnt30 AS registerCnt30
+		FROM
+			mgt_statistic_user_login_puv sulv
+			left join mgt_channels c on c.channel_code = sulv.channel_code
+		WHERE
+		sulv.statistic_date &gt;= #{startDate}
+		
+		AND
+			sulv.channel_code=#{channelCode}
+		<if test="endDate != null">
+			AND sulv.statistic_date &lt; #{endDate}
+		</if>
+	</select>
+	<select id="getChannelUserCompare" resultType="com.jbb.mgt.core.domain.UserLoginPuv">
+			SELECT
+			sulv.statistic_date AS statisticDate,
+			sulv.channel_code AS channelCode,
+			sulv.app_login_cnt1 AS appLoginCnt1,
+			sulv.app_login_cnt7 AS appLoginCnt7,
+			sulv.app_login_cnt15 AS appLoginCnt15,
+			sulv.app_login_cnt30 AS appLoginCnt30,
+			sulv.p_uv1 AS pUv1,
+			sulv.p_uv7 AS pUv7,
+			sulv.p_uv15 AS pUv15,
+			sulv.p_uv30 AS pUv30,
+			c.cpa_price AS price,
+			c.channel_name AS channelName,
+			sulv.register_cnt1 AS registerCnt1,
+			sulv.register_cnt7 AS registerCnt7,
+			sulv.register_cnt15 AS registerCnt15,
+			sulv.register_cnt30 AS registerCnt30
+		FROM
+			mgt_statistic_user_login_puv sulv
+			left join mgt_channels c on c.channel_code = sulv.channel_code
+		WHERE
+			sulv.statistic_date = DATE(#{statisticDate})
+	</select>
+</mapper> 
+

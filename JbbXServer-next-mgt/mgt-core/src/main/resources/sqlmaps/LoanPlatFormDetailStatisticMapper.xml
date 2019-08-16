@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.jbb.mgt.core.dao.mapper.LoanPlatformDetailStatisticMapper">
+
+	<sql id="loanPlatformStatisticCols">
+		m.statistic_date AS statisticDate,m.platform_id AS platformId,m.cnt AS cnt,m.price AS price,
+		m.expense AS expense,m.amount AS amount,m.balance AS balance,m.status AS status,
+		m.creation_date AS creationDate,m.update_date AS updateDate,m.confirm_date AS confirmDate,
+		m.confrim_account_id AS confrimAccountId,m.uv_cnt AS uvCnt,m.click_cnt AS clickCnt,m.total_register_cnt AS totalRegisterCnt
+	</sql>
+
+	<sql id="loanPlatformDetailStatisticCols">
+		d.id AS id,d.statistic_date AS statisticDate,d.platform_id AS platformId,d.product_platform AS productPlatform,
+		d.category_id AS categoryId,d.category_name AS categoryName,d.category_pos AS categoryPos,d.pos AS pos,
+		d.type AS type,d.click_cnt AS clickCnt1,d.uv_cnt AS uvCnt1
+	</sql>
+
+	<insert id="insertLoanPlatformDetailStatistics"
+			parameterType="ArrayList">
+		INSERT INTO mgt_loan_platform_detail_statistic
+		(statistic_date, platform_id,product_platform,category_id,category_name,category_pos,pos,type,click_cnt,uv_cnt)
+		VALUES
+		<foreach collection="lists" item="list" index="index"
+				 separator=",">
+			( #{list.statisticDate},#{list.platformId},#{list.productPlatform},#{list.categoryId},#{list.categoryName},#{list.categoryPos},#{list.pos},#{list.type},#{list.clickCnt},#{list.uvCnt})
+		</foreach>
+	</insert>
+
+	<insert id="insertLoanPlatformDetailStatistic">
+		INSERT INTO mgt_loan_platform_detail_statistic
+			(statistic_date, platform_id,product_platform,category_id,category_name,category_pos,pos,type,click_cnt,uv_cnt)
+		VALUES
+			(#{list.statisticDate},#{list.platformId},#{list.productPlatform},#{list.categoryId},#{list.categoryName},#{list.categoryPos},#{list.pos},#{list.type},#{list.clickCnt},#{list.uvCnt})
+	</insert>
+
+	<select id="selectLoanPlatformLDetailStatisticsByDate" resultType="com.jbb.mgt.core.domain.LoanPlatformDetailStatistic">
+
+		SELECT 
+			pf.platform_id as platformId,
+			pf.name AS platName ,
+			cast(log.event_action as SIGNED) as productPlatform,
+			cast(log.event_value as SIGNED) as categoryPos, 
+			cast(log.event_value2 as SIGNED) as pos, 
+			log.source_id as type, 
+			log.event_label as categoryName,
+			count(distinct log.user_id) as uvCnt, 
+			count(log.user_id) as clickCnt
+		FROM mgt_user_event_logs log
+		JOIN mgt_loan_platforms pf ON pf.platform_id = log.cookie_id
+		WHERE log.event_name in ('daichao','jbb2','bnh','xhyp') AND log.cookie_id is not null 
+			AND log.creation_date &gt;= #{startDate}
+			AND log.creation_date &lt; #{endDate}
+		GROUP BY
+			log.cookie_id,productPlatform , categoryPos , pos , type
+		
+	</select>
+
+	<resultMap id="PlatformDetailMap" type="com.jbb.mgt.core.domain.LoanPlatformStatistic">
+		<id property="statisticDate" column="statisticDate" />
+		<id property="platformId" column="platformId" />
+		<result property="cnt" column="cnt" />
+		<result property="puvCnt" column="puvCnt" />
+		<result property="price" column="price" />
+		<result property="expense" column="expense" />
+		<result property="amount" column="amount" />
+		<result property="balance" column="balance" />
+		<result property="status" column="status" />
+		<result property="creationDate" column="creationDate" />
+		<result property="updateDate" column="updateDate" />
+		<result property="confirmDate" column="confirmDate" />
+		<result property="confrimAccountId" column="confrimAccountId" />
+		<result property="platformName" column="platformName" />
+		<result property="uvCnt" column="uvCnt" />
+		<result property="clickCnt" column="clickCnt" />
+		<result property="totalRegisterCnt" column="totalRegisterCnt" />
+		<association property="salesAccount" javaType="com.jbb.mgt.core.domain.Account">
+			<id property="accountId" column="salesId" />
+			<result property="nickname" column="nickname" />
+		</association>
+		<collection property="loanPlatformDetailStatistics" javaType="ArrayList" ofType="com.jbb.mgt.core.domain.LoanPlatformDetailStatistic">
+			<id property="id" column="id" />
+			<result property="statisticDate" column="statisticDate" />
+			<result property="platformId" column="platformId" />
+			<result property="productPlatform" column="productPlatform" />
+			<result property="categoryId" column="categoryId" />
+			<result property="categoryName" column="categoryName" />
+			<result property="categoryPos" column="categoryPos" />
+			<result property="pos" column="pos" />
+			<result property="type" column="type" />
+			<result property="clickCnt" column="clickCnt1" />
+			<result property="uvCnt" column="uvCnt1" />
+		</collection>
+	</resultMap>
+
+
+	<select id="selectLoanPlatformDetailStatistic" resultMap="PlatformDetailMap">
+		SELECT
+            t1.statistic_date AS statisticDate,
+			t1.platform_id AS platformId ,
+			t1.platformName AS platformName ,
+			t1.salesId AS salesId ,
+			t1.nickname AS nickname ,
+			t1.price AS price ,
+			t1.uvCnt AS uvCnt ,
+			t1.clickCnt AS clickCnt ,
+			t1.cnt AS cnt ,
+			t1.puvCnt AS puvCnt,
+			t2.product_platform AS productPlatform ,
+			t2.category_name AS categoryName ,
+			t2.category_pos AS categoryPos ,
+			t2.pos AS pos ,
+			t2.click_cnt AS clickCnt1 ,
+			t2.uv_cnt AS uvCnt1
+		FROM
+			(
+				SELECT
+                    m.statistic_date,
+					m.platform_id ,
+					p.name AS platformName ,
+					p.sales_id AS salesId,
+					a.nickname AS nickname,
+					avg(ifnull(m.price , 0)) AS price ,
+					SUM(m.uv_cnt) AS uvCnt ,
+					SUM(m.click_cnt) AS clickCnt ,
+					SUM(m.cnt) AS cnt,
+					sum(m.puv_cnt) AS puvCnt
+				FROM
+					mgt_loan_platform_statistic m
+				LEFT JOIN mgt_loan_platforms p ON p.platform_id = m.platform_id
+				LEFT JOIN mgt_accounts a ON a.account_id = p.sales_id
+				WHERE
+					m.statistic_date &gt;= #{startDate}
+					<if test="endDate != null">
+						AND m.statistic_date &lt; #{endDate}
+					</if>
+						AND m.platform_id = #{platformId}
+					<if test="salesId !=null and salesId>0">
+						AND p.sales_id = #{salesId}
+					</if>
+				GROUP BY
+					m.statistic_date
+			) t1
+		LEFT JOIN(
+			SELECT
+        pds.statistic_date AS statistic_date ,
+				pds.platform_id AS platform_id ,
+				pds.product_platform AS product_platform ,
+				pds.category_name AS category_name ,
+				pds.category_pos AS category_pos ,
+				pds.pos AS pos ,
+				SUM(pds.click_cnt) AS click_cnt ,
+				SUM(pds.uv_cnt) AS uv_cnt
+			FROM
+				mgt_loan_platform_detail_statistic pds
+			LEFT JOIN mgt_loan_platforms p ON p.platform_id = pds.platform_id
+			WHERE
+				pds.statistic_date &gt;= #{startDate}
+				<if test="endDate != null">
+					AND pds.statistic_date &lt; #{endDate}
+				</if>
+        			AND pds.platform_id = #{platformId}
+				<if test="salesId !=null and salesId>0">
+					AND p.sales_id = #{salesId}
+				</if>
+			GROUP BY
+				pds.statistic_date, pds.product_platform , pds.category_name, pds.category_pos, pds.pos
+		) t2 ON t1.statistic_date = t2.statistic_date
+		ORDER BY
+			 statisticDate,cnt desc , product_platform , category_name, category_pos, pos;
+	</select>
+
+	<select id="selectLoanPlatformDetailStatisticByStatisticDate" resultMap="PlatformDetailMap">
+		SELECT
+			t1.platform_id AS platformId ,
+			t1.platformName AS platformName ,
+			t1.salesId AS salesId ,
+			t1.nickname AS nickname ,
+			t1.price AS price ,
+			t1.uvCnt AS uvCnt ,
+			t1.puvCnt AS puvCnt,
+			t1.clickCnt AS clickCnt ,
+			t1.cnt AS cnt ,
+			t2.product_platform AS productPlatform ,
+			t2.category_name AS categoryName ,
+			t2.category_pos AS categoryPos ,
+			t2.pos AS pos ,
+			t2.click_cnt AS clickCnt1 ,
+			t2.uv_cnt AS uvCnt1
+		FROM
+			(
+				SELECT
+					m.platform_id ,
+					p.name AS platformName ,
+					p.sales_id AS salesId,
+					a.nickname AS nickname,
+					avg(ifnull(m.price , 0)) AS price ,
+					SUM(m.uv_cnt) AS uvCnt ,
+					SUM(m.click_cnt) AS clickCnt ,
+					SUM(m.cnt) AS cnt,
+					SUM(m.puv_cnt) AS puvCnt
+				FROM
+					mgt_loan_platform_statistic m
+				LEFT JOIN mgt_loan_platforms p ON p.platform_id = m.platform_id
+				LEFT JOIN mgt_accounts a ON a.account_id = p.sales_id
+				WHERE
+					m.statistic_date &gt;= #{startDate}
+					<if test="endDate != null">
+						AND m.statistic_date &lt; #{endDate}
+					</if>
+					<if test="salesId !=null and salesId>0">
+						AND p.sales_id = #{salesId}
+					</if>
+				GROUP BY
+					m.platform_id
+			) t1
+		LEFT JOIN(
+			SELECT
+				pds.platform_id AS platform_id ,
+				pds.product_platform AS product_platform ,
+				pds.category_name AS category_name ,
+				pds.category_pos AS category_pos ,
+				pds.pos AS pos ,
+				SUM(pds.click_cnt) AS click_cnt ,
+				SUM(pds.uv_cnt) AS uv_cnt
+			FROM
+				mgt_loan_platform_detail_statistic pds
+			LEFT JOIN mgt_loan_platforms p ON p.platform_id = pds.platform_id
+			WHERE
+				pds.statistic_date &gt;= #{startDate}
+					<if test="endDate != null">
+						AND pds.statistic_date &lt; #{endDate}
+					</if>
+					<if test="salesId !=null and salesId>0">
+						AND p.sales_id = #{salesId}
+					</if>
+			GROUP BY
+				pds.platform_id, pds.product_platform , pds.category_name, pds.category_pos, pds.pos
+		) t2 ON t1.platform_id = t2.platform_id
+		ORDER BY
+			 cnt desc , platformId, product_platform , category_name, category_pos, pos
+	</select>
+
+
+</mapper>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.JuXinLiReportMapper" >
+
+	<insert id="saveReportInfo">
+		INSERT INTO mgt_data_julixin_report 
+			(token, user_id, apply_id, report_type, status, creation_date)
+		VALUES 
+			(#{token}, #{userId}, #{applyId}, #{reportType}, #{status}, #{creationDate})
+		ON DUPLICATE KEY UPDATE 
+			status = #{status}, user_id = #{userId}, apply_id = #{applyId}
+	</insert>
+	
+	
+	<select id="selectReport" resultType="com.jbb.mgt.core.domain.JuXinLiReport">
+		SELECT r.token as token, r.user_id as userId, r.apply_id as applyId, r.report_type as reportType, 
+			r.status as status, r.creation_date as creationDate
+		FROM mgt_data_julixin_report  r
+		WHERE 1=1 
+		<if test="null!=token"> 
+			AND r.token = #{token}
+		</if>
+		<if test="null!=userId"> 
+			AND r.user_id = #{userId}
+		</if>
+		<if test="null!=applyId"> 
+			AND r.apply_id = #{applyId}
+		</if>
+		<if test="null!=reportType"> 
+			AND r.report_type = #{reportType}
+		</if>
+		ORDER BY r.status DESC, r.creation_date DESC
+		LIMIT 1
+	</select>
+	
+</mapper>

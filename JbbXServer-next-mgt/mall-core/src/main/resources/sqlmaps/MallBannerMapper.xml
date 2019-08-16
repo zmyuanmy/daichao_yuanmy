@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mall.core.dao.mapper.MallBannerMapper" >
+
+	<select id="getMallBanner" resultType="java.lang.String">
+		select ip_address from mgt_account_login_log limit 1
+	</select>
+	
+	<resultMap id="MallBannerVo" type="com.jbb.mall.core.dao.domain.MallBannersVo">
+	  <id property="id" column="bannerId" />
+		<result property="adImg" column="adImg" />
+		<result property="productId" column="productId" />
+	</resultMap>
+	
+	<select id="selectMallBannerVoList" resultMap="MallBannerVo">
+		SELECT banner_id AS bannerId, adImg AS adImg,product_id AS productId 
+		FROM mall_banners WHERE product_type=#{type};
+	</select>
+
+</mapper> 

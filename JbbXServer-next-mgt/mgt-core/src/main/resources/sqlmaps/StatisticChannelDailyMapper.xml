@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.StatisticChannelDailyMapper">
+
+   <sql id="StatisticInfo">
+		mscd.statistic_date AS statisticDate, 
+		mscd.channel_code AS channelCode,
+		mscd.user_type AS userType,
+		mscd.click_cnt AS clickCnt,
+		mscd.uv_cnt AS uvCnt,
+		mscd.total_register_cnt AS totalRegisterCnt,
+		mscd.hidden_register_cnt AS hiddenRegisterCnt,
+		mscd.entry_cnt AS entryCnt,
+		mscd.hidden_entry_cnt AS hiddenEntryCnt,
+		mscd.sell_entry_cnt AS sellEntryCnt,
+		mscd.hidden_sell_entry_cnt AS hiddenSellEntryCnt,
+		mscd.h5_click_cnt AS h5ClickCnt,
+		mscd.success_page_cnt AS successPageCnt,
+		mscd.download_click_cnt AS downloadClickCnt,
+		mscd.level_1_cnt AS level1Cnt,
+		mscd.level_2_cnt AS level2Cnt,
+		mscd.zhima_1_cnt AS zhima1Cnt,
+		mscd.age_1_cnt AS age1Cnt
+   </sql>
+   <select id="getStatisticChannelDailyByChannelCode" resultType="com.jbb.mgt.core.domain.StatisticChannelDaily">
+   		SELECT
+			c.channel_code AS channelCode,
+			c.channel_name As channelName,
+			tlogs.clickCnt AS clickCnt, 
+			tlogs.uvCnt AS uvCnt,
+			tcnt.registerCnt as totalRegisterCnt,	
+			tcnt.hiddenRegisterCnt as hiddenRegisterCnt,
+			
+					tcnt.entryCnt as entryCnt,
+			        tcnt.hiddenEntryCnt as hiddenEntryCnt,
+			        tcnt.sellEntryCnt as sellEntryCnt,
+			        tcnt.hiddenSellEntryCnt as hiddenSellEntryCnt,
+               
+					tcnt.noidCnt2 as level1Cnt,
+			        tcnt.idCnt2 as level2Cnt,
+			        tcnt.zhima1Cnt as zhima1Cnt,
+			        tcnt.age1Cnt as age1Cnt,
+           
+
+			tlogs.successPageCnt as successPageCnt,
+			tlogs.h5ClickCnt as h5ClickCnt,
+			tlogs.downloadClickCnt as downloadClickCnt
+			
+			FROM mgt_channels c
+			JOIN mgt_accounts acc ON c.creator = acc.account_id
+			LEFT JOIN (
+				SELECT au.channel_code as channel_code, 
+			 
+					    count(case when au.user_id is not null and ou.entry_status =1   AND u.zhima_score <![CDATA[>=]]>580 then 1 else null end) as sellEntryCnt,
+                        count(case when au.user_id is not null AND au.is_hidden = 1 AND ou.entry_status =1 then 1 else null end) as hiddenEntryCnt, 
+						count(case when au.user_id is not null and ou.entry_status =1  AND u.zhima_score <![CDATA[>=]]>580 AND au.is_hidden = 1 then 1 else null end) as hiddenSellEntryCnt,
+						count(case when au.user_id is not null and ou.entry_status =1  then 1 else null end) as entryCnt,
+							
+              
+					    count(case when au.user_id is not null  AND u.zhima_score >580 then 1 else null end) as zhima1Cnt,
+				        count(case when au.user_type=2 and u.idcard is not null then 1 else null end) as idCnt2,
+				        count(case when au.user_type=2 and u.idcard is null then 1 else null end) as noidCnt2,
+						count(case when YEAR(NOW()) - substring(u.idCard, 7, 4) <![CDATA[>=]]> 23 and YEAR(NOW()) - substring(u.idCard, 7, 4)<![CDATA[<=]]> 40 then 1 else null end) as age1Cnt,
+            
+					    count(1) as registerCnt,
+						count(case when au.is_hidden = 1 then 1 else null end) as hiddenRegisterCnt	
+						
+					  
+				FROM mgt_org_app_channel_users au
+				LEFT JOIN mgt_users u on au.user_id = u.user_id 
+				LEFT JOIN mgt_org_users ou on au.user_id = ou.user_id  <if test="orgId!=null" >AND ou.org_id = #{orgId}</if>
+				LEFT JOIN mgt_user_properties p2 on p2.user_id = u.user_id AND p2.`name` = 'woolcheckResult'
+				LEFT JOIN mgt_user_properties p3 on p3.user_id = u.user_id AND p3.`name` = 'mobileCheckResult'
+				LEFT JOIN mgt_user_loan_records ur on ur.user_id = u.user_id
+				WHERE 1=1 AND au.org_id = 1
+					<if test="startDate != null">
+						AND au.creation_date <![CDATA[>=]]> #{startDate}
+					</if>
+					<if test="endDate != null">
+						AND au.creation_date <![CDATA[<]]> #{endDate}
+					</if>	
+					<if test="userType != null">
+						AND au.user_type = #{userType}
+					</if>		
+					
+				GROUP BY au.channel_code
+			) tcnt ON tcnt.channel_code = c.channel_code
+			LEFT JOIN (
+				SELECT uel.source_id as channel_code, 
+					count(case when uel.event_name = 'index' AND uel.event_action = 'init'  then 1 else null end) as clickCnt, 
+                    count(distinct uel.cookie_id) as uvCnt,
+					count(distinct case when uel.event_name = 'addmore' AND uel.event_action = 'clickH5'  then uel.cookie_id else null end) as h5ClickCnt,
+					count(distinct case when uel.event_name = 'success' AND uel.event_action = 'init'  then uel.cookie_id else null end) as successPageCnt,
+					count(distinct case when uel.event_name = 'success' AND uel.event_action = 'download'  then uel.cookie_id else null end) as downloadClickCnt				
+				FROM mgt_user_event_logs uel
+				WHERE 
+					<if test="userType != null">
+					uel.event_value = #{userType}
+					</if>
+					<if test="startDate != null">
+					AND uel.creation_date <![CDATA[>=]]> #{startDate}
+					</if>
+				    <if test="endDate != null">
+					AND uel.creation_date <![CDATA[<]]> #{endDate}
+					</if>
+				GROUP BY uel.source_id
+			) tlogs ON tlogs.channel_code = c.channel_code
+			WHERE c.status != 1
+				<if test="channelCode != null">
+					AND c.channel_code = #{channelCode}
+				</if>
+				<if test="orgId!=null" >
+					AND acc.org_id = #{orgId}
+				</if>
+			ORDER BY c.creation_date DESC
+	
+   </select>
+   
+   <insert id="insertStatisticChannelDaily"
+		parameterType="ArrayList">
+		INSERT INTO mgt_statistic_channel_daily
+		(statistic_date, channel_code,user_type,click_cnt,uv_cnt,total_register_cnt,hidden_register_cnt,
+		entry_cnt,hidden_entry_cnt,sell_entry_cnt,hidden_sell_entry_cnt,h5_click_cnt,success_page_cnt,
+		download_click_cnt,level_1_cnt,level_2_cnt,zhima_1_cnt,age_1_cnt)
+		VALUES
+		<foreach collection="lists" item="list" index="index"
+			separator=",">
+			( #{list.statisticDate},
+			#{list.channelCode},#{list.userType},
+			#{list.clickCnt},#{list.uvCnt},
+			#{list.totalRegisterCnt},#{list.hiddenRegisterCnt},
+			#{list.entryCnt},#{list.hiddenEntryCnt},
+			#{list.sellEntryCnt},#{list.hiddenSellEntryCnt},
+			#{list.h5ClickCnt},#{list.successPageCnt},
+			#{list.downloadClickCnt},#{list.level1Cnt},
+			#{list.level2Cnt},#{list.zhima1Cnt},
+			#{list.age1Cnt})
+		</foreach>
+	
+	</insert>
+	
+	<select id="getChannelDailysByChannelCode" resultType="com.jbb.mgt.core.domain.StatisticChannelDaily">
+			SELECT
+				mscd.statistic_date AS statisticDate,
+				mscd.user_type AS userType,
+				sum(mscd.click_cnt) AS clickCnt,
+				sum(mscd.uv_cnt) AS uvCnt,
+				sum(mscd.total_register_cnt) AS totalRegisterCnt,
+				sum(mscd.hidden_register_cnt) AS hiddenRegisterCnt,
+				sum(mscd.entry_cnt) AS entryCnt,
+				sum(mscd.hidden_entry_cnt) AS hiddenEntryCnt,
+				sum(mscd.sell_entry_cnt) AS sellEntryCnt,
+				sum(mscd.hidden_sell_entry_cnt) AS hiddenSellEntryCnt,
+				sum(mscd.h5_click_cnt) AS h5ClickCnt,
+				sum(mscd.success_page_cnt) AS successPageCnt,
+				sum(mscd.download_click_cnt) AS downloadClickCnt,
+				sum(mscd.level_1_cnt) AS level1Cnt,
+				sum(mscd.level_2_cnt) AS level2Cnt,
+				sum(mscd.zhima_1_cnt) AS zhima1Cnt,
+				sum(mscd.age_1_cnt) AS age1Cnt,
+				avg(ifnull(fcsd.price,0)) AS price
+
+			FROM mgt_statistic_channel_daily mscd
+			LEFT JOIN mgt_fin_channel_statistic_daily fcsd ON mscd.channel_code = fcsd.channel_code
+			AND mscd.statistic_date = fcsd.statistic_date
+			LEFT JOIN mgt_channels c ON mscd.channel_code = c.channel_code
+			WHERE
+			<if test="channelCodes!=null">
+			mscd.channel_code in
+			<foreach item="channelCode" index="index" collection="channelCodes" open="(" separator="," close=")">
+			   #{channelCode}
+			</foreach>
+			AND
+			</if>
+			 mscd.statistic_date <![CDATA[>=]]> #{startDate}
+			<if test="endDate != null">
+			AND mscd.statistic_date <![CDATA[<=]]> #{endDate}
+			</if>
+			<if test="userType != null">
+			AND mscd.user_type= #{userType}
+			</if>
+			group by mscd.statistic_date
+	</select>
+	
+	<select id="getChannelsCompare" resultType="com.jbb.mgt.core.domain.StatisticChannelDaily">
+		SELECT	  
+			mscd.user_type AS userType,
+			mscd.channel_code AS channelCode,
+			c.channel_name AS channelName,
+			avg(ifnull(fcsd.price,0)) AS price,
+			sum(mscd.click_cnt) AS clickCnt,
+			sum(mscd.uv_cnt) AS uvCnt,
+			sum(mscd.total_register_cnt) AS totalRegisterCnt,
+			sum(mscd.hidden_register_cnt) AS hiddenRegisterCnt,
+			sum(mscd.entry_cnt) AS entryCnt,
+			sum(mscd.hidden_entry_cnt) AS hiddenEntryCnt,
+			sum(mscd.sell_entry_cnt) AS sellEntryCnt,
+			sum(mscd.hidden_sell_entry_cnt) AS hiddenSellEntryCnt,
+			sum(mscd.h5_click_cnt) AS h5ClickCnt,
+			sum(mscd.success_page_cnt) AS successPageCnt,
+			sum(mscd.download_click_cnt) AS downloadClickCnt,
+			sum(mscd.level_1_cnt) AS level1Cnt,
+			sum(mscd.level_2_cnt) AS level2Cnt,
+			sum(mscd.zhima_1_cnt) AS zhima1Cnt,
+			sum(mscd.age_1_cnt) AS age1Cnt
+		FROM mgt_statistic_channel_daily mscd  
+		LEFT JOIN mgt_fin_channel_statistic_daily fcsd ON mscd.channel_code = fcsd.channel_code 
+		AND mscd.statistic_date = fcsd.statistic_date
+		LEFT JOIN mgt_channels c ON mscd.channel_code = c.channel_code
+		WHERE  
+		    mscd.statistic_date <![CDATA[>=]]> #{startDate}
+		<if test="endDate != null">
+		AND mscd.statistic_date <![CDATA[<=]]> #{endDate}
+		</if>
+		<if test="userType != null">
+		AND mscd.user_type= #{userType} 
+		</if>
+		AND c.is_hidden=0
+		GROUP BY mscd.channel_code
+		ORDER BY totalRegisterCnt DESC
+	</select>
+
+</mapper>

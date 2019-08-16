@@ -1,0 +1,2 @@
+mvn install:install-file -DgroupId=com.qftx -DartifactId=qftx-open-SDK-Java -Dversion=1.4 -Dpackaging=jar -Dfile=qftx-open-SDK-Java-1.4.jar
+mvn install:install-file -DgroupId=com.bs -DartifactId=bsApi -Dversion=3.5.1 -Dpackaging=jar -Dfile=bsApi-3.5.1.jar

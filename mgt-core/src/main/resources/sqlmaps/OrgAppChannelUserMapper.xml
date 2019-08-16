@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.OrgAppChannelUserMapper">
+
+	<insert id="insertOrgAppChannelUser">
+		INSERT IGNORE INTO mgt_org_app_channel_users
+			(org_id, user_id, channel_code, application_id, is_hidden, user_type )
+		VALUES
+			(#{orgId}, #{userId}, #{channelCode}, #{applicationId}, #{isHidden}, #{userType})
+	</insert>
+
+
+	<select id="checkExist"  resultType="java.lang.Integer">
+		SELECT EXISTS (
+			SELECT 1 FROM mgt_org_app_channel_users
+		    WHERE org_id = #{orgId} AND user_id =#{userId}
+		    	<if test="null != applicationId"> AND application_id = #{applicationId} </if>
+		    	<if test="null != startDate"> AND creation_date <![CDATA[>=]]> #{startDate} </if>
+		    	<if test="null != endDate"> AND creation_date <![CDATA[<]]> #{endDate} </if>
+		)
+	</select>
+	
+</mapper>

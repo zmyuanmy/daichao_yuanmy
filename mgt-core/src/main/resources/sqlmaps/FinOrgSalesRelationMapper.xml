@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.FinOrgSalesRelationMapper" >
+
+	<sql id="finOrgSalesRelationCols">
+        f.org_id  AS orgId,
+        f.account_id  AS accountId,
+        f.creator  AS creator,
+        f.creation_date  AS creationDate,
+        f.is_deleted AS isDeleted,
+        f.default_price AS defaultPrice,
+        f.delegate_price AS delegatePrice
+    </sql>
+
+	<insert id="insertFinOrgSalesRelation">
+		INSERT INTO mgt_fin_org_sales_relation
+			(org_id,account_id,creator,creation_date,is_deleted,default_price,delegate_price)
+		VALUES
+			(#{orgId}, #{accountId}, #{creator}, #{creationDate}, #{isDeleted},#{defaultPrice},#{delegatePrice})
+	</insert>
+
+	<update id="updateFinOrgSalesRelation">
+		UPDATE mgt_fin_org_sales_relation
+		SET account_id = #{accountId}
+		WHERE org_id = #{orgId}
+	</update>
+
+	<select id="checkExist" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+		SELECT EXISTS (SELECT 1 FROM mgt_fin_org_sales_relation f WHERE f.org_id=#{orgId} AND f.account_id=#{accountId})
+	</select>
+
+	<select id="selectFinOrgSalesRelationByOrgId" resultType="com.jbb.mgt.core.domain.FinOrgSalesRelation">
+		SELECT  <include refid="finOrgSalesRelationCols"/>
+		FROM  mgt_fin_org_sales_relation AS f
+		WHERE f.org_id = #{orgId}
+	</select>
+
+	<delete id="deleteFinOrgSalesRelation">
+		DELETE  FROM mgt_fin_org_sales_relation
+		WHERE org_id = #{orgId}
+		AND account_id = #{accountId}
+	</delete>
+
+</mapper> 
+

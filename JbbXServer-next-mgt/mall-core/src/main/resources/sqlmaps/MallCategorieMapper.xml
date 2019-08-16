@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mall.core.dao.mapper.MallCategoriesMapper" >
+
+	<resultMap id="MallCategoriesVo" type="com.jbb.mall.core.dao.domain.MallCategoriesVo">
+	  <id property="categoryId" column="categoryId" />
+		<result property="img" column="img" />
+		<result property="content" column="content" />
+	</resultMap>
+	
+	<select id="selectMallCategoriesVoList" resultMap="MallCategoriesVo">
+		SELECT
+		  mc.category_id AS categoryId,
+		  mc.adImg AS img,
+		  mc.title AS content
+		FROM
+		  mall_classifications mcf LEFT JOIN 
+		  mall_categories mc
+		  ON mcf.classification = mc.classification
+		WHERE product_type = #{type} AND mc.classification='首页中间情景'
+		ORDER BY mc.index_no
+	</select>
+
+</mapper> 

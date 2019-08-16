@@ -1,0 +1,72 @@
+2019-05-13
+1.贷超产品上下架
+2.渠道数据 权限控制
+3.渠道漏斗数据 权限控制
+4.修改贷超产品收款权限（产品商务142）
+5.发送贷超产品 数量和余额的提醒短信
+6.贷超产品uv 添加需求量
+7.修改渠道充消 每天uv计价的 按照uv算消耗和余额 同时修复uv价格不正确的问题
+8.渠道充消 权限控制
+9.添加充消操作的操作日志
+10.贷超导流漏斗表添加计价模式和价格
+
+
+sql
+
+-- 2019-05-08 取消产品商务133权限
+DELETE FROM mgt_role_permissions WHERE role_id=106 AND permission_id=133
+
+-- 创建财务操作日志表
+CREATE TABLE `mgt_fin_op_log`  (
+  `log_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '日志编号',
+  `account_id` int(11) NULL DEFAULT NULL COMMENT '操作账户ID',
+	`source_id`  varchar(128)  NULL DEFAULT NULL COMMENT '渠道或者平台id',
+  `type` int(4) NOT NULL COMMENT '1渠道 2 平台',
+  `op_date` timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  `params` varchar(500)  NULL DEFAULT NULL COMMENT '操作理由',
+  PRIMARY KEY (`log_id`) USING BTREE,
+  INDEX `i_mgt_account_op_log_accid`(`account_id`) USING BTREE,
+  INDEX `i_mgt_account_op_log_sourceId`(`source_id`) USING BTREE,
+  INDEX `i_mgt_account_op_log_optype`(`type`) USING BTREE,
+  INDEX `i_mgt_account_op_log_opdate`(`op_date`) USING BTREE
+) ;
+
+-- 贷超产品 计算uv模式记录表
+CREATE TABLE `mgt_platform_statistic`  (
+  `statistic_date` date NOT NULL COMMENT '统计时间',
+  `creation_date` timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+  PRIMARY KEY (`statistic_date`) USING BTREE
+) ;
+
+--添加贷超产品UV数，贷超导流漏斗表权限
+INSERT INTO mgt_permissions(permission_id, description) VALUES (140, '贷超产品UV数');
+INSERT INTO mgt_permissions(permission_id, description) VALUES (141, '贷超导流漏斗表');
+
+INSERT INTO mgt_role_permissions(role_id, permission_id) VALUES (107, 140);
+INSERT INTO mgt_role_permissions(role_id, permission_id) VALUES (107, 141);
+INSERT INTO mgt_role_permissions(role_id, permission_id) VALUES (103, 141);
+INSERT INTO mgt_role_permissions(role_id, permission_id) VALUES (104, 140);
+INSERT INTO mgt_role_permissions(role_id, permission_id) VALUES (104, 141);
+INSERT INTO mgt_role_permissions(role_id, permission_id) VALUES (105, 140);
+INSERT INTO mgt_role_permissions(role_id, permission_id) VALUES (105, 141);
+INSERT INTO mgt_role_permissions(role_id, permission_id) VALUES (106, 140);
+INSERT INTO mgt_role_permissions(role_id, permission_id) VALUES (110, 140);
+
+配置文件添加--在项目properties下的core.properties
+#贷超产品短信提醒
+#余额提醒模板
+jbb.platform.msgBalance.template=以下分组余额不足:CodeTemplate
+#预期量提醒模板
+jbb.platform.msgCnt.template=以下产品达到预设:CodeTemplate
+#余额提醒值
+jbb.mgt.platform.msgBalance=100000
+#距离预期的值
+jbb.mgt.platform.msgCnt=0
+#短信签名
+jbb.mgt.platform.msgSignName=【借帮帮】
+#除商务外提醒的手机号
+#jbb.mgt.platform.op.mobiles=17606619884
+#短信提醒开关
+jbb.platform.msgRemind.enabled=false
+#提醒间隔时间(毫秒)
+jbb.platform.remind.sendMsg.interval=900000

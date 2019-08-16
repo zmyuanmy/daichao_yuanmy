@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mall.core.dao.mapper.AccountMapper" >
+
+	<sql id="accountCols">
+        c.account_id AS accountId,c.username AS username
+        , c.nickname AS nickName, c.phone_number AS phoneNumber,c.jbb_user_id AS jbbUserId,
+		c.password AS password,c.org_id AS orgId,c.is_deleted AS deleted, c.is_freeze AS freeze,
+		c.creator AS creator, c.creation_date AS creationDate,c.trade_password AS tradePassword	
+    </sql>
+	
+	<select id="selectAccountByKey" resultType="com.jbb.mall.core.dao.domain.Account">
+		SELECT  <include refid="accountCols"/>
+			, k.user_key as 'key.userKey', k.expiry as 'key.expiry', k.is_deleted as 'key.deleted'
+		FROM mgt_account_keys k, mgt_accounts c
+		WHERE c.account_id = k.account_id AND k.user_key = #{userKey}
+			AND k.expiry &gt;= #{expiry} AND k.is_deleted = 0
+	</select>	
+	
+	<select id="selectAccountPermissions" resultType="java.lang.Integer">
+		SELECT p.permission_id 
+		FROM mgt_accounts c, mgt_account_roles r, mgt_role_permissions p
+		WHERE c.account_id = #{accountId} AND c.account_id = r.account_id AND r.role_id = p.role_id
+	</select>	
+ 
+</mapper> 
+

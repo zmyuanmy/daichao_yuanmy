@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jbb.mgt.core.dao.mapper.PermissionsMapper">
+
+
+	<select id="selectPermissionsByPermissionsId" resultType="com.jbb.mgt.core.domain.Permissions">
+		SELECT p.permission_id as permissionId, p.description as description
+		FROM mgt_permissions p
+		JOIN mgt_role_permissions rp on p.permission_id = rp.permission_id
+		JOIN mgt_roles r on r.role_id = rp.role_id
+		WHERE p.permission_id = #{permissionId} AND r.application_id = #{applicationId} 
+	</select>
+
+
+	<select id="selectPermissions" resultType="com.jbb.mgt.core.domain.Permissions">
+		SELECT DISTINCT(p.permission_id) as permissionId, p.description as description
+		FROM mgt_permissions  p
+		JOIN mgt_role_permissions rp on p.permission_id = rp.permission_id
+		JOIN mgt_roles r on r.role_id = rp.role_id
+		WHERE r.application_id = #{applicationId} 
+	</select>
+
+</mapper> 

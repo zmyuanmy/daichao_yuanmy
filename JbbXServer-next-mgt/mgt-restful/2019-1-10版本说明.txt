@@ -1,0 +1,35 @@
+-----2019-01-10版本变动
+1.贷超漏斗表---调整排序--- 按注册数排序 ------->1000537
+2.工具---图片上传      ------------->1000536
+3.渠道推广---添加商务人员过滤 ----->1000517
+4.增加商务录款功能    ---------->1000516
+5.渠道和贷超按Uv计价 -------->1000533
+
+----sql变动
+
+ALTER TABLE mgt_channels ADD COLUMN uv_price int(11)  default 0  comment 'uv价格';
+
+ALTER TABLE mgt_fin_channel_statistic_daily ADD COLUMN uv_cnt int(11)  default 0  comment 'uv数量';
+
+ALTER TABLE mgt_fin_channel_statistic_daily ADD COLUMN mode int(11)  default NULL  comment '结算模式';
+
+ALTER TABLE mgt_loan_platform_statistic ADD COLUMN puv_cnt int(11)  default 0  comment '产品uv';
+
+ALTER TABLE mgt_loan_platforms ADD COLUMN sales_id int(11)  default null  comment '销售人员的accountId';
+
+INSERT INTO mgt_role_permissions (role_id, permission_id) VALUES ('103', '119');
+
+
+
+
+----配置文件 
+core.properities
+#\u56fe\u7247\u4e0a\u4f20oss
+
+jbb.aliyu.oss.accessUrl = https://jbb-dc-imgs.oss-cn-shenzhen.aliyuncs.com
+
+jbb.aliyu.oss.cimgsSize=100
+
+jbb.aliyu.oss.pimgsSize=100
+
+jbb.aliyu.oss.padsSize=100
