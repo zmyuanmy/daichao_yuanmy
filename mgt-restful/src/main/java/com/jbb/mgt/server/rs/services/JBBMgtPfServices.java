@@ -20,6 +20,7 @@ import com.jbb.mgt.rs.action.loanAreaTag.LoanAreaTagAction;
 import com.jbb.mgt.rs.action.pf.LoanPlatformAction;
 import com.jbb.mgt.rs.action.pfmgt.LoanPlatformPublishAction;
 import com.jbb.mgt.rs.action.pfmgt.LoanPlatformTagAction;
+import com.jbb.mgt.rs.action.user.UserLibraryAction;
 import com.jbb.mgt.server.rs.pojo.ActionResponse;
 import com.jbb.server.common.Constants;
 
@@ -339,6 +340,20 @@ public class JBBMgtPfServices extends BasicRestfulServices {
         LoanPlatformAction action = getBean(LoanPlatformAction.ACTION_NAME);
         action.validateUserKey(userKey);
         action.getPlatformGroupName();
+        logger.debug("<getPlatformGroupName()");
+        return action.getActionResponse();
+    }
+
+    @GET
+    @Path("/userList")
+    public ActionResponse getUserList(@HeaderParam(API_KEY) String userKey, @QueryParam("pageNo") int pageNo,
+        @QueryParam("pageSize") int pageSize, @QueryParam("channelCode") String channelCode,
+        @QueryParam("phoneNumber") String phoneNumber, @QueryParam("ipAddress") String ipAddress,
+        @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate) {
+        logger.debug(">getPlatformGroupName()");
+        UserLibraryAction action = getBean(UserLibraryAction.ACTION_NAME);
+        action.validateUserKey(userKey);
+        action.getUserList(pageNo, pageSize, channelCode, phoneNumber, ipAddress, startDate, endDate);
         logger.debug("<getPlatformGroupName()");
         return action.getActionResponse();
     }
