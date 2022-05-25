@@ -16,7 +16,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring-version>4.3.10.RELEASE</spring-version>
-		<spring-security-version>4.2.3.RELEASE</spring-security-version>
+		<spring-security-version>5.5.7</spring-security-version>
 		<aws-java-sdk-version>1.11.172</aws-java-sdk-version>
 	</properties>
 	<dependencies>
